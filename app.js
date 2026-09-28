@@ -1,5 +1,6 @@
 import { REGIONS, EXERCISES, EX_BY_ID, REGION_BY_ID, VIDEO_MB } from './exercises.js';
 import { FOODS, DIETS, buildDayMenu } from './nutrition.js';
+import { bodyMap } from './bodymap.js';
 
 // ═════════════════════════ Yardımcılar
 const $ = (s, el = document) => el.querySelector(s);
@@ -800,17 +801,79 @@ function renderPick() {
   if (!picking) { location.replace('#/lib'); return; }
   return renderLib(null, true);
 }
+// Bölgelerin kapak fotoğrafı: [hareket, görsel sırası]
+const REGION_COVER = { gogus: ['bench', 1], sirt: ['pullup', 0], bacak: ['front-squat', 1], omuz: ['db-shoulder-press', 1], kol: ['biceps-curl', 1], karin: ['hanging-leg-raise', 0] };
+const regionGoal = id => (id === 'karin' ? [6, 15] : [10, 20]);
+// Son 7 günde bölge başına çalışma seti
+function weeklyRegionSets() {
+  const since = dayKey(new Date(Date.now() - 6 * 864e5));
+  const out = Object.fromEntries(REGIONS.map(r => [r.id, 0]));
+  for (const s of working(db.sets.filter(x => x.date >= since))) { const r = getEx(s.exId)?.region; if (r in out) out[r]++; }
+  return out;
+}
+const setLevel = (id, n) => (!n ? 0 : n < regionGoal(id)[0] / 2 ? 1 : n < regionGoal(id)[0] ? 2 : 3);
+
 function renderLib(region, pickMode = false) {
-  if (region) libRegion = region;
-  setHeader(pickMode ? 'Hareket seç' : 'Hareketler', pickMode ? { back: true, always: true } : { action: `<a class="top-btn" href="#/new" aria-label="Özel hareket ekle">${icon('plus')}</a>` });
-  view.innerHTML = (pickMode ? `<div class="pick-banner">${icon('plus')} ${esc(picking.title)}</div>`
-    : pageHead(`${allExercises().length} hareket · ${EXERCISES.filter(e => e.videos).length} videolu`, 'Hareketler')) + `
+  if (pickMode) {
+    setHeader('Hareket seç', { back: true, always: true });
+    view.innerHTML = `<div class="pick-banner">${icon('plus')} ${esc(picking.title)}</div>
+      <label class="search">${icon('search')}<input id="lib-q" type="search" placeholder="Hareket veya kas ara" value="${esc(libQuery)}" autocomplete="off"></label>
+      <div class="chips" id="lib-chips"></div>
+      <div id="lib-body"></div>`;
+    $('#lib-q').addEventListener('input', e => { libQuery = e.target.value; renderLibBody(true); });
+    renderLibBody(true);
+    return () => { picking = null; };
+  }
+  const reg = REGION_BY_ID[region];
+  const addBtn = { action: `<a class="top-btn" href="#/new" aria-label="Özel hareket ekle">${icon('plus')}</a>` };
+  if (reg) {
+    // Bir bölgenin hareketleri
+    const n = allExercises().filter(e => e.region === reg.id).length, wk = weeklyRegionSets()[reg.id];
+    setHeader(reg.name, { ...addBtn, back: true, always: true });
+    view.innerHTML = pageHead(`${n} hareket${wk ? ` · bu hafta ${wk} set` : ''}`, reg.name) + `
+      <label class="search">${icon('search')}<input id="lib-q" type="search" placeholder="${esc(reg.name)} hareketlerinde ara" autocomplete="off"></label>
+      <div id="lib-body"></div>`;
+    $('#lib-q').addEventListener('input', e => renderLibBody(false, reg.id, e.target.value));
+    renderLibBody(false, reg.id, '');
+    return;
+  }
+  // Ana sayfa: bölge kareleri veya vücut haritası
+  setHeader('Hareketler', addBtn);
+  const mode = db.settings.libView === 'map' ? 'map' : 'tiles';
+  const wk = weeklyRegionSets();
+  const levels = Object.fromEntries(REGIONS.map(r => [r.id, setLevel(r.id, wk[r.id])]));
+  const count = id => allExercises().filter(e => e.region === id).length;
+  const tiles = `<div class="rtiles">${REGIONS.map(r => {
+    const [exId, i] = REGION_COVER[r.id], img = EX_BY_ID[exId]?.img?.[i];
+    return `<a class="rtile" href="#/lib/${r.id}">${img ? `<img src="${img}" alt="">` : ''}
+      ${wk[r.id] ? `<span class="rt-badge l${levels[r.id]}">Bu hafta ${wk[r.id]} set</span>` : ''}
+      <div class="rt-text"><b>${r.name}</b><span>${count(r.id)} hareket</span></div></a>`;
+  }).join('')}</div>`;
+  const map = `<div class="card bm-card">${bodyMap(levels)}
+      <div class="bm-hint">Bir kas grubuna dokun, hareketleri açılsın.</div>
+      <div class="bm-legend"><span><i class="l0"></i>Hiç</span><span><i class="l1"></i>Az</span><span><i class="l2"></i>Orta</span><span><i class="l3"></i>Hedefte</span></div>
+      <div class="faint small" style="text-align:center;margin-top:8px">Renkler son 7 gündeki set sayına göre</div>
+    </div>
+    <div class="list bm-list">${REGIONS.map(r => `<a class="link-row" href="#/lib/${r.id}"><i class="dot l${levels[r.id]}"></i>
+      <div class="grow" style="font-weight:600">${r.name}</div><span class="faint small num">${wk[r.id]} / ${regionGoal(r.id)[0]} set</span>${icon('chev', 'chev')}</a>`).join('')}</div>`;
+  view.innerHTML = pageHead(`${allExercises().length} hareket · ${EXERCISES.filter(e => e.videos).length} videolu`, 'Hareketler') + `
     <label class="search">${icon('search')}<input id="lib-q" type="search" placeholder="Hareket veya kas ara" value="${esc(libQuery)}" autocomplete="off"></label>
-    <div class="chips" id="lib-chips"></div>
+    <div id="lib-home">
+      <div class="seg"><button data-v="tiles" class="${mode === 'tiles' ? 'on' : ''}">Bölgeler</button><button data-v="map" class="${mode === 'map' ? 'on' : ''}">Vücut haritası</button></div>
+      ${mode === 'map' ? map : tiles}
+    </div>
     <div id="lib-body"></div>`;
-  $('#lib-q').addEventListener('input', e => { libQuery = e.target.value; renderLibBody(pickMode); });
-  renderLibBody(pickMode);
-  if (pickMode) return () => { picking = null; };
+  $$('#lib-home .seg button').forEach(b => b.addEventListener('click', () => {
+    db.settings.libView = b.dataset.v; save(); renderLib();
+  }));
+  $$('.bodymap .mm', view).forEach(m => m.addEventListener('click', () => { location.hash = `#/lib/${m.dataset.r}`; }));
+  const sync = () => {
+    const q = libQuery.trim();
+    $('#lib-home').hidden = !!q;
+    if (q) renderLibBody(false, 'all', q); else $('#lib-body').innerHTML = '';
+  };
+  $('#lib-q').addEventListener('input', e => { libQuery = e.target.value; sync(); });
+  sync();
 }
 function libItem(ex, pickMode) {
   const ss = setsOf(ex.id);
@@ -823,17 +886,20 @@ function libItem(ex, pickMode) {
   return pickMode ? `<button class="item" data-pick="${esc(ex.id)}" style="width:100%;text-align:left">${inner}</button>`
     : `<a class="item" href="#/ex/${encodeURIComponent(ex.id)}">${inner}</a>`;
 }
-function renderLibBody(pickMode) {
-  $('#lib-chips').innerHTML = `<button class="chip ${libRegion === 'all' ? 'on' : ''}" data-r="all">Tümü</button>` +
-    REGIONS.map(r => `<button class="chip ${libRegion === r.id ? 'on' : ''}" data-r="${r.id}">${r.name}</button>`).join('');
-  $$('#lib-chips .chip').forEach(c => c.addEventListener('click', () => { libRegion = c.dataset.r; renderLibBody(pickMode); }));
-  const q = norm(libQuery.trim());
-  const exs = allExercises().filter(e => (libRegion === 'all' || e.region === libRegion) &&
+function renderLibBody(pickMode, scope = libRegion, query = libQuery) {
+  if (pickMode) {
+    $('#lib-chips').innerHTML = `<button class="chip ${libRegion === 'all' ? 'on' : ''}" data-r="all">Tümü</button>` +
+      REGIONS.map(r => `<button class="chip ${libRegion === r.id ? 'on' : ''}" data-r="${r.id}">${r.name}</button>`).join('');
+    $$('#lib-chips .chip').forEach(c => c.addEventListener('click', () => { libRegion = c.dataset.r; renderLibBody(true); }));
+  }
+  const q = norm(query.trim());
+  const exs = allExercises().filter(e => (scope === 'all' || e.region === scope) &&
     (!q || norm(`${e.name} ${(e.primary || []).join(' ')} ${(e.secondary || []).join(' ')}`).includes(q)));
-  const regions = libRegion === 'all' ? REGIONS : REGIONS.filter(r => r.id === libRegion);
+  const regions = scope === 'all' ? REGIONS : REGIONS.filter(r => r.id === scope);
   const html = regions.map(r => {
     const list = exs.filter(e => e.region === r.id);
-    return list.length ? `<div class="group-title">${r.name} · ${list.length}</div><div class="list">${list.map(e => libItem(e, pickMode)).join('')}</div>` : '';
+    if (!list.length) return '';
+    return `${regions.length > 1 ? `<div class="group-title">${r.name} · ${list.length}</div>` : '<div style="height:12px"></div>'}<div class="list">${list.map(e => libItem(e, pickMode)).join('')}</div>`;
   }).join('');
   $('#lib-body').innerHTML = html || `<div style="margin-top:14px">${emptyBox('search', 'Sonuç yok', 'Farklı bir arama dene.')}</div>`;
   if (pickMode) $$('[data-pick]', view).forEach(b => b.addEventListener('click', () => {
