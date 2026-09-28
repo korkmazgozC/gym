@@ -1,4 +1,5 @@
 import { REGIONS, EXERCISES, EX_BY_ID, REGION_BY_ID, VIDEO_MB } from './exercises.js';
+import { MEALS, buildDayMenu } from './nutrition.js';
 
 // ═════════════════════════ Yardımcılar
 const $ = (s, el = document) => el.querySelector(s);
@@ -68,12 +69,13 @@ const P = {
   run: '<circle cx="14.5" cy="4.5" r="1.8"/><path d="m6 20 3.5-5 3 2V21M7 11l3-3.5 4 1.5 2 3.5h3.5M10 8.5 8.5 14"/>',
   shield: '<path d="M12 3.5 5 6v5.5c0 4.3 3 7.8 7 9 4-1.2 7-4.7 7-9V6l-7-2.5Z"/>',
   edit: '<path d="M4 20h4L19 9l-4-4L4 16v4Z"/><path d="m13.5 6.5 4 4"/>',
+  gear: '<circle cx="12" cy="12" r="3.2"/><path d="M12 2.8v2.6M12 18.6v2.6M21.2 12h-2.6M5.4 12H2.8M18.5 5.5l-1.8 1.8M7.3 16.7l-1.8 1.8M18.5 18.5l-1.8-1.8M7.3 7.3 5.5 5.5"/>',
 };
 const icon = (n, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24">${P[n]}</svg>`;
 
 // ═════════════════════════ Veri
 const KEY = 'gymtakip.v1';
-const DEFAULT_SETTINGS = { rest: 90, step: 2.5, useRoutines: true, lastBackup: 0, backupSnooze: 0 };
+const DEFAULT_SETTINGS = { rest: 90, step: 2.5, useRoutines: true, lastBackup: 0, backupSnooze: 0, onboarded: false };
 const DEFAULT_PROFILE = { sex: null, age: null, height: null, activity: 1.55, goal: 'maintain', days: 3, target: null };
 let db = load();
 
@@ -82,7 +84,7 @@ function normalize(d) {
   return {
     sets: d.sets || [], custom: d.custom || [], weights: d.weights || [],
     routines: d.routines || [], workouts: d.workouts || [], session: d.session || null,
-    measures: d.measures || [], cardio: d.cardio || [], food: d.food || {},
+    measures: d.measures || [], cardio: d.cardio || [], food: d.food || {}, menu: d.menu || {},
     settings: { ...DEFAULT_SETTINGS, ...d.settings },
     profile: { ...DEFAULT_PROFILE, ...d.profile },
   };
@@ -302,7 +304,7 @@ $('#back').innerHTML = icon('back');
 $('#back').addEventListener('click', () => (history.length > 1 ? history.back() : (location.hash = '#/today')));
 addEventListener('scroll', () => top.classList.toggle('scrolled', scrollY > 30), { passive: true });
 
-const TABS = [['today', 'Bugün', 'home'], ['lib', 'Hareketler', 'dumbbell'], ['hist', 'Geçmiş', 'calendar'], ['profile', 'Profil', 'user']];
+const TABS = [['today', 'Bugün', 'home'], ['lib', 'Hareketler', 'dumbbell'], ['nutrition', 'Beslenme', 'fork'], ['hist', 'Geçmiş', 'calendar'], ['profile', 'Profil', 'user']];
 $('#tabs').innerHTML = TABS.map(([id, t, ic]) => `<a href="#/${id}" data-tab="${id}">${icon(ic)}<span>${t}</span></a>`).join('');
 
 function thumb(ex) {
@@ -332,13 +334,15 @@ let cleanup = null;
 const routes = {
   today: renderToday, lib: renderLib, pick: renderPick, ex: renderEx, hist: renderHist, profile: renderProfile, new: renderNew,
   workout: renderWorkout, summary: renderSummary, programs: renderPrograms, routine: renderRoutine,
+  nutrition: renderNutrition, settings: renderSettings, welcome: renderWelcome,
 };
-const TAB_OF = { ex: 'lib', new: 'lib', pick: 'lib', workout: 'today', summary: 'today', programs: 'profile', routine: 'profile' };
+const TAB_OF = { ex: 'lib', new: 'lib', pick: 'lib', workout: 'today', summary: 'today', programs: 'profile', routine: 'profile', settings: 'profile', welcome: 'today' };
 function route() {
   const [name = 'today', ...args] = location.hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
   const fn = routes[name] || renderToday;
   if (cleanup) { cleanup(); cleanup = null; }
   closeSheet();
+  document.body.classList.remove('bare');
   const tab = TAB_OF[name] || (routes[name] ? name : 'today');
   $$('#tabs a').forEach(a => a.classList.toggle('on', a.dataset.tab === tab));
   currentRoute = name;
@@ -488,7 +492,7 @@ function renderSummary(id) {
       <div class="metric"><div class="lbl">Süre</div><b class="num">${fmtInt((w.end - w.start) / 60000)}<small>dk</small></b><div class="note">${pst ? delta(w.end - w.start, prev.end - prev.start) : ''}</div></div>
       <div class="metric"><div class="lbl">Kalori</div><b class="num">${fmtInt(st.kcal)}<small>kcal</small></b><div class="note">${delta(st.kcal, pst?.kcal)}</div></div>
       <div class="metric"><div class="lbl">Set</div><b class="num">${st.sets}</b><div class="note">${delta(st.sets, pst?.sets)}</div></div>
-      <div class="metric"><div class="lbl">Hacim</div><b class="num">${fmtInt(st.volume)}<small>kg</small></b><div class="note">${delta(st.volume, pst?.volume)}</div></div>
+      <div class="metric"><div class="lbl">Toplam kaldırılan</div><b class="num">${fmtInt(st.volume)}<small>kg</small></b><div class="note">${delta(st.volume, pst?.volume)}</div></div>
     </div>
     ${prEx.length ? `<div class="sec"><h2>Yeni rekorlar</h2><span class="pill accent">${icon('trophy')}${prEx.length}</span></div>
       <div class="list">${prEx.map(s => { const ex = getEx(s.exId); return `<a class="item" href="#/ex/${encodeURIComponent(s.exId)}">${thumb(ex)}<div class="grow"><div class="name">${esc(ex?.name)}</div><div class="meta num">${esc(fmtSet(ex, s))}</div></div>${icon('trophy', 'chev')}</a>`; }).join('')}</div>` : ''}
@@ -499,58 +503,55 @@ function renderSummary(id) {
     <a class="btn" href="#/today" style="margin-top:18px">Tamam</a>`;
 }
 
-// ═════════════════════════ Set düzenleyici (hareket sayfası ve antrenman ekranı ortak)
+// ═════════════════════════ Set girişi (antrenman ekranında)
 const drafts = {};
-function renderSetEditor(box, ex, { target = null, since = null, showStats = false, onSaved = null } = {}) {
+function renderSetEditor(box, ex, { target = null, since = null, onSaved = null } = {}) {
   const type = ex.type || 'weight';
   const today = dayKey();
   const list = setsOf(ex.id).filter(s => (since ? s.ts >= since : s.date === today)).sort((a, b) => a.ts - b.ts);
   const ids = new Set(list.map(s => s.id));
   const last = lastSessionSets(ex, ids);
-  const best = bestSet(ex, setsOf(ex.id));
   const sug = suggest(ex, target, last);
   const work = working(list);
   if (!drafts[ex.id]) {
     const ref = work.at(-1);
     drafts[ex.id] = ref ? { w: ref.w, r: ref.r, warm: false }
-      : { w: sug.w ?? (last.at(-1)?.w ?? (type === 'weight' ? 20 : 0)), r: sug.r, warm: false };
+      : { w: sug.w ?? (last.at(-1)?.w ?? (type === "weight" ? ((ex.met || 5) >= 6 ? 20 : 8) : 0)), r: sug.r, warm: false };
   }
   const d = drafts[ex.id];
   const rStep = type === 'time' ? 5 : 1;
-  const showSug = !work.length || (sug.w != null && (sug.w !== d.w || sug.r !== d.r) && work.length === 0);
   let wi = 0;
   const prevFor = s => (s.warm ? '—' : last[wi] ? fmtSet(ex, last[wi++]) : (wi++, '—'));
 
   box.innerHTML = `
-    ${showStats ? `<div class="stat-pair">
-      <div class="card"><div class="card-label">Geçen sefer</div><b class="num">${last.length ? esc(fmtSet(ex, last.at(-1))) : '—'}</b><div class="sm">${last.length ? `${last.length} set · ${daysAgo(last[0].date)}` : 'Kayıt yok'}</div></div>
-      <div class="card"><div class="card-label">Rekor</div><b class="num">${best ? esc(fmtSet(ex, best)) : '—'}</b><div class="sm">${best && type === 'weight' && best.r > 1 ? `Tahmini 1RM ${fmtInt(e1rm(best.w, best.r))} kg` : best ? daysAgo(best.date) : 'Kayıt yok'}</div></div>
-    </div>` : ''}
-    ${target ? `<div class="target-hint">${icon('target')} Hedef: <b>${schemeText(target, ex)}</b></div>` : ''}
-    ${showSug ? `<div class="suggest"><span class="ic">${icon(sug.up ? 'trend' : 'bulb')}</span><div class="grow"><b>${esc(sug.title)}</b><span>${esc(sug.sub)}</span></div>
-      ${sug.w != null || sug.r ? `<button id="sug-apply">Uygula</button>` : ''}</div>` : ''}
+    ${!work.length ? (last.length
+      ? `<button class="sug" id="sug-apply" style="margin-bottom:10px"><span class="ic">${icon(sug.up ? 'trend' : 'bulb')}</span>
+          <div class="grow"><b>Öneri: ${esc(sug.title)}</b><span>${esc(sug.sub)}</span></div><span class="go">Uygula</span></button>`
+      : `<div class="target-hint">${icon('bulb')} İlk kez: rahatça 2–3 tekrar daha yapabileceğin bir ağırlıkla başla.</div>`) : ''}
     <div class="sets">
       <div class="sets-h"><span>Set</span><span>Önceki</span><span>${type === 'time' ? 'Süre' : 'Kg'}</span><span>${type === 'time' ? 'Kg' : 'Tekrar'}</span><span></span></div>
       ${list.length ? (() => { let n = 0; return list.map(s => `<div class="set-r" data-edit="${s.id}">
         <span class="n ${s.warm ? 'warm' : ''}">${s.warm ? 'I' : ++n}</span><span class="p">${esc(prevFor(s))}</span>
         <span class="v">${type === 'time' ? `${s.r} sn` : fmtN(s.w)}</span>
         <span class="v">${type === 'time' ? (s.w ? fmtN(s.w) : '—') : s.r}${isPR(ex, s) ? `<span class="pr">${icon('trophy')}</span>` : ''}</span>
-        <span class="del">${icon('edit')}</span></div>`).join(''); })()
-      : `<div class="sets-empty">Henüz set yok.${last.length ? ` Geçen sefer ${last.length} set yaptın.` : ''}</div>`}
+        <span class="del" aria-label="Düzenle">${icon('edit')}</span></div>`).join(''); })()
+      : `<div class="sets-empty">${target ? `Hedef: <b>${schemeText(target, ex)}</b>. ` : ''}Aşağıdan ilk setini gir.</div>`}
     </div>
     <div class="composer card">
-      <div class="warm-toggle"><span>Isınma seti</span>${switchHTML('warm-sw', d.warm)}</div>
       <div class="steppers">
         <div class="stepper"><label>${type === 'weight' ? 'Ağırlık · kg' : 'Ek ağırlık · kg'}</label><div class="ctl"><button data-s="w" data-d="-1" aria-label="Azalt">${icon('minus')}</button>
           <input class="in-w" inputmode="decimal" value="${fmtN(d.w, 2)}"><button data-s="w" data-d="1" aria-label="Artır">${icon('plus')}</button></div></div>
         <div class="stepper"><label>${type === 'time' ? 'Süre · sn' : 'Tekrar'}</label><div class="ctl"><button data-s="r" data-d="-1" aria-label="Azalt">${icon('minus')}</button>
           <input class="in-r" inputmode="numeric" value="${d.r}"><button data-s="r" data-d="1" aria-label="Artır">${icon('plus')}</button></div></div>
       </div>
-      <button class="btn add-set">${icon('check')} ${d.warm ? 'Isınma setini kaydet' : `${work.length + 1}. seti kaydet`}</button>
+      <div class="composer-foot">
+        <button class="chip-toggle ${d.warm ? 'on' : ''}" id="warm-sw" aria-pressed="${d.warm}">${icon('flame')} Isınma</button>
+        <button class="btn add-set">${icon('check')} ${d.warm ? 'Isınma setini kaydet' : 'Seti tamamla'}</button>
+      </div>
     </div>`;
 
   const inW = $('.in-w', box), inR = $('.in-r', box);
-  const redraw = () => renderSetEditor(box, ex, { target, since, showStats, onSaved });
+  const redraw = () => renderSetEditor(box, ex, { target, since, onSaved });
   inW.addEventListener('change', () => { d.w = Math.max(0, num(inW.value)); inW.value = fmtN(d.w, 2); });
   inR.addEventListener('change', () => { d.r = Math.max(0, Math.round(num(inR.value))); inR.value = d.r; });
   $$('.stepper button', box).forEach(b => b.addEventListener('click', () => {
@@ -591,7 +592,7 @@ function editSetSheet(ex, s, after) {
       <div class="in-box"><label>${type === 'time' ? 'Ek ağırlık · kg' : 'Kg'}</label><input id="e-w" inputmode="decimal" value="${fmtN(s.w, 2)}"></div>
       <div class="in-box"><label>${type === 'time' ? 'Süre · sn' : 'Tekrar'}</label><input id="e-r" inputmode="numeric" value="${s.r}"></div>
     </div>
-    <div class="warm-toggle" style="margin-top:14px"><span>Isınma seti</span>${switchHTML('e-warm', warm)}</div>
+    <div class="warm-toggle" style="margin-top:14px"><span>Isınma seti <span class="faint small">(rekor ve önerilere sayılmaz)</span></span>${switchHTML('e-warm', warm)}</div>
     <div class="sheet-actions"><button class="btn danger" id="e-del">Sil</button><button class="btn" id="e-save">Kaydet</button></div>`);
   $('#e-warm', el).addEventListener('click', e => { warm = !warm; e.currentTarget.classList.toggle('on', warm); });
   $('#e-save', el).addEventListener('click', () => {
@@ -615,114 +616,102 @@ function renderToday() {
   const hour = new Date().getHours();
   const hello = hour < 6 ? 'İyi geceler' : hour < 12 ? 'Günaydın' : hour < 18 ? 'İyi günler' : 'İyi akşamlar';
   setHeader('Bugün');
-
   const ws = weekStart();
   const weekDays = [...Array(7)].map((_, i) => { const d = new Date(ws); d.setDate(ws.getDate() + i); return dayKey(d); });
   const weekKcal = weekDays.map(d => dayStats(d).kcal);
   const trained = weekDays.filter(d => setsOn(d).length).length;
   const goalDays = db.profile.days || 3;
   const maxK = Math.max(...weekKcal, 1);
-  const C = 2 * Math.PI * 44;
-  const ringOff = C * (1 - clamp(trained / goalDays, 0, 1));
   const doneToday = db.workouts.filter(w => w.date === today).sort((a, b) => b.end - a.end);
 
-  let html = pageHead(fmtDay(today), hello) + `
-    <div class="hero">
-      <div class="hero-top">
-        <div class="hero-kcal">
-          <div class="lbl">${icon('flame')} Yakılan kalori</div>
-          <div class="big num">${fmtInt(st.kcal)}<small>kcal</small></div>
-          <div class="note">${profileReady() ? `${fmtN(bodyKg())} kg vücut ağırlığına göre` : 'Doğru hesap için profilden kilonu gir'}</div>
-        </div>
-        <div class="ring-wrap">
-          <svg viewBox="0 0 104 104"><circle class="track" cx="52" cy="52" r="44"/><circle class="bar" cx="52" cy="52" r="44" stroke-dasharray="${C}" stroke-dashoffset="${ringOff}"/></svg>
-          <div class="ring-center"><b class="num">${trained}/${goalDays}</b><span>bu hafta</span></div>
-        </div>
-      </div>
-      <div class="hero-stats">
-        <div><b class="num">${fmtInt(st.min)}<span style="font-size:13px"> dk</span></b><span>Süre</span></div>
-        <div><b class="num">${st.sets}</b><span>Set</span></div>
-        <div><b class="num">${st.volume >= 1000 ? fmtN(st.volume / 1000) + ' t' : fmtInt(st.volume)}</b><span>Hacim${st.volume >= 1000 ? '' : ' (kg)'}</span></div>
-      </div>
-    </div>`;
+  let html = pageHead(fmtDay(today), hello);
 
-  if (!profileReady()) {
-    html += `<a class="card cta" href="#/profile" style="margin-top:10px">
-      <div class="ic">${icon('user')}</div>
-      <div class="grow"><div class="card-title">Profilini tamamla</div><div class="muted small">Boy, kilo ve hedefini gir; kalori ihtiyacın ve kişisel önerilerin hesaplansın.</div></div>
-      ${icon('chev', 'chev')}</a>`;
-  }
-  html += backupReminder();
-
-  // Program kartı
+  // 1) Ana eylem: antrenman
   if (db.session) {
     const d = withProgress(db.session, db.session.start);
     const done = d.items.filter(i => i.complete).length;
-    html += `<div class="sec"><h2>Devam eden antrenman</h2></div>
-      <div class="card"><div class="plan-head"><div class="plan-icon">${icon('pulse')}</div><div class="grow"><div class="card-title">${esc(db.session.name)}</div>
-        <div class="muted small num">${done}/${d.items.length} hareket tamam · ${fmtDur(Date.now() - db.session.start)}</div></div></div>
-        <a class="btn" href="#/workout" style="margin-top:14px">Antrenmana devam et</a></div>`;
+    html += `<div class="next"><div class="eyebrow">Devam eden antrenman</div><h2>${esc(db.session.name)}</h2>
+      <div class="meta"><span class="pill accent num">${icon('pulse')}${fmtDur(Date.now() - db.session.start)}</span><span class="pill">${done}/${d.items.length} hareket tamam</span></div>
+      <a class="btn" href="#/workout">Antrenmana devam et</a></div>`;
   } else {
-    const plan = nextPlanDay();
     if (doneToday.length) {
       const w = doneToday[0];
-      html += `<div class="sec"><h2>Bugün tamamlandı</h2></div>
-        <a class="card cta" href="#/summary/${w.id}"><div class="ic" style="background:var(--accent-soft);color:var(--accent)">${icon('check')}</div>
-          <div class="grow"><div class="card-title">${esc(w.name)}</div><div class="muted small">${fmtInt((w.end - w.start) / 60000)} dk · özeti gör</div></div>${icon('chev', 'chev')}</a>`;
+      html += `<a class="slim" href="#/summary/${w.id}" style="margin:0 0 10px"><div class="ic" style="background:var(--accent-soft);color:var(--accent)">${icon('check')}</div>
+        <div class="grow"><b>Bugünkü antrenman tamamlandı</b><span>${esc(w.name)} · ${fmtInt((w.end - w.start) / 60000)} dk · özeti gör</span></div>${icon('chev', 'chev')}</a>`;
     }
+    const plan = nextPlanDay();
     if (plan) {
-      const p = withProgress(plan, Date.now());
-      html += `<div class="sec"><h2>${doneToday.length ? 'Sıradaki antrenman' : 'Bugünün programı'}</h2><a href="#/programs">${esc(programName())}</a></div>
-        <div class="card">
-          <div class="plan-head"><div class="plan-icon">${icon('dumbbell')}</div>
-            <div class="grow"><div class="card-title">${esc(p.name)}</div>
-            <div class="muted small">${p.items.length} hareket · ${usingRoutines() ? 'kendi programın' : `${GOALS[db.profile.goal]} hedefine göre`}</div></div></div>
-          <div class="plan-list">${p.items.map(i => `<a class="plan-item" href="#/ex/${encodeURIComponent(i.exId)}">
-            <span class="chk"></span><span class="nm">${esc(i.ex.name)}</span><span class="tg">${schemeText(i, i.ex)}</span></a>`).join('')}</div>
-          <button class="btn" id="start-plan">${icon('play')} Antrenmanı başlat</button>
-        </div>`;
+      const items = plan.items.filter(i => getEx(i.exId));
+      const estMin = Math.round(items.reduce((a, i) => a + i.sets, 0) * 2.5);
+      html += `<div class="next"><div class="eyebrow">${doneToday.length ? 'Sıradaki antrenman' : 'Bugünün antrenmanı'}</div><h2>${esc(plan.name)}</h2>
+        <div class="meta"><span class="pill">${items.length} hareket</span><span class="pill">~${estMin} dk</span><span class="pill">${esc(programName())}</span></div>
+        <div class="ex-strip">${items.slice(0, 5).map(i => thumb(getEx(i.exId))).join('')}${items.length > 5 ? `<div class="more">+${items.length - 5}</div>` : ''}</div>
+        <button class="btn" id="start-plan">${icon('play')} Antrenmana başla</button>
+        <div class="row" style="justify-content:center;gap:22px;margin-top:12px">
+          <button class="alt" id="plan-see" style="width:auto;margin:0">Hareketleri gör</button>
+          <button class="alt" id="start-free" style="width:auto;margin:0">Serbest antrenman</button></div></div>`;
     } else {
-      html += `<div class="sec"><h2>Program</h2></div>${emptyBox('list', 'Programında gün yok', 'Profil → Programlar bölümünden gün ekle.')}`;
+      html += `<div class="next"><div class="eyebrow">Program</div><h2>Programında gün yok</h2>
+        <div class="muted small" style="margin:10px 0 16px">Programlar bölümünden gün ekle ya da serbest antrenman yap.</div>
+        <button class="btn" id="start-free">${icon('play')} Serbest antrenman</button></div>`;
     }
-    html += `<button class="btn ghost" id="start-free" style="margin-top:10px">Serbest antrenman başlat</button>`;
   }
 
-  // Beslenme
+  // 2) Özet sayılar
+  html += `<div class="mini-stats">
+      <div><span>${icon('flame')} Yakılan</span><b>${fmtInt(st.kcal)}<small>kcal</small></b></div>
+      <div><span>${icon('pulse')} Süre</span><b>${fmtInt(st.min)}<small>dk</small></b></div>
+      <a href="#/hist"><span>${icon('calendar')} Bu hafta</span><b>${trained}/${goalDays}<small>gün</small></b></a>
+    </div>`;
+
+  if (!profileReady()) {
+    html += `<a class="slim" href="#/profile"><div class="ic" style="background:var(--blue-soft);color:var(--blue)">${icon('user')}</div>
+      <div class="grow"><b>Profilini tamamla</b><span>Kalori ihtiyacın ve beslenme planın hesaplansın</span></div>${icon('chev', 'chev')}</a>`;
+  }
+  html += backupReminder();
+
+  // 3) Beslenme özeti
   if (m) {
     const f = db.food[today] || { kcal: 0, protein: 0, water: 0 };
     const kcalT = m.goalKcal + st.kcal, waterT = (m.water + (setsOn(today).length ? 0.5 : 0)) * 1000;
-    const row = (label, val, tgt, unit, color) => `<div class="track-row"><div class="top"><b>${label}</b><span>${fmtInt(val)} / ${fmtInt(tgt)} ${unit}</span></div>
-      <div class="bar"><i style="width:${clamp((val / tgt) * 100, 0, 100)}%;background:${color}"></i></div></div>`;
-    html += `<div class="sec"><h2>Beslenme</h2><a href="#/profile">Hedefler</a></div>
-      <div class="card">
-        ${row('Kalori', f.kcal, kcalT, 'kcal', 'var(--fire)')}
-        ${row('Protein', f.protein, m.protein, 'g', 'var(--accent)')}
-        ${row('Su', f.water, waterT, 'ml', 'var(--blue)')}
-        <div class="quick"><button id="q-meal">${icon('fork')} Öğün ekle</button><button id="q-water">${icon('drop')} +250 ml</button></div>
-      </div>`;
+    const bar = (v, t, c) => `<div class="bar" style="margin-top:6px"><i style="width:${clamp((v / t) * 100, 0, 100)}%;background:${c}"></i></div>`;
+    html += `<div class="sec"><h2>Beslenme</h2><a href="#/nutrition">Menüyü gör</a></div>
+      <a class="card" href="#/nutrition" style="display:block">
+        <div class="row"><div class="grow"><div class="card-label">Kalori</div><div class="kcal-big" style="margin-top:4px"><b>${fmtInt(f.kcal)}</b><span>/ ${fmtInt(kcalT)} kcal</span></div></div>${icon('chev', 'chev')}</div>
+        ${bar(f.kcal, kcalT, 'var(--fire)')}
+        <div class="targets" style="grid-template-columns:1fr 1fr;margin-top:14px">
+          <div><div class="card-label">Protein</div><b class="num" style="font-size:16px">${fmtInt(f.protein)} / ${fmtInt(m.protein)} g</b>${bar(f.protein, m.protein, 'var(--accent)')}</div>
+          <div><div class="card-label">Su</div><b class="num" style="font-size:16px">${fmtN(f.water / 1000)} / ${fmtN(waterT / 1000)} L</b>${bar(f.water, waterT, 'var(--blue)')}</div>
+        </div></a>`;
   }
 
-  // Kardiyo
+  // 4) Kardiyo
   const cardio = cardioOn(today);
   html += `<div class="sec"><h2>Kardiyo</h2><button id="add-cardio">${icon('plus')} Ekle</button></div>`;
   html += cardio.length ? `<div class="card">${cardio.map(c => `<div class="cardio-row" data-id="${c.id}">
       <div class="plan-icon" style="width:38px;height:38px;border-radius:12px;background:var(--blue-soft);color:var(--blue)">${icon('run')}</div>
-      <div class="grow"><div style="font-weight:600">${esc(CARDIO.find(x => x[0] === c.type)?.[1] || 'Kardiyo')}</div><div class="faint small num">${c.min} dk</div></div>
+      <div class="grow"><div style="font-weight:600">${esc(CARDIO.find(x => x[0] === c.type)?.[1] || 'Kardiyo')}</div><div class="faint small num">${c.min} dk · silmek için dokun</div></div>
       <span class="pill fire num">${icon('flame')}${fmtInt(c.kcal)}</span></div>`).join('')}</div>`
-    : `<button class="card cta" id="add-cardio2" style="width:100%;text-align:left"><div class="ic">${icon('run')}</div><div class="grow"><div class="card-title">Koşu, bisiklet, yürüyüş…</div><div class="muted small">Süreyi gir, yaktığın kalori günlük toplama eklensin.</div></div>${icon('plus', 'chev')}</button>`;
+    : `<button class="slim" id="add-cardio2" style="margin-top:0"><div class="ic" style="background:var(--blue-soft);color:var(--blue)">${icon('run')}</div>
+        <div class="grow"><b>Koşu, bisiklet, yürüyüş…</b><span>Süreyi gir, kalorisi günlük toplama eklensin</span></div>${icon('plus', 'chev')}</button>`;
 
-  // Hafta
+  // 5) Hafta
   html += `<div class="sec"><h2>Bu hafta</h2><span class="faint small num">${fmtInt(weekKcal.reduce((a, b) => a + b, 0))} kcal</span></div>
     <div class="card"><div class="week">${weekDays.map((d, i) => `<div class="d ${d === today ? 'today' : ''}">
       <div class="b ${weekKcal[i] ? 'on' : ''}" style="height:${weekKcal[i] ? Math.max(14, (weekKcal[i] / maxK) * 70) : 6}px"></div>
       <span>${['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'][i]}</span></div>`).join('')}</div></div>`;
-  html += `<div id="offline-slot"></div>`;
   view.innerHTML = html;
 
   $('#start-plan')?.addEventListener('click', () => startSession(nextPlanDay()));
   $('#start-free')?.addEventListener('click', () => startSession(null));
-  $('#q-water')?.addEventListener('click', () => { addFood(0, 0, 250); toast('+250 ml su', 'drop'); rerender(); });
-  $('#q-meal')?.addEventListener('click', () => mealSheet(rerender));
+  $('#plan-see')?.addEventListener('click', () => {
+    const p = nextPlanDay();
+    const { el, close } = openSheet(`<div class="sheet-title">${esc(p.name)}</div>
+      <div class="list">${p.items.filter(i => getEx(i.exId)).map(i => `<a class="item" href="#/ex/${encodeURIComponent(i.exId)}">${thumb(getEx(i.exId))}
+        <div class="grow"><div class="name">${esc(getEx(i.exId).name)}</div><div class="meta">${schemeText(i, getEx(i.exId))}</div></div>${icon('chev', 'chev')}</a>`).join('')}</div>
+      <div class="sheet-actions"><a class="btn ghost" href="#/programs">Programı düzenle</a><button class="btn" id="ps-start">Başla</button></div>`);
+    $('#ps-start', el).addEventListener('click', () => { close(); startSession(p); });
+  });
   $('#add-cardio')?.addEventListener('click', () => cardioSheet(rerender));
   $('#add-cardio2')?.addEventListener('click', () => cardioSheet(rerender));
   $$('.cardio-row', view).forEach(r => r.addEventListener('click', () => {
@@ -730,7 +719,6 @@ function renderToday() {
     db.cardio = db.cardio.filter(c => c.id !== r.dataset.id); save(); rerender();
   }));
   bindBackupReminder();
-  offlineCard($('#offline-slot'), true);
   function rerender() { const y = scrollY; renderToday(); scrollTo(0, y); }
 }
 
@@ -744,7 +732,7 @@ function addFood(kcal, protein, water) {
 function mealSheet(after) {
   const presets = [['Kahvaltı', 450, 25], ['Ana öğün', 700, 40], ['Ara öğün', 250, 10], ['Protein shake', 150, 25]];
   const { el, close } = openSheet(`
-    <div class="sheet-title">Öğün ekle</div>
+    <div class="sheet-title">Yediğini ekle</div>
     <div class="opt-grid">${presets.map(([n, k, p]) => `<button class="opt" data-k="${k}" data-p="${p}">${n}<span class="faint small"> · ${k} kcal</span></button>`).join('')}</div>
     <div class="in-row" style="margin-top:10px">
       <div class="in-box"><label>Kalori · kcal</label><input id="m-k" inputmode="numeric" placeholder="0"></div>
@@ -756,11 +744,13 @@ function mealSheet(after) {
   $('#m-add', el).addEventListener('click', () => {
     const k = num($('#m-k', el).value), p = num($('#m-p', el).value);
     if (!k && !p) return toast('Kalori veya protein gir', 'info');
-    addFood(k, p, 0); close(); toast('Öğün eklendi', 'fork'); after();
+    addFood(k, p, 0); close(); toast('Eklendi', 'fork'); after();
   });
   $('#m-reset', el).addEventListener('click', () => {
     if (!confirm('Bugünkü kalori, protein ve su kayıtları sıfırlansın mı?')) return;
-    delete db.food[dayKey()]; save(); close(); after();
+    delete db.food[dayKey()];
+    if (db.menu[dayKey()]) db.menu[dayKey()].eaten = {};
+    save(); close(); after();
   });
 }
 function cardioSheet(after) {
@@ -791,9 +781,9 @@ function cardioSheet(after) {
 function backupReminder() {
   const s = db.settings, now = Date.now();
   if (db.sets.length < 10 || now < s.backupSnooze || now - s.lastBackup < 14 * 864e5) return '';
-  return `<div class="card" id="bk-card" style="margin-top:10px"><div class="cta"><div class="ic" style="background:var(--accent-soft);color:var(--accent)">${icon('shield')}</div>
-    <div class="grow"><div class="card-title">Kayıtlarını yedekle</div><div class="muted small">${s.lastBackup ? `Son yedek ${daysAgo(dayKey(new Date(s.lastBackup)))}.` : 'Hiç yedek almadın.'} Telefon değişirse veriler kaybolmasın.</div></div></div>
-    <div class="sheet-actions" style="margin-top:12px"><button class="btn ghost" id="bk-later">Sonra</button><button class="btn" id="bk-now">Yedek al</button></div></div>`;
+  return `<div class="slim" id="bk-card"><div class="ic" style="background:var(--accent-soft);color:var(--accent)">${icon('shield')}</div>
+    <button class="grow" id="bk-now" style="text-align:left"><b>Kayıtlarını yedekle</b><span>${s.lastBackup ? `Son yedek ${daysAgo(dayKey(new Date(s.lastBackup)))}` : 'Henüz yedek yok'} · dokun</span></button>
+    <button class="ibtn" id="bk-later" aria-label="Sonra hatırlat">${icon('x')}</button></div>`;
 }
 function bindBackupReminder() {
   $('#bk-later')?.addEventListener('click', () => { db.settings.backupSnooze = Date.now() + 7 * 864e5; save(); $('#bk-card').remove(); });
@@ -1044,14 +1034,25 @@ function mountMedia(box, anim) {
   return () => clearTimeout(timer);
 }
 
-// ═════════════════════════ Hareket detayı
+// ═════════════════════════ Hareket detayı (bilgi + ilerleme; set girişi antrenman ekranında)
 const LEVELS = { beginner: 'Başlangıç', intermediate: 'Orta', expert: 'İleri' };
-let exTab = 'log';
+let exTab = 'how';
+function quickLog(exId) {
+  if (db.session) {
+    addToSession(exId);
+    db.session.cur = db.session.items.findIndex(i => i.exId === exId);
+  } else {
+    db.session = { id: uid(), start: Date.now(), key: 'free', name: 'Hızlı antrenman', items: [{ exId, ...schemeObj(1, exId) }], cur: 0 };
+  }
+  save();
+  location.hash = '#/workout';
+}
 function renderEx(id) {
   const ex = getEx(id);
   if (!ex) { location.replace('#/lib'); return; }
   const anim = animOf(ex);
   const regionName = REGION_BY_ID[ex.region]?.name || '';
+  const inSession = db.session?.items.some(i => i.exId === ex.id);
   setHeader(ex.name, { back: true, always: true, action: ex.custom ? `<button class="top-btn danger" id="del-ex">Sil</button>` : '' });
   view.innerHTML = `
     <div id="media">${anim ? '' : `<div class="card empty" style="margin-top:6px"><div class="ic">${icon('dumbbell')}</div>Bu hareket için görsel seçilmedi.</div>`}</div>
@@ -1064,10 +1065,12 @@ function renderEx(id) {
         ${anim?.level ? `<span class="pill">${LEVELS[anim.level] || anim.level}</span>` : ''}
       </div>
     </div>
-    <div class="seg"><button data-t="log">Kayıt</button><button data-t="how">Nasıl yapılır</button><button data-t="chart">İlerleme</button></div>
-    <div id="pane"></div>
-    ${db.session ? '' : ''}`;
+    <button class="btn ex-cta" id="ex-log">${icon(inSession ? 'chev' : 'plus')} ${inSession ? 'Antrenmanda bu harekete git' : db.session ? 'Antrenmana ekle ve set gir' : 'Set kaydet'}</button>
+    ${!db.session ? '<div class="faint small" style="text-align:center;margin-top:8px">Hızlı bir antrenman başlar; istediğin kadar hareket ekleyebilirsin.</div>' : ''}
+    <div class="seg"><button data-t="how">Nasıl yapılır</button><button data-t="chart">İlerleme</button></div>
+    <div id="pane"></div>`;
   const unmount = anim ? mountMedia($('#media'), anim) : () => {};
+  $('#ex-log').addEventListener('click', () => quickLog(ex.id));
   $('#del-ex')?.addEventListener('click', () => {
     const n = setsOf(ex.id).length;
     if (!confirm(`"${ex.name}" silinsin mi?${n ? `\n${n} set kaydı da silinecek.` : ''}`)) return;
@@ -1080,12 +1083,11 @@ function renderEx(id) {
   const show = t => {
     exTab = t;
     $$('.seg button', view).forEach(b => b.classList.toggle('on', b.dataset.t === t));
-    if (t === 'log') renderSetEditor(pane, ex, { target: planItemFor(ex.id), since: db.session?.start || null, showStats: true });
     if (t === 'how') renderHow(pane, ex, anim);
     if (t === 'chart') renderChart(pane, ex);
   };
   $$('.seg button', view).forEach(b => b.addEventListener('click', () => show(b.dataset.t)));
-  show(exTab);
+  show(exTab === 'log' ? 'how' : exTab);
   return unmount;
 }
 
@@ -1098,7 +1100,7 @@ function renderHow(pane, ex, anim) {
       <div class="kv"><span>Ana kaslar</span><span>${esc(src.primary.join(', '))}</span></div>
       ${src.secondary?.length ? `<div class="kv"><span>Yardımcı kaslar</span><span>${esc(src.secondary.join(', '))}</span></div>` : ''}
       ${src.level ? `<div class="kv"><span>Seviye</span><span>${LEVELS[src.level] || src.level}</span></div>` : ''}
-      <div class="kv"><span>Yoğunluk</span><span>${met >= 6 ? 'Yüksek' : met >= 4.5 ? 'Orta' : 'Düşük'} · set başı ~${fmtInt(met * bodyKg() * 130 / 3600)} kcal</span></div>
+      <div class="kv"><span>Zorluk</span><span>${met >= 6 ? 'Yüksek' : met >= 4.5 ? 'Orta' : 'Düşük'} · set başı ~${fmtInt(met * bodyKg() * 130 / 3600)} kcal</span></div>
     </div>
     <div class="sec"><h2>Adım adım</h2></div>
     <div class="card"><ol class="steps">${src.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol></div>
@@ -1108,9 +1110,12 @@ function renderHow(pane, ex, anim) {
 let chartMetric = 'max';
 function renderChart(pane, ex) {
   const type = ex.type || 'weight';
-  const days = groupByDay(working(setsOf(ex.id))).reverse();
+  const all = setsOf(ex.id);
+  const days = groupByDay(working(all)).reverse();
+  const last = groupByDay(working(all))[0];
+  const best = bestSet(ex, all);
   const list = type === 'weight'
-    ? [['max', 'Maks ağırlık', 'kg'], ['1rm', 'Tahmini 1RM', 'kg'], ['vol', 'Hacim', 'kg']]
+    ? [['max', 'En ağır', 'kg'], ['1rm', 'Tahmini maksimum', 'kg'], ['vol', 'Toplam kaldırılan', 'kg']]
     : type === 'time' ? [['max', 'En uzun', 'sn'], ['vol', 'Toplam', 'sn']] : [['max', 'En çok tekrar', ''], ['vol', 'Toplam tekrar', '']];
   if (!list.some(m => m[0] === chartMetric)) chartMetric = list[0][0];
   const metric = list.find(m => m[0] === chartMetric);
@@ -1123,10 +1128,15 @@ function renderChart(pane, ex) {
     return chartMetric === 'max' ? Math.max(...ss.map(s => s.r)) : ss.reduce((a, s) => a + s.r, 0);
   };
   const points = days.map(([d, ss]) => ({ d, v: value(ss) }));
-  const allDays = groupByDay(setsOf(ex.id));
+  const allDays = groupByDay(all);
   pane.innerHTML = `
+    <div class="stat-pair">
+      <div class="card"><div class="card-label">Son antrenman</div><b class="num">${last ? esc(fmtSet(ex, last[1].at(-1))) : '—'}</b><div class="sm">${last ? `${last[1].length} set · ${daysAgo(last[0])}` : 'Kayıt yok'}</div></div>
+      <div class="card"><div class="card-label">Rekor</div><b class="num">${best ? esc(fmtSet(ex, best)) : '—'}</b>
+        <div class="sm">${best && type === 'weight' && best.r > 1 ? `1 tekrarda ~${fmtInt(e1rm(best.w, best.r))} kg kaldırabilirsin` : best ? daysAgo(best.date) : 'Kayıt yok'}</div></div>
+    </div>
     <div class="chips" style="margin-bottom:10px">${list.map(m => `<button class="chip ${m[0] === chartMetric ? 'on' : ''}" data-m="${m[0]}">${m[1]}</button>`).join('')}</div>
-    ${points.length ? `<div class="card"><canvas class="chart"></canvas></div>` : emptyBox('bars', 'Henüz veri yok', 'İlk setini kaydettiğinde ilerlemen burada görünecek.')}
+    ${points.length ? `<div class="card"><canvas class="chart"></canvas></div>` : emptyBox('bars', 'Henüz veri yok', 'Bu hareketle ilk setini kaydettiğinde ilerlemen burada görünecek.')}
     ${allDays.length ? `<div class="sec"><h2>Antrenmanlar</h2></div><div class="list">${allDays.map(([d, ss]) => `<div class="item" style="display:block">
       <div class="row"><div class="grow name">${esc(fmtDay(d, { day: 'numeric', month: 'long', year: 'numeric' }))}</div><span class="faint small">${working(ss).length} set</span></div>
       <div class="set-chips">${ss.map(s => `<span class="set-chip">${s.warm ? 'Isınma · ' : ''}${esc(fmtSet(ex, s))}</span>`).join('')}</div></div>`).join('')}</div>` : ''}`;
@@ -1246,8 +1256,24 @@ function renderHist() {
 }
 
 // ═════════════════════════ Profil
+const HELP = {
+  bmi: 'Vücut kitle indeksi (VKİ): kilonun boyunun karesine bölümü. 18,5–25 arası sağlıklı kabul edilir. Kaslı kişilerde yüksek çıkabilir; tek başına yağ oranını göstermez.',
+  bmr: 'Bazal metabolizma: hiç hareket etmeden, sadece yaşamak için günde harcadığın kalori.',
+  tdee: 'Günlük harcama: bazal metabolizma + gün içindeki hareketin ve sporun. Bu kadar yersen kilon sabit kalır.',
+  fat: 'VKİ, yaş ve cinsiyetten hesaplanan kaba bir tahmindir (Deurenberg formülü). Kesin sonuç için ölçüm gerekir.',
+};
+const helpBtn = k => `<span class="help" data-help="${k}">?</span>`;
+function bindHelp() {
+  $$('[data-help]', view).forEach(h => h.addEventListener('click', e => {
+    e.preventDefault(); e.stopPropagation();
+    const { el, close } = openSheet(`<div class="sheet-title">Nedir?</div><p class="muted" style="line-height:1.55">${esc(HELP[h.dataset.help])}</p>
+      <div style="margin-top:16px"><button class="btn ghost" id="h-ok">Tamam</button></div>`);
+    $('#h-ok', el).addEventListener('click', close);
+  }));
+}
+
 function renderProfile() {
-  setHeader('Profil');
+  setHeader('Profil', { action: `<a class="top-btn" href="#/settings" aria-label="Ayarlar">${icon('gear')}</a>` });
   const p = db.profile, m = metrics(), w = currentWeight();
   const opt = (vals, cur, fmt) => vals.map(v => `<option value="${v}" ${v === cur ? 'selected' : ''}>${fmt(v)}</option>`).join('');
   const split = SPLITS[splitKey(p.days || 3)];
@@ -1262,59 +1288,41 @@ function renderProfile() {
       <div class="field"><label for="p-h">Boy</label><input id="p-h" inputmode="numeric" placeholder="—" value="${p.height ?? ''}"><span class="unit">cm</span></div>
       <div class="field"><label for="p-w">Kilo</label><input id="p-w" inputmode="decimal" placeholder="—" value="${w ? fmtN(w) : ''}"><span class="unit">kg</span></div>
       <div class="field"><label for="p-t">Hedef kilo</label><input id="p-t" inputmode="decimal" placeholder="—" value="${p.target ? fmtN(p.target) : ''}"><span class="unit">kg</span></div>
-      <div class="field"><label for="p-act">Aktivite</label><select id="p-act">${opt(ACTIVITY.map(a => a[0]), p.activity, v => ACTIVITY.find(a => a[0] === v)[1])}</select></div>
+      <div class="field"><label for="p-act">Günlük hareketin</label><select id="p-act">${opt(ACTIVITY.map(a => a[0]), p.activity, v => ACTIVITY.find(a => a[0] === v)[1])}</select></div>
       <div class="field"><label>Hedef</label><div class="mini-seg" id="p-goal">${Object.keys(GOALS).map(k => `<button data-v="${k}" class="${p.goal === k ? 'on' : ''}">${GOAL_SHORT[k]}</button>`).join('')}</div></div>
       <div class="field"><label for="p-days">Haftalık antrenman</label><select id="p-days">${opt([2, 3, 4, 5, 6], p.days, v => `${v} gün`)}</select></div>
     </div>
     <div class="list" style="margin-top:10px">
       <a class="link-row" href="#/programs"><div class="ic" style="background:rgba(167,139,250,.14);color:var(--violet)">${icon('list')}</div>
-        <div class="grow"><div style="font-weight:600">Programlar</div><div class="faint small">${esc(programName())}${usingRoutines() ? ` · ${db.routines.length} gün` : ''}</div></div>${icon('chev', 'chev')}</a>
+        <div class="grow"><div style="font-weight:600">Antrenman programı</div><div class="faint small">${esc(programName())}${usingRoutines() ? ` · ${db.routines.length} gün` : ''}</div></div>${icon('chev', 'chev')}</a>
+      <a class="link-row" href="#/nutrition"><div class="ic" style="background:var(--fire-soft);color:var(--fire)">${icon('fork')}</div>
+        <div class="grow"><div style="font-weight:600">Beslenme planı</div><div class="faint small">${m ? `Günde ${fmtInt(m.goalKcal)} kcal · ${fmtInt(m.protein)} g protein` : 'Profili doldurunca hazırlanır'}</div></div>${icon('chev', 'chev')}</a>
     </div>`;
 
   if (!m) {
-    html += `<div class="card" style="margin-top:10px"><div class="row">${icon('info')}<div class="grow muted small">Cinsiyet, yaş, boy ve kilonu girdiğinde kalori ihtiyacın, vücut analizin ve sana özel öneriler burada görünecek.</div></div></div>`;
+    html += `<div class="card" style="margin-top:10px"><div class="row">${icon('info')}<div class="grow muted small">Cinsiyet, yaş, boy ve kilonu girdiğinde vücut analizin, beslenme planın ve sana özel öneriler hazırlanır.</div></div></div>`;
   } else {
     const bmiPos = clamp(((m.bmi - 15) / (40 - 15)) * 100, 0, 100);
-    const kP = m.protein * 4, kF = m.fat * 9, kC = m.carbs * 4, tot = kP + kF + kC;
     html += `
       <div class="sec"><h2>Vücut analizi</h2></div>
       <div class="metric-grid">
-        <div class="metric wide"><div class="row"><div class="grow"><div class="lbl">Vücut kitle indeksi (VKİ)</div>
+        <div class="metric wide"><div class="row"><div class="grow"><div class="lbl">Vücut kitle indeksi ${helpBtn('bmi')}</div>
           <b class="num">${fmtN(m.bmi)}</b></div><span class="pill" style="color:${m.bmiCat[1]}">${m.bmiCat[0]}</span></div>
           <div class="bmi-bar"><i style="left:${bmiPos}%"></i></div>
           <div class="bmi-scale"><span>15</span><span>18,5</span><span>25</span><span>30</span><span>40</span></div>
           <div class="note" style="margin-top:10px">Boyuna göre sağlıklı kilo aralığı: <b>${fmtInt(m.idealMin)}–${fmtInt(m.idealMax)} kg</b></div></div>
-        <div class="metric"><div class="lbl">Tahmini yağ oranı</div><b class="num">%${fmtInt(m.bodyFat)}</b><div class="note">VKİ'ye dayalı kaba tahmin</div></div>
-        <div class="metric"><div class="lbl">Bazal metabolizma</div><b class="num">${fmtInt(m.bmr)}<small>kcal</small></b><div class="note">Dinlenirken harcanan</div></div>
+        <div class="metric"><div class="lbl">Yağ oranı ${helpBtn('fat')}</div><b class="num">~%${fmtInt(m.bodyFat)}</b><div class="note">Tahmini</div></div>
+        <div class="metric"><div class="lbl">Günlük harcama ${helpBtn('tdee')}</div><b class="num">${fmtInt(m.tdee)}<small>kcal</small></b><div class="note">Dinlenirken ${fmtInt(m.bmr)} kcal</div></div>
       </div>
-
-      <div class="sec"><h2>Enerji ve beslenme</h2></div>
-      <div class="metric-grid">
-        <div class="metric"><div class="lbl">Günlük harcama</div><b class="num">${fmtInt(m.tdee)}<small>kcal</small></b><div class="note">Kilonu korumak için</div></div>
-        <div class="metric" style="border-color:rgba(212,245,60,.28)"><div class="lbl">Günlük hedefin</div><b class="num" style="color:var(--accent)">${fmtInt(m.goalKcal)}<small>kcal</small></b>
-          <div class="note">${p.goal === 'lose' ? '~0,5 kg/hafta yağ kaybı' : p.goal === 'gain' ? '~0,25 kg/hafta kontrollü artış' : 'Kilonu korursun'}</div></div>
-        <div class="metric wide"><div class="lbl">Günlük makro dağılımı</div>
-          <div class="macro-bar" style="margin-top:12px"><i style="width:${(kP / tot) * 100}%;background:var(--accent)"></i><i style="width:${(kF / tot) * 100}%;background:var(--fire)"></i><i style="width:${(kC / tot) * 100}%;background:var(--blue)"></i></div>
-          <div class="legend">
-            <div><i style="background:var(--accent)"></i>Protein<b class="num">${fmtInt(m.protein)} g</b></div>
-            <div><i style="background:var(--fire)"></i>Yağ<b class="num">${fmtInt(m.fat)} g</b></div>
-            <div><i style="background:var(--blue)"></i>Karbonhidrat<b class="num">${fmtInt(m.carbs)} g</b></div>
-          </div></div>
-        <div class="metric"><div class="lbl">Su</div><b class="num">${fmtN(m.water)}<small>L / gün</small></b><div class="note">Antrenman günü +0,5 L</div></div>
-        <div class="metric"><div class="lbl">Hedef kiloya</div><b class="num">${m.weeks ? `~${m.weeks}<small>hafta</small>` : '—'}</b><div class="note">${p.target ? `${fmtN(p.target)} kg hedefi` : 'Hedef kilo girilmedi'}</div></div>
-      </div>
-
-      <div class="sec"><h2>Sana özel öneriler</h2></div>
+      <div class="sec"><h2>Antrenman önerileri</h2></div>
       <div class="card">${recommendations(m, split).map(r => `<div class="reco"><div class="ic" style="background:${r.bg};color:${r.c}">${icon(r.i)}</div>
-        <div class="grow"><b>${esc(r.t)}</b><p>${esc(r.d)}</p></div></div>`).join('')}</div>
-      <div class="disclaimer">Hesaplamalar Mifflin-St Jeor formülüne ve genel spor bilimi önerilerine dayanır; tıbbi tavsiye değildir. Sağlık sorunun varsa bir uzmana danış.</div>`;
+        <div class="grow"><b>${esc(r.t)}</b><p>${esc(r.d)}</p></div></div>`).join('')}</div>`;
   }
 
   if (db.weights.length) {
     html += `<div class="sec"><h2>Kilo takibi</h2><span class="faint small">${db.weights.length} ölçüm</span></div>
-      <div class="card">${db.weights.length > 1 ? '<canvas class="chart" id="w-chart"></canvas>' : `<div class="muted small">Kilonu farklı günlerde güncelledikçe burada grafik oluşur. Son ölçüm: <b>${fmtN(w)} kg</b></div>`}</div>`;
+      <div class="card">${db.weights.length > 1 ? '<canvas class="chart" id="w-chart"></canvas>' : `<div class="muted small">Kilonu yukarıdan farklı günlerde güncelledikçe burada grafik oluşur. Son ölçüm: <b>${fmtN(w)} kg</b></div>`}</div>`;
   }
-
   html += `<div class="sec"><h2>Vücut ölçüleri</h2><button id="meas-add">${icon('plus')} Ölçü ekle</button></div>
     ${lastM ? `<div class="meas-grid">${MEASURES.filter(([k]) => lastM[k]).map(([k, n]) => {
       const d = firstM !== lastM && firstM[k] ? lastM[k] - firstM[k] : null;
@@ -1322,29 +1330,6 @@ function renderProfile() {
         ${d != null ? `<div class="delta ${(k === 'waist' || k === 'hip') === d <= 0 ? 'up' : 'down'}">${d > 0 ? '+' : ''}${fmtN(d)} cm</div>` : '<div class="note">ilk ölçüm</div>'}</div>`;
     }).join('')}</div><div class="faint small" style="margin:8px 4px 0">Son ölçüm ${daysAgo(lastM.date)} · ${meas.length} kayıt</div>`
       : `<div class="card muted small">Bel, göğüs, kol gibi ölçülerini ayda bir gir; kilo değişmese bile vücudunun nasıl değiştiğini görürsün.</div>`}`;
-
-  html += `
-    <div class="sec"><h2>Ayarlar</h2></div>
-    <div class="form">
-      <div class="setting"><span>Dinlenme süresi</span><select id="s-rest">${opt([0, 45, 60, 90, 120, 150, 180, 240], db.settings.rest, v => (v ? `${Math.floor(v / 60)}:${pad2(v % 60)}` : 'Kapalı'))}</select></div>
-      <div class="setting"><span>Ağırlık artış adımı</span><select id="s-step">${opt([0.5, 1, 1.25, 2, 2.5, 5], db.settings.step, v => fmtN(v, 2) + ' kg')}</select></div>
-    </div>
-    <div class="sec"><h2>Çevrimdışı videolar</h2></div>
-    <div id="offline-slot"></div>
-    <div class="sec"><h2>Yedekleme</h2></div>
-    <div class="card">
-      <div class="muted small" style="margin-bottom:12px">Veriler yalnızca bu telefonda saklanır. Yedeği "Dosyalar'a Kaydet" → iCloud Drive ile sakla. ${db.settings.lastBackup ? `Son yedek: <b>${daysAgo(dayKey(new Date(db.settings.lastBackup)))}</b>.` : 'Henüz yedek alınmadı.'}</div>
-      <button class="btn ghost" id="b-export">${icon('download')} Yedek al</button>
-      <button class="btn ghost" id="b-import">Yedeği geri yükle</button>
-      <input type="file" id="f-import" accept="application/json,.json" hidden>
-    </div>
-    <div class="sec"><h2>Kaynaklar</h2></div>
-    <div class="card small muted" style="line-height:1.6">
-      Videolar: Goulart, <a class="lnk" href="https://wger.de" target="_blank" rel="noopener">wger.de</a> — CC BY-SA 4.0 (kısaltıldı, yeniden kodlandı).<br>
-      Fotoğraflar: <a class="lnk" href="https://github.com/yuhonas/free-exercise-db" target="_blank" rel="noopener">free-exercise-db</a> — kamu malı.
-    </div>
-    <div style="margin-top:22px"><button class="btn danger" id="b-reset">Tüm verileri sil</button></div>
-    <div class="faint small" style="text-align:center;margin-top:14px">${db.sets.length} set · ${db.workouts.length} antrenman · ${db.custom.length} özel hareket</div>`;
   view.innerHTML = html;
 
   const rerender = () => { const y = scrollY; renderProfile(); scrollTo(0, y); };
@@ -1354,30 +1339,20 @@ function renderProfile() {
   bindNum('#p-age', v => (p.age = v ? clamp(Math.round(v), 12, 100) : null));
   bindNum('#p-h', v => (p.height = v ? clamp(Math.round(v), 120, 230) : null));
   bindNum('#p-t', v => (p.target = v ? clamp(v, 30, 250) : null));
-  bindNum('#p-w', v => {
-    if (!v) return;
-    const kg = clamp(v, 30, 300), today = dayKey();
-    const e = db.weights.find(x => x.date === today);
-    if (e) e.kg = kg; else db.weights.push({ date: today, kg });
-  });
+  bindNum('#p-w', v => setWeight(v));
   $('#p-act').addEventListener('change', e => { p.activity = +e.target.value; save(); rerender(); });
   $('#p-days').addEventListener('change', e => { p.days = +e.target.value; save(); rerender(); });
-  $('#s-rest').addEventListener('change', e => { db.settings.rest = +e.target.value; save(); });
-  $('#s-step').addEventListener('change', e => { db.settings.step = +e.target.value; save(); });
   $('#meas-add').addEventListener('click', () => measureSheet(lastM, rerender));
-  $('#b-export').addEventListener('click', async () => { if (await exportData()) rerender(); });
-  $('#b-import').addEventListener('click', () => $('#f-import').click());
-  $('#f-import').addEventListener('change', e => importData(e.target.files[0]));
-  $('#b-reset').addEventListener('click', () => {
-    if (!confirm('Tüm set kayıtları, antrenmanlar, ölçümler ve özel hareketler silinecek. Emin misin?')) return;
-    if (!confirm('Bu işlem geri alınamaz. Son kez onaylıyor musun?')) return;
-    db = normalize({ sets: [], settings: db.settings, profile: db.profile });
-    save(); toast('Veriler silindi'); rerender();
-  });
   const wc = $('#w-chart');
   if (wc) drawChart(wc, [...db.weights].sort((a, b) => (a.date < b.date ? -1 : 1)).map(x => ({ d: x.date, v: x.kg })), 'kg',
     getComputedStyle(document.documentElement).getPropertyValue('--blue').trim());
-  offlineCard($('#offline-slot'), false);
+  bindHelp();
+}
+function setWeight(v) {
+  if (!v) return;
+  const kg = clamp(v, 30, 300), today = dayKey();
+  const e = db.weights.find(x => x.date === today);
+  if (e) e.kg = kg; else db.weights.push({ date: today, kg });
 }
 
 function measureSheet(last, after) {
@@ -1402,38 +1377,261 @@ function measureSheet(last, after) {
 function recommendations(m, split) {
   const p = db.profile, g = p.goal, out = [];
   out.push({
-    i: 'fork', c: 'var(--fire)', bg: 'var(--fire-soft)', t: `Günde ~${fmtInt(m.goalKcal)} kcal al`,
-    d: g === 'lose' ? 'Harcamandan ~500 kcal az yiyerek haftada yaklaşık 0,5 kg yağ kaybedersin. Antrenman günlerinde yaktığın kalorinin bir kısmını geri alabilirsin.'
-      : g === 'gain' ? 'Harcamandan ~300 kcal fazla yiyerek yağlanmayı en aza indirip kas kazanırsın. Ayda 1 kg\'dan hızlı alıyorsan kaloriyi biraz düşür.'
-        : 'Harcamana eşit kalori alarak kilonu korursun. Haftalık kilo ortalamana göre ±100–200 kcal ayarla.',
-  });
-  out.push({
-    i: 'bolt', c: 'var(--accent)', bg: 'var(--accent-soft)', t: `Günde ${fmtInt(m.protein)} g protein`,
-    d: `Kilogram başına ${fmtN(m.protein / m.w)} g. 4 öğüne bölersen (öğün başı ~${fmtInt(m.protein / 4)} g) kas onarımı için en verimli şekilde kullanılır.`,
-  });
-  out.push({
     i: 'dumbbell', c: 'var(--violet)', bg: 'rgba(167,139,250,.14)', t: `${usingRoutines() ? 'Kendi programın' : split.name + ' programı'} · haftada ${p.days} gün`,
-    d: g === 'gain' ? 'Ana hareketlerde 4×6–8, yardımcılarda 3×8–12 tekrar. Uygulama her sette hedefin üst sınırına ulaştığında ağırlık artırmanı önerir. Setler arası 2–3 dk dinlen.'
+    d: g === 'gain' ? 'Ana hareketlerde 4×6–8, yardımcılarda 3×8–12 tekrar. Tüm setlerde üst sınıra ulaştığında uygulama ağırlık artırmanı önerir. Setler arası 2–3 dk dinlen.'
       : g === 'lose' ? 'Kas kaybını önlemek için ağır çalışmaya devam et: ana hareketlerde 3×8–10, diğerlerinde 3×12–15. Setler arası 60–90 sn dinlen.'
         : 'Hareket başına 3×8–12 tekrar; son 1–2 tekrar zorlayıcı olsun. Setler arası 90 sn dinlen.',
   });
   if (g === 'lose' || m.bmi >= 25) {
     out.push({ i: 'pulse', c: 'var(--blue)', bg: 'var(--blue-soft)', t: 'Haftada 150–300 dk kardiyo',
-      d: m.bmi >= 30 ? 'Eklemlerini korumak için tempolu yürüyüş, bisiklet veya eliptik gibi düşük darbeli kardiyo seç. Bugün ekranından kardiyo kaydedebilirsin.'
-        : 'Tempolu yürüyüş, bisiklet veya yüzme. Antrenman sonrası 15–20 dk kardiyo yağ yakımını destekler. Bugün ekranından kaydedebilirsin.' });
+      d: m.bmi >= 30 ? 'Eklemlerini korumak için tempolu yürüyüş, bisiklet veya eliptik gibi düşük darbeli kardiyo seç. Bugün ekranından kaydedebilirsin.'
+        : 'Tempolu yürüyüş, bisiklet veya yüzme. Antrenman sonrası 15–20 dk kardiyo yağ yakımını destekler. Günde 8–10 bin adım hedefle.' });
   } else if (m.bmi < 18.5) {
     out.push({ i: 'heart', c: 'var(--blue)', bg: 'var(--blue-soft)', t: 'Kardiyoyu sınırlı tut',
-      d: 'VKİ\'n düşük; enerjini kas gelişimine ayırmak için kardiyoyu haftada 1–2 hafif seansla sınırla ve kalori fazlası ile beslen.' });
+      d: 'VKİ\'n düşük; enerjini kas gelişimine ayırmak için kardiyoyu haftada 1–2 hafif seansla sınırla ve kalori fazlasıyla beslen.' });
   }
   if (m.weeks) out.push({ i: 'target', c: 'var(--good)', bg: 'rgba(52,211,153,.14)', t: `Hedefine ~${m.weeks} haftada ulaşabilirsin`,
-    d: `${fmtN(m.w)} kg → ${fmtN(p.target)} kg. Güvenli hızda ilerlemek verilen kilonun geri gelmesini önler. Haftada 1–2 kez aynı saatte tartıl ve kilonu buraya gir.` });
+    d: `${fmtN(m.w)} kg → ${fmtN(p.target)} kg. Güvenli hızda ilerlemek verilen kilonun geri gelmesini önler. Haftada 1–2 kez aynı saatte tartılıp kilonu güncelle.` });
   const done = new Set(db.sets.filter(s => s.date >= dayKey(weekStart())).map(s => s.date)).size;
   out.push({ i: 'calendar', c: 'var(--warn)', bg: 'rgba(251,191,36,.14)', t: done >= p.days ? 'Bu haftanın hedefi tamam!' : `Bu hafta ${p.days - done} antrenman kaldı`,
     d: done >= p.days ? 'Harika gidiyorsun. Ekstra gün yapacaksan hafif kardiyo veya esneme tercih et.'
-      : `Hafta hedefin ${p.days} gün, şu ana kadar ${done} gün antrenman yaptın. Bugün ekranından sıradaki antrenmanı başlat.` });
+      : `Hafta hedefin ${p.days} gün, şu ana kadar ${done} gün antrenman yaptın.` });
   out.push({ i: 'moon', c: 'var(--text-2)', bg: 'var(--surface-2)', t: 'Her gece 7–9 saat uyu',
-    d: 'Kas gelişimi ve iştah kontrolü uykuda düzenlenir. Az uyku, güç ve yağ yakımını belirgin şekilde düşürür.' });
+    d: 'Kas gelişimi ve iştah kontrolü uykuda düzenlenir. Az uyku güç ve yağ yakımını belirgin şekilde düşürür.' });
   return out;
+}
+
+// ═════════════════════════ Beslenme
+const dayOfYear = () => Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 864e5);
+function renderNutrition() {
+  setHeader('Beslenme');
+  const m = metrics();
+  if (!m) {
+    view.innerHTML = pageHead('Kişisel beslenme planı', 'Beslenme') + `<div class="card empty"><div class="ic">${icon('fork')}</div>
+      <b>Önce profilini doldur</b>Boy, kilo, yaş ve hedefine göre günlük kalori ihtiyacını ve örnek menünü hazırlayalım.
+      <a class="btn" href="#/profile" style="margin-top:16px">Profile git</a></div>`;
+    return;
+  }
+  const today = dayKey();
+  const st = dayStats(today);
+  const f = db.food[today] || { kcal: 0, protein: 0, water: 0 };
+  const md = db.menu[today] || { picks: {}, eaten: {} };
+  const menu = buildDayMenu(m.goalKcal, m.protein, md.picks, dayOfYear());
+  const kcalT = m.goalKcal + st.kcal, waterT = (m.water + (setsOn(today).length ? 0.5 : 0)) * 1000;
+  const kP = m.protein * 4, kF = m.fat * 9, kC = m.carbs * 4, tot = kP + kF + kC;
+  const bar = (v, t, c) => `<div class="bar" style="margin-top:6px"><i style="width:${clamp((v / t) * 100, 0, 100)}%;background:${c}"></i></div>`;
+  const mealIcon = { breakfast: 'bulb', lunch: 'fork', snack: 'bolt', dinner: 'moon' };
+
+  view.innerHTML = pageHead(fmtDay(today), 'Beslenme', `${GOALS[db.profile.goal]} hedefin için günde <b>${fmtInt(m.goalKcal)} kcal</b>`) + `
+    <div class="card">
+      <div class="card-label">Bugün yediğin</div>
+      <div class="kcal-big" style="margin-top:4px"><b>${fmtInt(f.kcal)}</b><span>/ ${fmtInt(kcalT)} kcal</span></div>
+      ${bar(f.kcal, kcalT, 'var(--fire)')}
+      ${st.kcal > 5 ? `<div class="faint small" style="margin-top:8px">Bugün sporla yaktığın ~${fmtInt(st.kcal)} kcal hedefine eklendi.</div>` : ''}
+      <div class="targets" style="grid-template-columns:1fr 1fr;margin-top:14px">
+        <div><div class="card-label">Protein</div><b class="num" style="font-size:16px">${fmtInt(f.protein)} / ${fmtInt(m.protein)} g</b>${bar(f.protein, m.protein, 'var(--accent)')}</div>
+        <div><div class="card-label">Su</div><b class="num" style="font-size:16px">${fmtN(f.water / 1000)} / ${fmtN(waterT / 1000)} L</b>${bar(f.water, waterT, 'var(--blue)')}</div>
+      </div>
+      <div class="quick"><button id="q-meal">${icon('plus')} Başka bir şey yedim</button><button id="q-water">${icon('drop')} +250 ml su</button></div>
+    </div>
+
+    <div class="sec"><h2>Bugünün menüsü</h2><button id="menu-shuffle">Yenile</button></div>
+    ${menu.meals.map(ml => {
+      const eaten = !!md.eaten[ml.id];
+      const nBase = MEALS.find(x => x.id === ml.id).options[ml.optIndex].items.length;
+      return `<div class="meal ${eaten ? 'eaten' : ''}" data-id="${ml.id}">
+        <div class="meal-head"><div class="ic">${icon(eaten ? 'check' : mealIcon[ml.id])}</div>
+          <div class="grow"><div class="t">${ml.name} · ${ml.time}</div><h3>${esc(ml.optName)}</h3></div>
+          <div class="k"><b>${fmtInt(ml.kcal)}</b><span>kcal · ${fmtInt(ml.p)} g prot.</span></div></div>
+        <ul>${ml.rows.map((r, i) => `<li class="${i >= nBase ? 'boost' : ''}">${esc(r.text)}${i >= nBase ? ' <span class="faint small">(protein hedefi için)</span>' : ''}</li>`).join('')}</ul>
+        <div class="meal-actions"><button data-swap="${ml.id}">${icon('trend')} Değiştir</button>
+          <button class="eat" data-eat="${ml.id}">${icon('check')} ${eaten ? 'Yedim' : 'Bunu yedim'}</button></div>
+      </div>`;
+    }).join('')}
+    <div class="menu-total"><span>Menü toplamı</span><span><b class="num">${fmtInt(menu.total.kcal)} kcal</b> · ${fmtInt(menu.total.p)} g protein</span></div>
+
+    <div class="sec"><h2>Günlük hedeflerin</h2></div>
+    <div class="metric-grid">
+      <div class="metric"><div class="lbl">Günlük harcama ${helpBtn('tdee')}</div><b class="num">${fmtInt(m.tdee)}<small>kcal</small></b><div class="note">Kilonu korumak için</div></div>
+      <div class="metric" style="border-color:rgba(212,245,60,.28)"><div class="lbl">Alman gereken</div><b class="num" style="color:var(--accent)">${fmtInt(m.goalKcal)}<small>kcal</small></b>
+        <div class="note">${db.profile.goal === 'lose' ? '~0,5 kg/hafta yağ kaybı' : db.profile.goal === 'gain' ? '~0,25 kg/hafta kontrollü artış' : 'Kilonu korursun'}</div></div>
+      <div class="metric wide"><div class="lbl">Protein / yağ / karbonhidrat</div>
+        <div class="macro-bar" style="margin-top:12px"><i style="width:${(kP / tot) * 100}%;background:var(--accent)"></i><i style="width:${(kF / tot) * 100}%;background:var(--fire)"></i><i style="width:${(kC / tot) * 100}%;background:var(--blue)"></i></div>
+        <div class="legend">
+          <div><i style="background:var(--accent)"></i>Protein<b class="num">${fmtInt(m.protein)} g</b></div>
+          <div><i style="background:var(--fire)"></i>Yağ<b class="num">${fmtInt(m.fat)} g</b></div>
+          <div><i style="background:var(--blue)"></i>Karbonhidrat<b class="num">${fmtInt(m.carbs)} g</b></div>
+        </div></div>
+    </div>
+
+    <div class="sec"><h2>İpuçları</h2></div>
+    <div class="card">${nutritionTips(m).map(r => `<div class="reco"><div class="ic" style="background:${r.bg};color:${r.c}">${icon(r.i)}</div>
+      <div class="grow"><b>${esc(r.t)}</b><p>${esc(r.d)}</p></div></div>`).join('')}</div>
+    <div class="disclaimer">Menü, hedeflerine göre otomatik oluşturulan bir örnektir; değerler yaklaşıktır ve diyetisyen planı yerine geçmez. Alerjin, sağlık sorunun veya özel diyetin varsa bir uzmana danış.</div>`;
+
+  const rerender = () => { const y = scrollY; renderNutrition(); scrollTo(0, y); };
+  const store = () => { db.menu[today] = md; save(); };
+  $('#q-meal').addEventListener('click', () => mealSheet(rerender));
+  $('#q-water').addEventListener('click', () => { addFood(0, 0, 250); toast('+250 ml su', 'drop'); rerender(); });
+  $$('[data-eat]', view).forEach(b => b.addEventListener('click', () => {
+    const ml = menu.meals.find(x => x.id === b.dataset.eat);
+    if (md.eaten[ml.id]) { addFood(-md.eaten[ml.id].kcal, -md.eaten[ml.id].p, 0); delete md.eaten[ml.id]; }
+    else { addFood(ml.kcal, ml.p, 0); md.eaten[ml.id] = { kcal: ml.kcal, p: ml.p }; toast(`${ml.name} eklendi`, 'fork'); }
+    store(); rerender();
+  }));
+  $$('[data-swap]', view).forEach(b => b.addEventListener('click', () => {
+    const ml = menu.meals.find(x => x.id === b.dataset.swap);
+    if (md.eaten[ml.id]) { addFood(-md.eaten[ml.id].kcal, -md.eaten[ml.id].p, 0); delete md.eaten[ml.id]; }
+    md.picks[ml.id] = (ml.optIndex + 1) % MEALS.find(x => x.id === ml.id).options.length;
+    store(); rerender();
+  }));
+  $('#menu-shuffle').addEventListener('click', () => {
+    for (const ml of menu.meals) {
+      if (md.eaten[ml.id]) continue;
+      const n = MEALS.find(x => x.id === ml.id).options.length;
+      md.picks[ml.id] = (ml.optIndex + 1 + Math.floor(Math.random() * (n - 1))) % n;
+    }
+    store(); rerender(); toast('Yeni menü hazır', 'trend');
+  });
+  bindHelp();
+}
+
+function nutritionTips(m) {
+  const g = db.profile.goal, out = [];
+  out.push({ i: 'bolt', c: 'var(--accent)', bg: 'var(--accent-soft)', t: `Her öğünde ~${fmtInt(m.protein / 4)} g protein`,
+    d: 'Proteini güne yaymak kas onarımını en verimli hale getirir: yumurta, tavuk, balık, süzme yoğurt, lor, baklagiller.' });
+  if (g === 'lose') out.push({ i: 'fork', c: 'var(--fire)', bg: 'var(--fire-soft)', t: 'Tabağının yarısı sebze olsun',
+    d: 'Sebze hacim sağlar, az kalorilidir ve tok tutar. Şekerli içecekleri ve atıştırmalıkları bırakmak en kolay 200–300 kcal tasarrufudur.' });
+  else if (g === 'gain') out.push({ i: 'fork', c: 'var(--fire)', bg: 'var(--fire-soft)', t: 'Öğün atlama',
+    d: 'Kalori fazlası için 4–5 öğün ye. Zorlanıyorsan süt, yulaf, fıstık ezmesi, ceviz gibi kalorisi yüksek sağlıklı ekler kullan.' });
+  else out.push({ i: 'fork', c: 'var(--fire)', bg: 'var(--fire-soft)', t: 'Dengeli tabak',
+    d: 'Her öğünde bir avuç protein, bir avuç kompleks karbonhidrat (bulgur, yulaf, tam buğday) ve bol sebze.' });
+  out.push({ i: 'dumbbell', c: 'var(--violet)', bg: 'rgba(167,139,250,.14)', t: 'Antrenman öncesi ve sonrası',
+    d: 'Antrenmandan 1–2 saat önce karbonhidrat + protein (ör. yulaf kasesi ya da muz ve yoğurt), sonrasında 2 saat içinde protein ağırlıklı bir öğün ye.' });
+  out.push({ i: 'drop', c: 'var(--blue)', bg: 'var(--blue-soft)', t: `Günde ${fmtN(m.water)} L su`,
+    d: 'Antrenman günlerinde +0,5 L. Susamayı beklemeden gün boyu küçük yudumlarla iç; idrar rengi açık sarı olmalı.' });
+  return out;
+}
+
+// ═════════════════════════ Ayarlar
+function renderSettings() {
+  setHeader('Ayarlar', { back: true, always: true });
+  const opt = (vals, cur, fmt) => vals.map(v => `<option value="${v}" ${v === cur ? 'selected' : ''}>${fmt(v)}</option>`).join('');
+  view.innerHTML = pageHead('Uygulama', 'Ayarlar') + `
+    <div class="form">
+      <div class="setting"><span>Setler arası dinlenme</span><select id="s-rest">${opt([0, 45, 60, 90, 120, 150, 180, 240], db.settings.rest, v => (v ? `${Math.floor(v / 60)}:${pad2(v % 60)}` : 'Kapalı'))}</select></div>
+      <div class="setting"><span>Ağırlık artırma adımı</span><select id="s-step">${opt([0.5, 1, 1.25, 2, 2.5, 5], db.settings.step, v => fmtN(v, 2) + ' kg')}</select></div>
+    </div>
+    <div class="sec"><h2>İnternetsiz kullanım</h2></div>
+    <div id="offline-slot"></div>
+    <div class="sec"><h2>Yedekleme</h2></div>
+    <div class="card">
+      <div class="muted small" style="margin-bottom:12px">Veriler yalnızca bu telefonda saklanır. Yedeği "Dosyalar'a Kaydet" → iCloud Drive ile sakla. ${db.settings.lastBackup ? `Son yedek: <b>${daysAgo(dayKey(new Date(db.settings.lastBackup)))}</b>.` : 'Henüz yedek alınmadı.'}</div>
+      <button class="btn ghost" id="b-export">${icon('download')} Yedek al</button>
+      <button class="btn ghost" id="b-import">Yedeği geri yükle</button>
+      <input type="file" id="f-import" accept="application/json,.json" hidden>
+    </div>
+    <div class="sec"><h2>Diğer</h2></div>
+    <div class="list">
+      <a class="link-row" href="#/welcome/0"><div class="ic" style="background:var(--accent-soft);color:var(--accent)">${icon('trend')}</div><div class="grow" style="font-weight:600">Kurulumu yeniden yap</div>${icon('chev', 'chev')}</a>
+      <a class="link-row" href="#/programs"><div class="ic" style="background:rgba(167,139,250,.14);color:var(--violet)">${icon('list')}</div><div class="grow" style="font-weight:600">Antrenman programı</div>${icon('chev', 'chev')}</a>
+    </div>
+    <div class="sec"><h2>Kaynaklar</h2></div>
+    <div class="card small muted" style="line-height:1.6">
+      Videolar: Goulart, <a class="lnk" href="https://wger.de" target="_blank" rel="noopener">wger.de</a> — CC BY-SA 4.0 (kısaltıldı, yeniden kodlandı).<br>
+      Fotoğraflar: <a class="lnk" href="https://github.com/yuhonas/free-exercise-db" target="_blank" rel="noopener">free-exercise-db</a> — kamu malı.
+    </div>
+    <div style="margin-top:22px"><button class="btn danger" id="b-reset">Tüm verileri sil</button></div>
+    <div class="faint small" style="text-align:center;margin-top:14px">${db.sets.length} set · ${db.workouts.length} antrenman · ${db.custom.length} özel hareket</div>`;
+  $('#s-rest').addEventListener('change', e => { db.settings.rest = +e.target.value; save(); });
+  $('#s-step').addEventListener('change', e => { db.settings.step = +e.target.value; save(); });
+  $('#b-export').addEventListener('click', async () => { if (await exportData()) renderSettings(); });
+  $('#b-import').addEventListener('click', () => $('#f-import').click());
+  $('#f-import').addEventListener('change', e => importData(e.target.files[0]));
+  $('#b-reset').addEventListener('click', () => {
+    if (!confirm('Tüm set kayıtları, antrenmanlar, ölçümler ve özel hareketler silinecek. Emin misin?')) return;
+    if (!confirm('Bu işlem geri alınamaz. Son kez onaylıyor musun?')) return;
+    db = normalize({ sets: [], settings: db.settings, profile: db.profile });
+    save(); toast('Veriler silindi'); renderSettings();
+  });
+  offlineCard($('#offline-slot'), false);
+}
+
+// ═════════════════════════ İlk kurulum
+let ob = null;
+const PROGRAM_INFO = {
+  full: 'Her antrenmanda tüm vücut çalışır — az günle en verimli yöntem.',
+  ul: 'Bir gün üst vücut, bir gün alt vücut — dengeli ve toparlanması kolay.',
+  ppl: 'İtme, çekme ve bacak günleri — sık antrenman için ideal.',
+};
+function renderWelcome(step = '0') {
+  step = clamp(+step || 0, 0, 3);
+  const p = db.profile;
+  ob ||= { goal: p.goal || 'maintain', days: p.days || 3, sex: p.sex, age: p.age, height: p.height, weight: currentWeight() };
+  document.body.classList.add('bare');
+  const go = s => (location.hash = '#/welcome/' + s);
+  const finish = () => { db.settings.onboarded = true; save(); ob = null; location.hash = '#/today'; };
+  const dots = [0, 1, 2, 3].map(i => `<i class="${i <= step ? 'on' : ''}"></i>`).join('');
+  const head = `<div class="ob-top">${step ? `<button class="ob-back" id="ob-back" aria-label="Geri">${icon('back')}</button>` : '<span style="width:36px"></span>'}
+    <div class="ob-dots">${dots}</div>${step < 3 ? '<button class="ob-skip" id="ob-skip">Atla</button>' : '<span style="width:36px"></span>'}</div>`;
+  let body = '', foot = '';
+  if (step === 0) {
+    const goals = [['lose', 'flame', 'Yağ yakmak', 'Kilo ver, sıkılaş'], ['maintain', 'heart', 'Formda kalmak', 'Sağlıklı ve güçlü kal'], ['gain', 'dumbbell', 'Kas kazanmak', 'Güçlen, kas kütleni artır']];
+    body = `<div class="ob-logo">${icon('dumbbell')}</div><h1>Hoş geldin!<br>Hedefin ne?</h1>
+      <p class="lead">Antrenman programını ve beslenme planını buna göre hazırlayacağız.</p>
+      ${goals.map(([k, ic, t, d]) => `<button class="choice ${ob.goal === k ? 'on' : ''}" data-goal="${k}"><div class="ic">${icon(ic)}</div><div><b>${t}</b><span>${d}</span></div></button>`).join('')}`;
+    foot = `<button class="btn" id="ob-next">Devam</button>`;
+  } else if (step === 1) {
+    const k = splitKey(ob.days);
+    body = `<h1>Haftada kaç gün spor yapabilirsin?</h1><p class="lead">Gerçekçi ol; düzenli 3 gün, ara sıra 5 günden iyidir.</p>
+      <div class="day-pick">${[2, 3, 4, 5, 6].map(d => `<button class="${ob.days === d ? 'on' : ''}" data-days="${d}">${d}</button>`).join('')}</div>
+      <div class="ob-note"><b>${SPLITS[k].name} programı</b><br>${PROGRAM_INFO[k]}</div>`;
+    foot = `<button class="btn" id="ob-next">Devam</button>`;
+  } else if (step === 2) {
+    body = `<h1>Seni biraz tanıyalım</h1><p class="lead">Kalori ihtiyacını ve kişisel önerilerini hesaplamak için.</p>
+      <div class="mini-seg" id="ob-sex"><button data-v="m" class="${ob.sex === 'm' ? 'on' : ''}">Erkek</button><button data-v="f" class="${ob.sex === 'f' ? 'on' : ''}">Kadın</button></div>
+      <div class="in-row" style="margin-top:12px"><div class="in-box"><label>Yaş</label><input id="ob-age" inputmode="numeric" placeholder="—" value="${ob.age ?? ''}"></div>
+        <div class="in-box"><label>Boy · cm</label><input id="ob-h" inputmode="numeric" placeholder="—" value="${ob.height ?? ''}"></div></div>
+      <div class="in-row"><div class="in-box"><label>Kilo · kg</label><input id="ob-w" inputmode="decimal" placeholder="—" value="${ob.weight ? fmtN(ob.weight) : ''}"></div>
+        <div class="in-box" style="opacity:.0"></div></div>
+      <div class="faint small" style="margin-top:12px">Bilgilerin sadece bu telefonda saklanır.</div>`;
+    foot = `<button class="btn" id="ob-next">Programımı hazırla</button>`;
+  } else {
+    const m = metrics();
+    const days = autoDays();
+    body = `<div class="ob-logo">${icon('check')}</div><h1>Programın hazır!</h1><p class="lead">${esc(SPLITS[splitKey(db.profile.days)].name)} · haftada ${db.profile.days} gün · ${GOALS[db.profile.goal]}</p>
+      <div class="card ready-list">${days.map(d => `<div class="kv"><span>${esc(d.name)}</span><span class="small">${d.items.map(i => getEx(i.exId)?.name).join(', ')}</span></div>`).join('')}</div>
+      ${m ? `<div class="metric-grid" style="margin-top:10px">
+        <div class="metric"><div class="lbl">Günlük kalori</div><b class="num" style="color:var(--accent)">${fmtInt(m.goalKcal)}<small>kcal</small></b></div>
+        <div class="metric"><div class="lbl">Günlük protein</div><b class="num">${fmtInt(m.protein)}<small>g</small></b></div></div>` : ''}
+      <div id="offline-slot" style="margin-top:10px"></div>`;
+    foot = `<button class="btn" id="ob-done">Başlayalım</button><div class="faint small" style="text-align:center;margin-top:10px">Programı ve bilgilerini istediğin zaman Profil'den değiştirebilirsin.</div>`;
+  }
+  view.innerHTML = `<div class="ob fade-in">${head}${body}<div class="ob-foot">${foot}</div></div>`;
+
+  $('#ob-back')?.addEventListener('click', () => go(step - 1));
+  $('#ob-skip')?.addEventListener('click', finish);
+  $$('[data-goal]', view).forEach(b => b.addEventListener('click', () => { ob.goal = b.dataset.goal; $$('[data-goal]', view).forEach(x => x.classList.toggle('on', x === b)); }));
+  $$('[data-days]', view).forEach(b => b.addEventListener('click', () => { ob.days = +b.dataset.days; renderWelcome(1); }));
+  $$('#ob-sex button').forEach(b => b.addEventListener('click', () => { ob.sex = b.dataset.v; $$('#ob-sex button').forEach(x => x.classList.toggle('on', x === b)); }));
+  $('#ob-next')?.addEventListener('click', () => {
+    if (step === 2) {
+      ob.age = Math.round(num($('#ob-age').value)); ob.height = Math.round(num($('#ob-h').value)); ob.weight = num($('#ob-w').value);
+      if (!ob.sex || !ob.age || !ob.height || !ob.weight) return toast('Tüm alanları doldur', 'info');
+      Object.assign(db.profile, {
+        goal: ob.goal, days: ob.days, sex: ob.sex, age: clamp(ob.age, 12, 100), height: clamp(ob.height, 120, 230),
+        activity: ob.days <= 2 ? 1.375 : ob.days <= 4 ? 1.55 : 1.725,
+      });
+      setWeight(ob.weight);
+      save();
+    } else if (step < 2) {
+      db.profile.goal = ob.goal; db.profile.days = ob.days; save();
+    }
+    go(step + 1);
+  });
+  $('#ob-done')?.addEventListener('click', finish);
+  if (step === 3) offlineCard($('#offline-slot'), false);
+  return () => document.body.classList.remove('bare');
 }
 
 // ═════════════════════════ Çevrimdışı videolar
@@ -1577,7 +1775,11 @@ restEl.addEventListener('click', e => {
 });
 
 // ═════════════════════════ Başlat
-if (!location.hash || location.hash === '#/settings' || location.hash === '#/pick') history.replaceState(null, '', '#/today');
+if (!location.hash || location.hash === '#/pick') history.replaceState(null, '', '#/today');
+if (!db.settings.onboarded) {
+  if (profileReady() || db.sets.length) { db.settings.onboarded = true; save(); }
+  else history.replaceState(null, '', '#/welcome/0');
+}
 route();
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
