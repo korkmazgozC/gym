@@ -650,3 +650,5 @@ body.bare #view { padding: 0; max-width: none; }
 .meal.eaten .meal-actions .eat { background: rgba(52,211,153,.16); color: var(--good); }
 .menu-total { display: flex; justify-content: space-between; align-items: center; padding: 12px 4px 0; font-size: 13.5px; color: var(--text-2); }
 .menu-total b { color: var(--text); }
+.meal-actions button:disabled { opacity: .35; }
+.sheet-actions.sticky { position: sticky; bottom: 0; margin: 14px -18px calc(-18px - var(--bottom)); padding: 12px 18px calc(var(--bottom) + 12px); background: var(--surface); border-top: 1px solid var(--line); }

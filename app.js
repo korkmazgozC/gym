@@ -1,5 +1,5 @@
 import { REGIONS, EXERCISES, EX_BY_ID, REGION_BY_ID, VIDEO_MB } from './exercises.js';
-import { MEALS, buildDayMenu } from './nutrition.js';
+import { FOODS, DIETS, buildDayMenu } from './nutrition.js';
 
 // ═════════════════════════ Yardımcılar
 const $ = (s, el = document) => el.querySelector(s);
@@ -390,6 +390,9 @@ function finishSession() {
     if (!confirm('Bu antrenmanda hiç set yok. Antrenman iptal edilsin mi?')) return;
     db.session = null; save(); location.hash = '#/today'; return;
   }
+  const planned = s.items.reduce((a, i) => a + (i.sets || 0), 0);
+  const done = sets.filter(x => !x.warm).length;
+  if (done < planned && !confirm(`${planned} setin ${done} tanesini yaptın. Antrenman bitirilsin mi?`)) return;
   const w = { id: uid(), date: dayKey(new Date(s.start)), start: s.start, end: Date.now(), key: s.key, name: s.name };
   db.workouts.push(w);
   db.session = null;
@@ -1416,7 +1419,9 @@ function renderNutrition() {
   const st = dayStats(today);
   const f = db.food[today] || { kcal: 0, protein: 0, water: 0 };
   const md = db.menu[today] || { picks: {}, eaten: {} };
-  const menu = buildDayMenu(m.goalKcal, m.protein, md.picks, dayOfYear());
+  const prefs = foodPrefs();
+  const menu = buildDayMenu(m.goalKcal, m.protein, md.picks, dayOfYear(), prefs);
+  const prefText = [DIETS.find(d => d[0] === prefs.diet)?.[1], prefs.avoid.length ? `${prefs.avoid.length} yiyecek çıkarıldı` : ''].filter(Boolean).join(' · ');
   const kcalT = m.goalKcal + st.kcal, waterT = (m.water + (setsOn(today).length ? 0.5 : 0)) * 1000;
   const kP = m.protein * 4, kF = m.fat * 9, kC = m.carbs * 4, tot = kP + kF + kC;
   const bar = (v, t, c) => `<div class="bar" style="margin-top:6px"><i style="width:${clamp((v / t) * 100, 0, 100)}%;background:${c}"></i></div>`;
@@ -1436,15 +1441,19 @@ function renderNutrition() {
     </div>
 
     <div class="sec"><h2>Bugünün menüsü</h2><button id="menu-shuffle">Yenile</button></div>
+    <div class="list" style="margin-bottom:12px"><button class="link-row" id="menu-prefs" style="width:100%;text-align:left">
+      <div class="ic" style="background:var(--accent-soft);color:var(--accent)">${icon('user')}</div>
+      <div class="grow"><div style="font-weight:600">Beslenme tercihlerin</div><div class="faint small">${esc(prefText)}</div></div>${icon('chev', 'chev')}</button></div>
     ${menu.meals.map(ml => {
       const eaten = !!md.eaten[ml.id];
-      const nBase = MEALS.find(x => x.id === ml.id).options[ml.optIndex].items.length;
+      const nBase = ml.base;
+      const swapNote = ml.swaps.length ? `<div class="faint small" style="margin-top:4px">Tercihine göre uyarlandı: ${esc(ml.swaps.map(([a, b]) => (b ? `${a} yerine ${b}` : `${a} çıkarıldı`)).join(', '))}</div>` : '';
       return `<div class="meal ${eaten ? 'eaten' : ''}" data-id="${ml.id}">
         <div class="meal-head"><div class="ic">${icon(eaten ? 'check' : mealIcon[ml.id])}</div>
-          <div class="grow"><div class="t">${ml.name} · ${ml.time}</div><h3>${esc(ml.optName)}</h3></div>
+          <div class="grow"><div class="t">${ml.name} · ${ml.time}</div><h3>${esc(ml.optName)}</h3>${swapNote}</div>
           <div class="k"><b>${fmtInt(ml.kcal)}</b><span>kcal · ${fmtInt(ml.p)} g prot.</span></div></div>
         <ul>${ml.rows.map((r, i) => `<li class="${i >= nBase ? 'boost' : ''}">${esc(r.text)}${i >= nBase ? ' <span class="faint small">(protein hedefi için)</span>' : ''}</li>`).join('')}</ul>
-        <div class="meal-actions"><button data-swap="${ml.id}">${icon('trend')} Değiştir</button>
+        <div class="meal-actions"><button data-swap="${ml.id}" ${ml.n < 2 ? 'disabled' : ''}>${icon('trend')} Değiştir</button>
           <button class="eat" data-eat="${ml.id}">${icon('check')} ${eaten ? 'Yedim' : 'Bunu yedim'}</button></div>
       </div>`;
     }).join('')}
@@ -1482,24 +1491,57 @@ function renderNutrition() {
   $$('[data-swap]', view).forEach(b => b.addEventListener('click', () => {
     const ml = menu.meals.find(x => x.id === b.dataset.swap);
     if (md.eaten[ml.id]) { addFood(-md.eaten[ml.id].kcal, -md.eaten[ml.id].p, 0); delete md.eaten[ml.id]; }
-    md.picks[ml.id] = (ml.optIndex + 1) % MEALS.find(x => x.id === ml.id).options.length;
+    md.picks[ml.id] = (ml.optIndex + 1) % ml.n;
     store(); rerender();
   }));
   $('#menu-shuffle').addEventListener('click', () => {
     for (const ml of menu.meals) {
       if (md.eaten[ml.id]) continue;
-      const n = MEALS.find(x => x.id === ml.id).options.length;
-      md.picks[ml.id] = (ml.optIndex + 1 + Math.floor(Math.random() * (n - 1))) % n;
+      const n = ml.n;
+      if (n > 1) md.picks[ml.id] = (ml.optIndex + 1 + Math.floor(Math.random() * (n - 1))) % n;
     }
     store(); rerender(); toast('Yeni menü hazır', 'trend');
   });
+  $('#menu-prefs').addEventListener('click', () => prefsSheet(() => {
+    for (const id of Object.keys(md.picks)) if (!md.eaten[id]) delete md.picks[id];
+    store(); rerender();
+  }));
   bindHelp();
+}
+
+const foodPrefs = () => ({ diet: db.profile.diet || 'omni', avoid: db.profile.avoid || [] });
+function prefsSheet(after) {
+  const cur = foodPrefs();
+  let diet = cur.diet;
+  const avoid = new Set(cur.avoid);
+  const names = Object.entries(FOODS).filter(([k]) => k !== 'oil').sort((a, b) => a[1].n.localeCompare(b[1].n, 'tr'));
+  const { el, close } = openSheet(`
+    <div class="sheet-title">Beslenme tercihlerin</div>
+    <div class="card-label" style="margin:0 4px 8px">Beslenme şekli</div>
+    <div class="opt-grid" id="pf-diet" style="grid-template-columns:1fr">${DIETS.map(([k, n]) => `<button class="opt ${k === diet ? 'on' : ''}" data-k="${k}">${n}</button>`).join('')}</div>
+    <div class="card-label" style="margin:18px 4px 4px">Yemediğin yiyecekler</div>
+    <div class="faint small" style="margin:0 4px 10px">Seçtiklerin menüden çıkarılır, yerine benzer bir yiyecek konur.</div>
+    <div id="pf-avoid" style="display:flex;flex-wrap:wrap;gap:8px">${names.map(([k, f]) => `<button class="chip ${avoid.has(k) ? 'on' : ''}" data-k="${k}">${esc(f.n)}</button>`).join('')}</div>
+    <div class="sheet-actions sticky"><button class="btn ghost" id="pf-cancel">Vazgeç</button><button class="btn" id="pf-save">Kaydet</button></div>`);
+  $$('#pf-diet .opt', el).forEach(b => b.addEventListener('click', () => {
+    diet = b.dataset.k;
+    $$('#pf-diet .opt', el).forEach(x => x.classList.toggle('on', x === b));
+  }));
+  $$('#pf-avoid .chip', el).forEach(b => b.addEventListener('click', () => {
+    avoid.has(b.dataset.k) ? avoid.delete(b.dataset.k) : avoid.add(b.dataset.k);
+    b.classList.toggle('on', avoid.has(b.dataset.k));
+  }));
+  $('#pf-cancel', el).addEventListener('click', close);
+  $('#pf-save', el).addEventListener('click', () => {
+    db.profile.diet = diet; db.profile.avoid = [...avoid];
+    save(); close(); toast('Menü tercihine göre güncellendi', 'check'); after();
+  });
 }
 
 function nutritionTips(m) {
   const g = db.profile.goal, out = [];
   out.push({ i: 'bolt', c: 'var(--accent)', bg: 'var(--accent-soft)', t: `Her öğünde ~${fmtInt(m.protein / 4)} g protein`,
-    d: 'Proteini güne yaymak kas onarımını en verimli hale getirir: yumurta, tavuk, balık, süzme yoğurt, lor, baklagiller.' });
+    d: `Proteini güne yaymak kas onarımını en verimli hale getirir: ${{ omni: 'yumurta, tavuk, balık, süzme yoğurt, lor, baklagiller', pesco: 'balık, yumurta, süzme yoğurt, lor, baklagiller', veg: 'yumurta, süzme yoğurt, lor, peynir, mercimek, nohut, fasulye, tofu' }[foodPrefs().diet] || 'süzme yoğurt, lor, baklagiller'}.` });
   if (g === 'lose') out.push({ i: 'fork', c: 'var(--fire)', bg: 'var(--fire-soft)', t: 'Tabağının yarısı sebze olsun',
     d: 'Sebze hacim sağlar, az kalorilidir ve tok tutar. Şekerli içecekleri ve atıştırmalıkları bırakmak en kolay 200–300 kcal tasarrufudur.' });
   else if (g === 'gain') out.push({ i: 'fork', c: 'var(--fire)', bg: 'var(--fire-soft)', t: 'Öğün atlama',
