@@ -1,17 +1,20 @@
-import { REGIONS, EXERCISES, EX_BY_ID, REGION_BY_ID } from './exercises.js';
+import { REGIONS, EXERCISES, EX_BY_ID, REGION_BY_ID, VIDEO_MB } from './exercises.js';
 
-// ───────────────────────── Yardımcılar
+// ═════════════════════════ Yardımcılar
 const $ = (s, el = document) => el.querySelector(s);
 const $$ = (s, el = document) => [...el.querySelectorAll(s)];
 const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
 const num = v => { const n = parseFloat(String(v).replace(',', '.')); return Number.isFinite(n) ? n : 0; };
-const fmtN = n => (Math.round(n * 100) / 100).toLocaleString('tr-TR');
+const fmtN = (n, d = 1) => (Math.round(n * 10 ** d) / 10 ** d).toLocaleString('tr-TR');
+const fmtInt = n => Math.round(n).toLocaleString('tr-TR');
+const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 const pad2 = n => String(n).padStart(2, '0');
 const dayKey = (d = new Date()) => `${d.getFullYear()}-${pad2(d.getMonth() + 1)}-${pad2(d.getDate())}`;
 const parseDay = k => new Date(k + 'T12:00:00');
 const fmtDay = (k, opts = { weekday: 'long', day: 'numeric', month: 'long' }) => parseDay(k).toLocaleDateString('tr-TR', opts);
 const e1rm = (w, r) => (r <= 1 ? w : w * (1 + r / 30));
+const norm = s => s.toLocaleLowerCase('tr-TR').replace(/ı/g, 'i').normalize('NFD').replace(/[̀-ͯ]/g, '');
 
 function daysAgo(k) {
   const diff = Math.round((parseDay(dayKey()) - parseDay(k)) / 864e5);
@@ -21,90 +24,222 @@ function daysAgo(k) {
   if (diff < 30) return `${Math.floor(diff / 7)} hafta önce`;
   return fmtDay(k, { day: 'numeric', month: 'short' });
 }
+function weekStart(d = new Date()) {
+  const m = new Date(d); m.setDate(d.getDate() - ((d.getDay() + 6) % 7)); return m;
+}
 
-// ───────────────────────── Veri
+// ═════════════════════════ İkonlar
+const P = {
+  home: '<path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9v11.5h13V9"/><path d="M10 20.5v-6h4v6"/>',
+  dumbbell: '<path d="M6.5 6v12M17.5 6v12M3.5 9v6M20.5 9v6M6.5 12h11"/>',
+  calendar: '<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
+  user: '<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1.4-3.8 4.3-5.5 7.5-5.5s6.1 1.7 7.5 5.5"/>',
+  flame: '<path d="M12 3c.8 3.2 5 5.4 5 10.2a5 5 0 0 1-10 0c0-2.4 1.3-3.6 2-5 .7 1.2 1.3 1.8 2.3 2.1C10.8 8 11.4 5.6 12 3Z"/>',
+  bars: '<path d="M5 20V11M12 20V5M19 20v-6"/>',
+  chev: '<path d="m9 6 6 6-6 6"/>',
+  back: '<path d="M15 5 8 12l7 7"/>',
+  plus: '<path d="M12 5v14M5 12h14"/>',
+  minus: '<path d="M5 12h14"/>',
+  check: '<path d="m5 12.5 4.5 4.5L19 7.5"/>',
+  x: '<path d="M7 7l10 10M17 7 7 17"/>',
+  pause: '<path d="M9 5.5v13M15 5.5v13"/>',
+  play: '<path d="M8 5.5v13l10-6.5-10-6.5Z" fill="currentColor"/>',
+  search: '<circle cx="11" cy="11" r="6.5"/><path d="m20 20-4.2-4.2"/>',
+  trophy: '<path d="M8 4h8v5a4 4 0 0 1-8 0V4Z"/><path d="M8 6H5.5a2.5 2.5 0 0 0 2.8 4M16 6h2.5a2.5 2.5 0 0 1-2.8 4M12 13v3.5M8.5 20.5h7M9.5 16.5h5v4h-5z"/>',
+  target: '<circle cx="12" cy="12" r="8.5"/><circle cx="12" cy="12" r="4.5"/><circle cx="12" cy="12" r=".8" fill="currentColor"/>',
+  drop: '<path d="M12 3.5c3 4 6 7.3 6 10.5a6 6 0 0 1-12 0c0-3.2 3-6.5 6-10.5Z"/>',
+  bolt: '<path d="M13 3 5 13.5h6L10 21l8-10.5h-6L13 3Z"/>',
+  download: '<path d="M12 4v11M7.5 10.5 12 15l4.5-4.5M5 20h14"/>',
+  bulb: '<path d="M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 10.9V16h7v-2.1A6 6 0 0 0 12 3Z"/>',
+  heart: '<path d="M12 20s-7.5-4.6-7.5-10.2A4.3 4.3 0 0 1 12 7a4.3 4.3 0 0 1 7.5 2.8C19.5 15.4 12 20 12 20Z"/>',
+  pulse: '<path d="M3 12h4l3-7 4 14 3-7h4"/>',
+  fork: '<path d="M7 3v8M4.5 3v5a2.5 2.5 0 0 0 5 0V3M7 11v10M17.5 3C15.5 4.5 14.5 7 14.5 10h3v11"/>',
+  moon: '<path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/>',
+  video: '<rect x="3" y="6" width="13" height="12" rx="3"/><path d="m16 10.5 5-3v9l-5-3"/>',
+  info: '<circle cx="12" cy="12" r="8.5"/><path d="M12 11v5M12 8h.01"/>',
+};
+const icon = (n, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24">${P[n]}</svg>`;
+
+// ═════════════════════════ Veri
 const KEY = 'gymtakip.v1';
 const DEFAULT_SETTINGS = { rest: 90, step: 2.5 };
+const DEFAULT_PROFILE = { sex: null, age: null, height: null, activity: 1.55, goal: 'maintain', days: 3, target: null };
 let db = load();
 
 function load() {
-  try {
-    const d = JSON.parse(localStorage.getItem(KEY));
-    if (d && Array.isArray(d.sets)) return { sets: d.sets, custom: d.custom || [], settings: { ...DEFAULT_SETTINGS, ...d.settings } };
-  } catch { /* boş başla */ }
-  return { sets: [], custom: [], settings: { ...DEFAULT_SETTINGS } };
+  let d = null;
+  try { d = JSON.parse(localStorage.getItem(KEY)); } catch { /* boş */ }
+  d = d && Array.isArray(d.sets) ? d : {};
+  return {
+    sets: d.sets || [], custom: d.custom || [], weights: d.weights || [],
+    settings: { ...DEFAULT_SETTINGS, ...d.settings },
+    profile: { ...DEFAULT_PROFILE, ...d.profile },
+  };
 }
 function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(db)); }
-  catch { toast('⚠️ Kaydedilemedi'); }
+  try { localStorage.setItem(KEY, JSON.stringify(db)); } catch { toast('Kaydedilemedi', 'x'); }
 }
 navigator.storage?.persist?.().catch(() => {});
 
-function allExercises() {
-  return [...EXERCISES, ...db.custom.map(c => ({ ...c, custom: true }))];
-}
+const allExercises = () => [...EXERCISES, ...db.custom.map(c => ({ ...c, custom: true }))];
 function getEx(id) {
   if (EX_BY_ID[id]) return EX_BY_ID[id];
   const c = db.custom.find(x => x.id === id);
   return c ? { ...c, custom: true } : null;
 }
-const animOf = ex => (ex.frames ? ex : ex.animFrom ? EX_BY_ID[ex.animFrom] : null);
-
+const animOf = ex => (ex?.img ? ex : ex?.animFrom ? EX_BY_ID[ex.animFrom] || null : null);
 const setsOf = exId => db.sets.filter(s => s.exId === exId);
 const setsOn = day => db.sets.filter(s => s.date === day).sort((a, b) => a.ts - b.ts);
-
 function groupByDay(sets) {
   const m = new Map();
   for (const s of sets) (m.get(s.date) || m.set(s.date, []).get(s.date)).push(s);
   return [...m.entries()].sort((a, b) => (a[0] < b[0] ? 1 : -1)).map(([d, ss]) => [d, ss.sort((a, b) => a.ts - b.ts)]);
 }
-
 function fmtSet(ex, s) {
   const type = ex?.type || 'weight';
   if (type === 'time') return s.w ? `${s.r} sn · +${fmtN(s.w)} kg` : `${s.r} sn`;
   if (type === 'bodyweight') return s.w ? `+${fmtN(s.w)} kg × ${s.r}` : `${s.r} tekrar`;
   return `${fmtN(s.w)} kg × ${s.r}`;
 }
-const setScore = (ex, s) => (ex?.type === 'weight' ? e1rm(s.w, s.r) : ex?.type === 'time' ? s.r + s.w * 10 : s.r + s.w * 2);
-
+const setScore = (ex, s) => (!ex?.type || ex.type === 'weight' ? e1rm(s.w, s.r) : ex.type === 'time' ? s.r + s.w * 10 : s.r + s.w * 2);
 function bestSet(ex, sets) {
   let best = null;
   for (const s of sets) if (!best || setScore(ex, s) > setScore(ex, best)) best = s;
   return best;
 }
 
-// ───────────────────────── UI temel
+// ═════════════════════════ Vücut ve kalori hesapları
+const ACTIVITY = [
+  [1.2, 'Hareketsiz'], [1.375, 'Az hareketli (1–3 gün)'], [1.55, 'Orta (3–5 gün)'],
+  [1.725, 'Çok hareketli (6–7 gün)'], [1.9, 'Aşırı (günde 2 antrenman)'],
+];
+const GOALS = { lose: 'Yağ yak', maintain: 'Formu koru', gain: 'Kas kazan' };
+const GOAL_SHORT = { lose: 'Yağ yak', maintain: 'Koru', gain: 'Kas' };
+
+function currentWeight() {
+  const w = [...db.weights].sort((a, b) => (a.date < b.date ? 1 : -1))[0];
+  return w?.kg || null;
+}
+const bodyKg = () => currentWeight() || 70;
+const profileReady = () => { const p = db.profile; return !!(p.sex && p.age && p.height && currentWeight()); };
+
+function metrics() {
+  if (!profileReady()) return null;
+  const p = db.profile, w = currentWeight();
+  const h = p.height / 100;
+  const bmi = w / (h * h);
+  const bmiCat = bmi < 18.5 ? ['Zayıf', 'var(--blue)'] : bmi < 25 ? ['Normal', 'var(--good)'] : bmi < 30 ? ['Fazla kilolu', 'var(--warn)'] : ['Obez', 'var(--danger)'];
+  // Mifflin-St Jeor
+  const bmr = 10 * w + 6.25 * p.height - 5 * p.age + (p.sex === 'm' ? 5 : -161);
+  const tdee = bmr * p.activity;
+  const floor = p.sex === 'm' ? 1500 : 1200;
+  const goalKcal = p.goal === 'lose' ? Math.max(floor, tdee - 500) : p.goal === 'gain' ? tdee + 300 : tdee;
+  const protein = w * (p.goal === 'maintain' ? 1.6 : p.goal === 'gain' ? 1.8 : 2.0);
+  const fat = w * 0.9;
+  const carbs = Math.max(0, (goalKcal - protein * 4 - fat * 9) / 4);
+  const water = w * 0.035;
+  const idealMin = 18.5 * h * h, idealMax = 24.9 * h * h;
+  // Deurenberg formülü (kaba tahmin)
+  const bodyFat = clamp(1.2 * bmi + 0.23 * p.age - 10.8 * (p.sex === 'm' ? 1 : 0) - 5.4, 3, 60);
+  let weeks = null;
+  if (p.target && Math.abs(p.target - w) > 0.2) weeks = Math.ceil(Math.abs(p.target - w) / (p.target < w ? 0.5 : 0.25));
+  return { w, bmi, bmiCat, bmr, tdee, goalKcal, protein, fat, carbs, water, idealMin, idealMax, bodyFat, weeks };
+}
+
+// Setin süresi (sn): tekrar başına ~3,5 sn + hazırlık; süreli hareketlerde girilen süre.
+const workSec = (ex, s) => (ex?.type === 'time' ? s.r : s.r * 3.5 + 10);
+// Kalori = MET × kg × saat (Compendium of Physical Activities). Dinlenme, setler arasındaki gerçek süreden alınır.
+function sessionStats(sets) {
+  const ss = [...sets].sort((a, b) => a.ts - b.ts);
+  const kg = bodyKg();
+  let kcal = 0, sec = 0, volume = 0;
+  ss.forEach((s, i) => {
+    const ex = getEx(s.exId);
+    let rest = 60;
+    if (i < ss.length - 1) {
+      const gap = (ss[i + 1].ts - s.ts) / 1000 - workSec(getEx(ss[i + 1].exId), ss[i + 1]);
+      rest = gap > 0 && gap < 1200 ? clamp(gap, 20, 240) : db.settings.rest || 90;
+    }
+    const t = workSec(ex, s) + rest;
+    kcal += (ex?.met || 5) * kg * t / 3600;
+    sec += t;
+    if (!ex?.type || ex.type === 'weight') volume += s.w * s.r;
+  });
+  return { kcal, min: sec / 60, volume, sets: ss.length };
+}
+
+// ═════════════════════════ Program önerisi
+const SPLITS = {
+  full: { name: 'Tüm Vücut', days: [
+    { n: 'Tüm Vücut A', ex: ['squat', 'bench', 'bb-row', 'ohp', 'plank'] },
+    { n: 'Tüm Vücut B', ex: ['deadlift', 'incline-db', 'lat-pulldown', 'lunge', 'hanging-leg-raise'] },
+  ] },
+  ul: { name: 'Üst / Alt', days: [
+    { n: 'Üst Vücut', ex: ['bench', 'bb-row', 'ohp', 'lat-pulldown', 'biceps-curl', 'triceps-pushdown'] },
+    { n: 'Alt Vücut', ex: ['squat', 'rdl', 'leg-press', 'leg-curl', 'calf-raise', 'plank'] },
+  ] },
+  ppl: { name: 'İtme / Çekme / Bacak', days: [
+    { n: 'İtme (Push)', ex: ['bench', 'incline-db', 'ohp', 'lateral-raise', 'triceps-pushdown'] },
+    { n: 'Çekme (Pull)', ex: ['pullup', 'bb-row', 'lat-pulldown', 'face-pull', 'hammer-curl'] },
+    { n: 'Bacak', ex: ['squat', 'rdl', 'leg-press', 'leg-curl', 'calf-raise'] },
+  ] },
+};
+const splitFor = days => (days <= 3 ? SPLITS.full : days === 4 ? SPLITS.ul : SPLITS.ppl);
+function scheme(i) {
+  const g = db.profile.goal;
+  if (g === 'gain') return i === 0 ? '4 × 6–8' : '3 × 8–12';
+  if (g === 'lose') return i === 0 ? '3 × 8–10' : '3 × 12–15';
+  return '3 × 8–12';
+}
+function todayPlan() {
+  const split = splitFor(db.profile.days || 3);
+  const ws = dayKey(weekStart()), today = dayKey();
+  const doneDays = new Set(db.sets.filter(s => s.date >= ws && s.date < today).map(s => s.date)).size;
+  const day = split.days[doneDays % split.days.length];
+  const doneToday = new Set(setsOn(today).map(s => s.exId));
+  return {
+    split, day,
+    items: day.ex.filter(id => EX_BY_ID[id]).map((id, i) => ({ ex: EX_BY_ID[id], scheme: scheme(i), done: doneToday.has(id) })),
+  };
+}
+
+// ═════════════════════════ Arayüz iskeleti
 const view = $('#view');
+const top = $('#top');
 let toastTimer;
-function toast(msg) {
+function toast(msg, ic = 'check') {
   const t = $('#toast');
-  t.textContent = msg; t.hidden = false;
+  t.innerHTML = `${icon(ic)}<span>${esc(msg)}</span>`;
+  t.hidden = false;
   t.style.animation = 'none'; void t.offsetWidth; t.style.animation = '';
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => (t.hidden = true), 2200);
 }
-
-function setHeader(title, { sub = '', back = false, action = '' } = {}) {
-  $('#title').textContent = title;
-  $('#subtitle').textContent = sub;
+function setHeader(title, { back = false, action = '', always = false } = {}) {
+  $('#top-title').textContent = title;
   $('#back').hidden = !back;
   $('#top-action').innerHTML = action;
+  top.classList.toggle('always', always);
 }
-$('#back').addEventListener('click', () => {
-  if (history.length > 1) history.back(); else location.hash = '#/lib';
-});
+$('#back').innerHTML = icon('back');
+$('#back').addEventListener('click', () => (history.length > 1 ? history.back() : (location.hash = '#/lib')));
+addEventListener('scroll', () => top.classList.toggle('scrolled', scrollY > 30), { passive: true });
 
-function regionBadge(regionId, label) {
-  const r = REGION_BY_ID[regionId] || { color: '#888', name: '?' };
-  return `<div class="badge" style="background:${r.color}22;color:${r.color}">${esc(label ?? r.name.slice(0, 2))}</div>`;
+const TABS = [['today', 'Bugün', 'home'], ['lib', 'Hareketler', 'dumbbell'], ['hist', 'Geçmiş', 'calendar'], ['profile', 'Profil', 'user']];
+$('#tabs').innerHTML = TABS.map(([id, t, ic]) => `<a href="#/${id}" data-tab="${id}">${icon(ic)}<span>${t}</span></a>`).join('');
+
+function thumb(ex) {
+  const a = animOf(ex);
+  if (!a) return `<div class="badge">${esc((ex?.name || '?').split(/\s+/).slice(0, 2).map(w => w[0]).join('').toLocaleUpperCase('tr-TR'))}</div>`;
+  return `<div class="thumb"><img src="${a.videos?.[0]?.poster || a.img[1]}" alt="" loading="lazy">${a.videos ? `<span class="vid"><svg viewBox="0 0 10 10"><path d="M2 1v8l7-4z"/></svg></span>` : ''}</div>`;
 }
-const initials = name => name.split(/[\s(]+/).filter(Boolean).slice(0, 2).map(w => w[0].toLocaleUpperCase('tr-TR')).join('');
-const chevron ='<svg class="chev" width="10" height="16" viewBox="0 0 10 16"><path d="M2 2l6 6-6 6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>';
+const pageHead = (eyebrow, title, sub = '') =>
+  `<div class="page-head"><div class="eyebrow">${esc(eyebrow)}</div><h1 class="large-title">${esc(title)}</h1>${sub ? `<div class="sub">${sub}</div>` : ''}</div>`;
+const emptyBox = (ic, title, text) => `<div class="card empty"><div class="ic">${icon(ic)}</div><b>${esc(title)}</b>${esc(text)}</div>`;
 
-// ───────────────────────── Router
+// ═════════════════════════ Yönlendirme
 let cleanup = null;
-const routes = { today: renderToday, lib: renderLib, ex: renderEx, hist: renderHist, settings: renderSettings, new: renderNew };
-
+const routes = { today: renderToday, lib: renderLib, ex: renderEx, hist: renderHist, profile: renderProfile, new: renderNew };
 function route() {
   const [name = 'today', ...args] = location.hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
   const fn = routes[name] || renderToday;
@@ -112,105 +247,150 @@ function route() {
   const tab = name === 'ex' || name === 'new' ? 'lib' : routes[name] ? name : 'today';
   $$('#tabs a').forEach(a => a.classList.toggle('on', a.dataset.tab === tab));
   view.innerHTML = '';
-  window.scrollTo(0, 0);
+  view.classList.remove('fade-in'); void view.offsetWidth; view.classList.add('fade-in');
+  scrollTo(0, 0);
+  top.classList.remove('scrolled');
   cleanup = fn(...args) || null;
 }
-window.addEventListener('hashchange', route);
+addEventListener('hashchange', route);
 
-// ───────────────────────── Bugün
+// ═════════════════════════ Bugün
 function renderToday() {
   const today = dayKey();
   const sets = setsOn(today);
-  setHeader('Bugün', { sub: fmtDay(today) });
+  const st = sessionStats(sets);
+  const m = metrics();
+  const hour = new Date().getHours();
+  const hello = hour < 6 ? 'İyi geceler' : hour < 12 ? 'Günaydın' : hour < 18 ? 'İyi günler' : 'İyi akşamlar';
+  setHeader('Bugün');
 
-  const exIds = [...new Set(sets.map(s => s.exId))];
-  const volume = sets.reduce((a, s) => a + s.w * s.r * (getEx(s.exId)?.type === 'weight' ? 1 : 0), 0);
+  const ws = weekStart();
+  const weekDays = [...Array(7)].map((_, i) => { const d = new Date(ws); d.setDate(ws.getDate() + i); return dayKey(d); });
+  const weekKcal = weekDays.map(d => sessionStats(setsOn(d)).kcal);
+  const trained = weekKcal.filter(k => k > 0).length;
+  const goalDays = db.profile.days || 3;
+  const maxK = Math.max(...weekKcal, 1);
+  const C = 2 * Math.PI * 44;
+  const ringOff = C * (1 - clamp(trained / goalDays, 0, 1));
+  const plan = todayPlan();
+  const next = plan.items.find(i => !i.done) || plan.items[0];
 
-  let html = `
-    <div class="stats">
-      <div class="stat"><b>${exIds.length}</b><span>Hareket</span></div>
-      <div class="stat"><b>${sets.length}</b><span>Set</span></div>
-      <div class="stat"><b>${fmtN(Math.round(volume))}</b><span>Hacim (kg)</span></div>
+  let html = pageHead(fmtDay(today), hello) + `
+    <div class="hero">
+      <div class="hero-top">
+        <div class="hero-kcal">
+          <div class="lbl">${icon('flame')} Yakılan kalori</div>
+          <div class="big num">${fmtInt(st.kcal)}<small>kcal</small></div>
+          <div class="note">${profileReady() ? `${fmtN(bodyKg())} kg vücut ağırlığına göre` : 'Doğru hesap için profilden kilonu gir'}</div>
+        </div>
+        <div class="ring-wrap">
+          <svg viewBox="0 0 104 104"><circle class="track" cx="52" cy="52" r="44"/><circle class="bar" cx="52" cy="52" r="44" stroke-dasharray="${C}" stroke-dashoffset="${ringOff}"/></svg>
+          <div class="ring-center"><b class="num">${trained}/${goalDays}</b><span>bu hafta</span></div>
+        </div>
+      </div>
+      <div class="hero-stats">
+        <div><b class="num">${fmtInt(st.min)}<span style="font-size:13px"> dk</span></b><span>Süre</span></div>
+        <div><b class="num">${st.sets}</b><span>Set</span></div>
+        <div><b class="num">${st.volume >= 1000 ? fmtN(st.volume / 1000) + ' t' : fmtInt(st.volume)}</b><span>Hacim${st.volume >= 1000 ? '' : ' (kg)'}</span></div>
+      </div>
     </div>`;
 
-  if (!sets.length) {
-    html += `<div class="card empty" style="margin-top:14px"><div class="big">🏋️</div>
-      Bugün henüz set kaydı yok.<br>Bir hareket seçip ilk setini ekle.</div>`;
-  } else {
-    html += `<div class="section-title">Bugünkü antrenman</div>`;
-    for (const id of exIds) {
-      const ex = getEx(id);
-      const ss = sets.filter(s => s.exId === id);
-      html += `<a class="card item" style="display:block;text-decoration:none;color:inherit" href="#/ex/${encodeURIComponent(id)}">
-        <div class="row">${regionBadge(ex?.region, initials(ex?.name || '?'))}<div class="grow"><div class="name">${esc(ex?.name || 'Silinmiş hareket')}</div>
-        <div class="sub">${ss.length} set</div></div>${chevron}</div>
-        <div class="set-chips">${ss.map(s => `<span class="set-chip">${esc(fmtSet(ex, s))}</span>`).join('')}</div></a>`;
-    }
+  if (!profileReady()) {
+    html += `<a class="card cta" href="#/profile" style="margin-top:10px">
+      <div class="ic">${icon('user')}</div>
+      <div class="grow"><div class="card-title">Profilini tamamla</div><div class="muted small">Boy, kilo ve hedefini gir; kalori ihtiyacın ve kişisel önerilerin hesaplansın.</div></div>
+      ${icon('chev', 'chev')}</a>`;
   }
 
-  html += `<div style="margin-top:16px"><a class="btn" href="#/lib" style="text-decoration:none">＋ Hareket ekle</a></div>`;
+  html += `<div class="sec"><h2>Bugünün programı</h2><a href="#/profile">${esc(plan.split.name)}</a></div>
+    <div class="card">
+      <div class="plan-head"><div class="plan-icon">${icon('dumbbell')}</div>
+        <div class="grow"><div class="card-title">${esc(plan.day.n)}</div>
+        <div class="muted small">${plan.items.length} hareket · ${GOALS[db.profile.goal]} hedefine göre</div></div></div>
+      <div class="plan-list">${plan.items.map(i => `<a class="plan-item ${i.done ? 'done' : ''}" href="#/ex/${i.ex.id}">
+        <span class="chk">${i.done ? icon('check') : ''}</span><span class="nm">${esc(i.ex.name)}</span><span class="tg">${i.scheme}</span></a>`).join('')}</div>
+      ${plan.items.every(i => i.done) ? `<div class="btn ghost">${icon('check')} Program tamamlandı</div>`
+        : `<a class="btn" href="#/ex/${next.ex.id}">${sets.length ? 'Devam et' : 'Antrenmana başla'} · ${esc(next.ex.name)}</a>`}
+    </div>`;
 
-  // Son yapılan hareketler: hızlı erişim
-  const recent = [];
-  for (const s of [...db.sets].sort((a, b) => b.ts - a.ts)) {
-    if (s.date !== today && !recent.includes(s.exId) && !exIds.includes(s.exId)) recent.push(s.exId);
-    if (recent.length >= 6) break;
+  if (m) {
+    html += `<div class="sec"><h2>Günlük hedefler</h2><a href="#/profile">Detay</a></div>
+      <div class="targets">
+        <div class="target"><div class="ic" style="background:var(--fire-soft);color:var(--fire)">${icon('fork')}</div><b class="num">${fmtInt(m.goalKcal + st.kcal)}</b><span>kcal al</span></div>
+        <div class="target"><div class="ic" style="background:var(--accent-soft);color:var(--accent)">${icon('bolt')}</div><b class="num">${fmtInt(m.protein)} g</b><span>protein</span></div>
+        <div class="target"><div class="ic" style="background:var(--blue-soft);color:var(--blue)">${icon('drop')}</div><b class="num">${fmtN(m.water + (sets.length ? 0.5 : 0))} L</b><span>su</span></div>
+      </div>`;
   }
-  const recentEx = recent.map(getEx).filter(Boolean);
-  if (recentEx.length) {
-    html += `<div class="section-title">Son yaptıkların</div><div class="list">${recentEx.map(exItem).join('')}</div>`;
+
+  html += `<div class="sec"><h2>Bu hafta</h2><span class="faint small num">${fmtInt(weekKcal.reduce((a, b) => a + b, 0))} kcal</span></div>
+    <div class="card"><div class="week">${weekDays.map((d, i) => `<div class="d ${d === today ? 'today' : ''}">
+      <div class="b ${weekKcal[i] ? 'on' : ''}" style="height:${weekKcal[i] ? Math.max(14, (weekKcal[i] / maxK) * 70) : 6}px"></div>
+      <span>${['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'][i]}</span></div>`).join('')}</div></div>`;
+
+  if (sets.length) {
+    const ids = [...new Set(sets.map(s => s.exId))];
+    html += `<div class="sec"><h2>Bugünkü setler</h2></div><div class="list">${ids.map(id => {
+      const ex = getEx(id), ss = sets.filter(s => s.exId === id);
+      return `<a class="item" href="#/ex/${encodeURIComponent(id)}">${thumb(ex)}<div class="grow">
+        <div class="name">${esc(ex?.name || 'Silinmiş hareket')}</div>
+        <div class="meta num">${ss.map(s => fmtSet(ex, s)).join(' · ')}</div></div>${icon('chev', 'chev')}</a>`;
+    }).join('')}</div>`;
   }
+  html += `<div id="offline-slot"></div>`;
   view.innerHTML = html;
+  offlineCard($('#offline-slot'), true);
 }
 
-function exItem(ex) {
-  const ss = setsOf(ex.id);
-  let sub = REGION_BY_ID[ex.region]?.name || '';
-  if (ss.length) {
-    const last = ss.reduce((a, b) => (a.ts > b.ts ? a : b));
-    sub = `Son: ${fmtSet(ex, last)} · ${daysAgo(last.date)}`;
-  }
-  return `<a class="item" href="#/ex/${encodeURIComponent(ex.id)}">${regionBadge(ex.region, initials(ex.name))}
-    <div class="grow"><div class="name">${esc(ex.name)}${ex.custom ? ' <span class="muted small">· özel</span>' : ''}</div><div class="sub">${esc(sub)}</div></div>${chevron}</a>`;
-}
-
-// ───────────────────────── Hareketler
-let libRegion = 'all';
+// ═════════════════════════ Hareketler
+let libRegion = 'all', libQuery = '';
 function renderLib(region) {
   if (region) libRegion = region;
-  setHeader('Hareketler', { action: `<button class="link-btn" id="add-custom">＋ Özel</button>` });
-  const exs = allExercises().filter(e => libRegion === 'all' || e.region === libRegion);
-
-  view.innerHTML = `
-    <div class="chips">
-      <button class="chip ${libRegion === 'all' ? 'on' : ''}" data-r="all">Tümü</button>
-      ${REGIONS.map(r => `<button class="chip ${libRegion === r.id ? 'on' : ''}" data-r="${r.id}"><span class="dot" style="background:${r.color}"></span> ${r.name}</button>`).join('')}
-    </div>
-    ${libRegion === 'all'
-      ? REGIONS.map(r => {
-        const list = exs.filter(e => e.region === r.id);
-        return list.length ? `<div class="section-title">${r.name}</div><div class="list">${list.map(exItem).join('')}</div>` : '';
-      }).join('')
-      : `<div class="list" style="margin-top:12px">${exs.map(exItem).join('') || '<div class="empty">Bu bölgede hareket yok.</div>'}</div>`}
-  `;
-  $$('.chip', view).forEach(c => c.addEventListener('click', () => { libRegion = c.dataset.r; renderLib(); }));
-  $('#add-custom').addEventListener('click', () => (location.hash = '#/new'));
+  setHeader('Hareketler', { action: `<a class="top-btn" href="#/new" aria-label="Özel hareket ekle">${icon('plus')}</a>` });
+  view.innerHTML = pageHead(`${allExercises().length} hareket · ${EXERCISES.filter(e => e.videos).length} videolu`, 'Hareketler') + `
+    <label class="search">${icon('search')}<input id="lib-q" type="search" placeholder="Hareket veya kas ara" value="${esc(libQuery)}" autocomplete="off"></label>
+    <div class="chips" id="lib-chips"></div>
+    <div id="lib-body"></div>`;
+  $('#lib-q').addEventListener('input', e => { libQuery = e.target.value; renderLibBody(); });
+  renderLibBody();
+}
+function libItem(ex) {
+  const ss = setsOf(ex.id);
+  let meta = (animOf(ex)?.primary || []).join(', ') || REGION_BY_ID[ex.region]?.name || '';
+  if (ss.length) {
+    const last = ss.reduce((a, b) => (a.ts > b.ts ? a : b));
+    meta = `${fmtSet(ex, last)} · ${daysAgo(last.date)}`;
+  }
+  return `<a class="item" href="#/ex/${encodeURIComponent(ex.id)}">${thumb(ex)}<div class="grow">
+    <div class="name">${esc(ex.name)}</div><div class="meta">${esc(meta)}${ex.custom ? ' · özel' : ''}</div></div>${icon('chev', 'chev')}</a>`;
+}
+function renderLibBody() {
+  $('#lib-chips').innerHTML = `<button class="chip ${libRegion === 'all' ? 'on' : ''}" data-r="all">Tümü</button>` +
+    REGIONS.map(r => `<button class="chip ${libRegion === r.id ? 'on' : ''}" data-r="${r.id}">${r.name}</button>`).join('');
+  $$('#lib-chips .chip').forEach(c => c.addEventListener('click', () => { libRegion = c.dataset.r; renderLibBody(); }));
+  const q = norm(libQuery.trim());
+  const exs = allExercises().filter(e => (libRegion === 'all' || e.region === libRegion) &&
+    (!q || norm(`${e.name} ${(e.primary || []).join(' ')} ${(e.secondary || []).join(' ')}`).includes(q)));
+  const regions = libRegion === 'all' ? REGIONS : REGIONS.filter(r => r.id === libRegion);
+  const html = regions.map(r => {
+    const list = exs.filter(e => e.region === r.id);
+    return list.length ? `<div class="group-title">${r.name} · ${list.length}</div><div class="list">${list.map(libItem).join('')}</div>` : '';
+  }).join('');
+  $('#lib-body').innerHTML = html || `<div style="margin-top:14px">${emptyBox('search', 'Sonuç yok', 'Farklı bir arama dene.')}</div>`;
 }
 
-// ───────────────────────── Özel hareket
 function renderNew() {
-  setHeader('Yeni hareket', { back: true });
-  view.innerHTML = `
-    <div class="form-row"><label>Hareket adı</label><input class="text-in" id="n-name" placeholder="örn. Cable Crossover" maxlength="60"></div>
+  setHeader('Yeni hareket', { back: true, always: true });
+  view.innerHTML = pageHead('Kendi hareketin', 'Yeni hareket') + `
+    <div class="form-row"><label>Hareket adı</label><input class="text-in" id="n-name" placeholder="örn. Landmine Press" maxlength="60"></div>
     <div class="form-row"><label>Bölge</label><select class="text-in" id="n-region">${REGIONS.map(r => `<option value="${r.id}" ${r.id === libRegion ? 'selected' : ''}>${r.name}</option>`).join('')}</select></div>
     <div class="form-row"><label>Takip türü</label><select class="text-in" id="n-type">
-      <option value="weight">Ağırlık × tekrar</option><option value="bodyweight">Vücut ağırlığı (tekrar, ek ağırlık opsiyonel)</option><option value="time">Süre (saniye)</option></select></div>
-    <div class="form-row"><label>3D animasyon (benzer hareket)</label><select class="text-in" id="n-anim">
-      <option value="">Animasyon yok</option>${EXERCISES.map(e => `<option value="${e.id}">${esc(e.name)}</option>`).join('')}</select></div>
+      <option value="weight">Ağırlık × tekrar</option><option value="bodyweight">Vücut ağırlığı</option><option value="time">Süre (saniye)</option></select></div>
+    <div class="form-row"><label>Görsel (benzer hareket)</label><select class="text-in" id="n-anim">
+      <option value="">Görsel yok</option>${REGIONS.map(r => `<optgroup label="${r.name}">${EXERCISES.filter(e => e.region === r.id).map(e => `<option value="${e.id}">${esc(e.name)}</option>`).join('')}</optgroup>`).join('')}</select></div>
     <button class="btn" id="n-save">Kaydet</button>`;
   $('#n-save').addEventListener('click', () => {
     const name = $('#n-name').value.trim();
-    if (!name) { toast('Hareket adı gir'); return; }
+    if (!name) return toast('Hareket adı gir', 'info');
     const id = 'c-' + uid();
     db.custom.push({ id, name, region: $('#n-region').value, type: $('#n-type').value, animFrom: $('#n-anim').value || null });
     save();
@@ -218,63 +398,119 @@ function renderNew() {
   });
 }
 
-// ───────────────────────── Hareket detayı
-const drafts = {};
-let exTab = 'log';
+// ═════════════════════════ Video / fotoğraf oynatıcı
+const MEDIA_CACHE = 'gym-media-v1';
+const videoCount = () => EXERCISES.reduce((n, e) => n + (e.videos?.length || 0), 0);
+// Video önce telefondaki önbellekten, yoksa internetten alınır ve kaydedilir; iOS için blob URL döner.
+async function mediaURL(src) {
+  try {
+    const cache = await caches.open(MEDIA_CACHE);
+    let res = await cache.match(src);
+    if (!res) {
+      res = await fetch(src);
+      if (!res.ok) throw new Error(res.status);
+      await cache.put(src, res.clone());
+    }
+    return URL.createObjectURL(await res.blob());
+  } catch {
+    return src;
+  }
+}
 
+function mountMedia(box, anim) {
+  if (anim.videos?.length) {
+    const vids = anim.videos;
+    box.innerHTML = `<div class="media">
+      <video playsinline muted loop autoplay preload="auto" poster="${vids[0].poster}"></video>
+      <span class="credit glass">Goulart · wger · CC BY-SA</span>
+      <div class="media-ctl">
+        <button class="mbtn glass" id="m-play" aria-label="Durdur">${icon('pause')}</button>
+        <button class="mbtn glass" id="m-speed">1×</button>
+        <span class="grow"></span>
+        ${vids.length > 1 ? `<span class="mseg glass">${vids.map((v, i) => `<b data-i="${i}" class="${i ? '' : 'on'}">Açı ${i + 1}</b>`).join('')}</span>` : ''}
+      </div>
+      <div class="mload glass" hidden>Yükleniyor…</div>
+    </div>`;
+    const player = $('.media', box), video = $('video', player), load = $('.mload', player), playBtn = $('#m-play', player);
+    const urls = [];
+    let speed = 1, alive = true;
+    const pick = async i => {
+      $$('.mseg b', player).forEach(b => b.classList.toggle('on', +b.dataset.i === i));
+      video.poster = vids[i].poster;
+      const t = setTimeout(() => (load.hidden = false), 300);
+      const url = await mediaURL(vids[i].src);
+      clearTimeout(t); load.hidden = true;
+      if (!alive) return URL.revokeObjectURL(url);
+      if (url.startsWith('blob:')) urls.push(url);
+      video.src = url;
+      video.playbackRate = speed;
+      video.play().catch(() => {});
+      if (url === vids[i].src && !navigator.onLine) { load.textContent = 'Bu video henüz indirilmedi'; load.hidden = false; }
+    };
+    const toggle = () => (video.paused ? video.play().catch(() => {}) : video.pause());
+    video.addEventListener('play', () => (playBtn.innerHTML = icon('pause')));
+    video.addEventListener('pause', () => (playBtn.innerHTML = icon('play')));
+    playBtn.addEventListener('click', e => { e.stopPropagation(); toggle(); });
+    player.addEventListener('click', toggle);
+    $('#m-speed', player).addEventListener('click', e => {
+      e.stopPropagation();
+      speed = speed === 1 ? 0.5 : speed === 0.5 ? 0.25 : 1;
+      video.playbackRate = speed;
+      e.currentTarget.textContent = String(speed).replace('.', ',') + '×';
+    });
+    $$('.mseg b', player).forEach(b => b.addEventListener('click', e => { e.stopPropagation(); pick(+b.dataset.i); }));
+    pick(0);
+    return () => { alive = false; video.pause(); video.removeAttribute('src'); urls.forEach(u => URL.revokeObjectURL(u)); };
+  }
+
+  box.innerHTML = `<div class="media">
+    <img class="ph" src="${anim.img[0]}" alt="">
+    <img class="ph ph1" src="${anim.img[1]}" alt="">
+    <div class="media-ctl">
+      <button class="mbtn glass" id="m-play" aria-label="Durdur">${icon('pause')}</button>
+      <span class="grow"></span>
+      <span class="mseg glass"><b data-f="0" class="on">Başlangıç</b><b data-f="1">Bitiş</b></span>
+    </div>
+  </div>`;
+  const photo = $('.media', box), playBtn = $('#m-play', photo);
+  let frame = 0, playing = true, timer = null;
+  const setFrame = f => {
+    frame = f;
+    photo.classList.toggle('f1', f === 1);
+    $$('.mseg b', photo).forEach(b => b.classList.toggle('on', +b.dataset.f === f));
+  };
+  const loop = () => { timer = setTimeout(() => { setFrame(1 - frame); loop(); }, 1300); };
+  const setPlaying = p => { playing = p; playBtn.innerHTML = icon(p ? 'pause' : 'play'); clearTimeout(timer); if (p) loop(); };
+  loop();
+  playBtn.addEventListener('click', e => { e.stopPropagation(); setPlaying(!playing); });
+  $$('.mseg b', photo).forEach(b => b.addEventListener('click', e => { e.stopPropagation(); setPlaying(false); setFrame(+b.dataset.f); }));
+  photo.addEventListener('click', () => { setPlaying(false); setFrame(1 - frame); });
+  return () => clearTimeout(timer);
+}
+
+// ═════════════════════════ Hareket detayı
+const drafts = {};
+const LEVELS = { beginner: 'Başlangıç', intermediate: 'Orta', expert: 'İleri' };
+let exTab = 'log';
 function renderEx(id) {
   const ex = getEx(id);
   if (!ex) { location.replace('#/lib'); return; }
-  const region = REGION_BY_ID[ex.region];
-  setHeader(ex.name, {
-    sub: region?.name, back: true,
-    action: ex.custom ? `<button class="link-btn danger" id="del-ex">Sil</button>` : '',
-  });
-
   const anim = animOf(ex);
+  setHeader(ex.name, { back: true, always: true, action: ex.custom ? `<button class="top-btn danger" id="del-ex">Sil</button>` : '' });
   view.innerHTML = `
-    <div class="viewer-wrap">
-      <div id="viewer"></div>
-      ${anim ? `<div class="vhint"><span class="tgt">${esc(anim.target || '')}</span><span>Döndürmek için sürükle</span></div>
-      <div class="viewer-ctl">
-        <button class="vbtn round" id="v-play" aria-label="Durdur">❚❚</button>
-        <button class="vbtn" id="v-speed">1×</button>
-        <span class="grow"></span>
-        <button class="vbtn" id="v-reset">Görünümü sıfırla</button>
-      </div>` : `<div class="viewer-msg">Bu hareket için 3D animasyon seçilmedi.</div>`}
+    <div id="media">${anim ? '' : `<div class="card empty" style="margin-top:6px"><div class="ic">${icon('dumbbell')}</div>Bu hareket için görsel seçilmedi.</div>`}</div>
+    <div class="ex-head">
+      <h1>${esc(ex.name)}</h1>
+      <div class="ex-tags">
+        ${anim?.primary?.includes(REGION_BY_ID[ex.region]?.name) ? '' : `<span class="pill">${esc(REGION_BY_ID[ex.region]?.name || '')}</span>`}
+        ${anim?.primary?.length ? `<span class="pill accent">${icon('target')}${esc(anim.primary.join(', '))}</span>` : ''}
+        ${anim?.videos ? `<span class="pill blue">${icon('video')}Video</span>` : ''}
+        ${anim?.level ? `<span class="pill">${LEVELS[anim.level] || anim.level}</span>` : ''}
+      </div>
     </div>
-    <div class="seg">
-      <button data-t="log">Kayıt</button>
-      <button data-t="how">Nasıl yapılır</button>
-      <button data-t="chart">Grafik</button>
-    </div>
+    <div class="seg"><button data-t="log">Kayıt</button><button data-t="how">Nasıl yapılır</button><button data-t="chart">İlerleme</button></div>
     <div id="pane"></div>`;
-
-  let viewer = null, disposed = false;
-  if (anim) {
-    const box = $('#viewer');
-    import('./viewer3d.js').then(({ Viewer }) => {
-      if (disposed) return;
-      viewer = new Viewer(box);
-      viewer.setExercise(anim);
-    }).catch(err => {
-      console.error(err);
-      box.innerHTML = `<div class="viewer-msg">3D görüntüleyici yüklenemedi.<br><span class="small">İlk açılışta internet bağlantısı gerekir.</span></div>`;
-    });
-    $('#v-play').addEventListener('click', e => {
-      if (!viewer) return;
-      viewer.playing = !viewer.playing;
-      e.currentTarget.textContent = viewer.playing ? '❚❚' : '▶';
-    });
-    const speeds = [1, 0.5, 0.25, 1.5];
-    $('#v-speed').addEventListener('click', e => {
-      if (!viewer) return;
-      viewer.speed = speeds[(speeds.indexOf(viewer.speed) + 1) % speeds.length];
-      e.currentTarget.textContent = String(viewer.speed).replace('.', ',') + '×';
-    });
-    $('#v-reset').addEventListener('click', () => viewer?.resetView());
-  }
-
+  const unmount = anim ? mountMedia($('#media'), anim) : () => {};
   $('#del-ex')?.addEventListener('click', () => {
     const n = setsOf(ex.id).length;
     if (!confirm(`"${ex.name}" silinsin mi?${n ? `\n${n} set kaydı da silinecek.` : ''}`)) return;
@@ -283,7 +519,6 @@ function renderEx(id) {
     save();
     location.replace('#/lib');
   });
-
   const pane = $('#pane');
   const show = t => {
     exTab = t;
@@ -294,80 +529,73 @@ function renderEx(id) {
   };
   $$('.seg button', view).forEach(b => b.addEventListener('click', () => show(b.dataset.t)));
   show(exTab);
-
-  return () => { disposed = true; viewer?.dispose(); };
+  return unmount;
 }
 
 function renderLog(pane, ex) {
   const today = dayKey();
   const all = setsOf(ex.id);
   const todays = all.filter(s => s.date === today).sort((a, b) => a.ts - b.ts);
-  const prevDays = groupByDay(all.filter(s => s.date !== today));
-  const last = prevDays[0];
+  const last = groupByDay(all.filter(s => s.date !== today))[0];
   const best = bestSet(ex, all);
   const type = ex.type || 'weight';
+  const planItem = todayPlan().items.find(i => i.ex.id === ex.id);
 
   if (!drafts[ex.id]) {
     const ref = todays.at(-1) || last?.[1].at(-1);
     drafts[ex.id] = ref ? { w: ref.w, r: ref.r } : { w: type === 'weight' ? 20 : 0, r: type === 'time' ? 30 : 10 };
   }
   const d = drafts[ex.id];
-  const wLabel = type === 'weight' ? 'Ağırlık (kg)' : 'Ek ağırlık (kg)';
-  const rLabel = type === 'time' ? 'Süre (sn)' : 'Tekrar';
   const rStep = type === 'time' ? 5 : 1;
+  const st = sessionStats(todays);
+  const prevFor = i => (last?.[1][i] ? fmtSet(ex, last[1][i]) : '—');
 
   pane.innerHTML = `
-    <div class="info-grid">
-      <div class="card"><span class="muted small">Geçen sefer${last ? ' · ' + daysAgo(last[0]) : ''}</span>
-        <b>${last ? esc(last[1].map(s => fmtSet(ex, s).replace(' kg', '')).slice(0, 3).join(', ')) + (last[1].length > 3 ? '…' : '') : '—'}</b></div>
-      <div class="card"><span class="muted small">Rekor 🏆</span>
-        <b>${best ? esc(fmtSet(ex, best)) : '—'}</b>
-        ${best && type === 'weight' && best.r > 1 ? `<span class="muted small">Tahmini 1RM: ${fmtN(Math.round(e1rm(best.w, best.r)))} kg</span>` : ''}</div>
+    <div class="stat-pair">
+      <div class="card"><div class="card-label">Geçen sefer</div><b class="num">${last ? esc(fmtSet(ex, last[1].at(-1))) : '—'}</b><div class="sm">${last ? `${last[1].length} set · ${daysAgo(last[0])}` : 'Kayıt yok'}</div></div>
+      <div class="card"><div class="card-label">Rekor</div><b class="num">${best ? esc(fmtSet(ex, best)) : '—'}</b><div class="sm">${best && type === 'weight' && best.r > 1 ? `Tahmini 1RM ${fmtInt(e1rm(best.w, best.r))} kg` : best ? daysAgo(best.date) : 'Kayıt yok'}</div></div>
     </div>
-
-    <div class="card" style="margin-top:10px">
-      <div class="inputs">
-        <div class="field"><label>${wLabel}</label>
-          <div class="stepper"><button data-s="w" data-d="-1">−</button>
-          <input id="in-w" inputmode="decimal" value="${fmtN(d.w)}"><button data-s="w" data-d="1">+</button></div></div>
-        <div class="field"><label>${rLabel}</label>
-          <div class="stepper"><button data-s="r" data-d="-1">−</button>
-          <input id="in-r" inputmode="numeric" value="${d.r}"><button data-s="r" data-d="1">+</button></div></div>
+    ${planItem ? `<div class="target-hint">${icon('target')} Bugünün hedefi: <b>${planItem.scheme}</b></div>` : ''}
+    <div class="sets">
+      <div class="sets-h"><span>Set</span><span>Önceki</span><span>${type === 'time' ? 'Süre' : 'Kg'}</span><span>${type === 'time' ? 'Kg' : 'Tekrar'}</span><span></span></div>
+      ${todays.length ? todays.map((s, i) => `<div class="set-r"><span class="n">${i + 1}</span><span class="p">${esc(prevFor(i))}</span>
+        <span class="v">${type === 'time' ? `${s.r} sn` : fmtN(s.w)}</span><span class="v">${type === 'time' ? (s.w ? fmtN(s.w) : '—') : s.r}</span>
+        <button class="del" data-id="${s.id}" aria-label="Seti sil">${icon('x')}</button></div>`).join('')
+      : `<div class="sets-empty">Bugün bu hareket için set yok.${last ? ` Geçen sefer ${last[1].length} set yaptın.` : ''}</div>`}
+    </div>
+    <div class="composer card">
+      <div class="steppers">
+        <div class="stepper"><label>${type === 'weight' ? 'Ağırlık · kg' : 'Ek ağırlık · kg'}</label><div class="ctl"><button data-s="w" data-d="-1" aria-label="Azalt">${icon('minus')}</button>
+          <input id="in-w" inputmode="decimal" value="${fmtN(d.w, 2)}"><button data-s="w" data-d="1" aria-label="Artır">${icon('plus')}</button></div></div>
+        <div class="stepper"><label>${type === 'time' ? 'Süre · sn' : 'Tekrar'}</label><div class="ctl"><button data-s="r" data-d="-1" aria-label="Azalt">${icon('minus')}</button>
+          <input id="in-r" inputmode="numeric" value="${d.r}"><button data-s="r" data-d="1" aria-label="Artır">${icon('plus')}</button></div></div>
       </div>
-      <button class="btn" id="add-set" style="margin-top:12px">Set ekle</button>
-    </div>
-
-    <div class="section-title">Bugün · ${todays.length} set</div>
-    <div class="card log-sets" style="margin-top:0;padding-top:4px;padding-bottom:4px">
-      ${todays.length ? todays.map((s, i) => `<div class="log-set"><span class="n">${i + 1}</span>
-        <span class="v">${esc(fmtSet(ex, s))}</span><button class="del" data-id="${s.id}" aria-label="Sil">×</button></div>`).join('')
-      : '<div class="muted small" style="padding:10px 2px">Henüz set yok.</div>'}
+      <button class="btn" id="add-set">${icon('check')} ${todays.length + 1}. seti kaydet</button>
+      ${todays.length ? `<div class="faint small" style="text-align:center;margin-top:10px">Bu harekette ~${fmtInt(st.kcal)} kcal · ${fmtInt(st.min)} dk</div>` : ''}
     </div>`;
 
   const inW = $('#in-w', pane), inR = $('#in-r', pane);
-  inW.addEventListener('change', () => { d.w = Math.max(0, num(inW.value)); inW.value = fmtN(d.w); });
+  inW.addEventListener('change', () => { d.w = Math.max(0, num(inW.value)); inW.value = fmtN(d.w, 2); });
   inR.addEventListener('change', () => { d.r = Math.max(0, Math.round(num(inR.value))); inR.value = d.r; });
   $$('.stepper button', pane).forEach(b => b.addEventListener('click', () => {
     const dir = +b.dataset.d;
-    if (b.dataset.s === 'w') { d.w = Math.max(0, Math.round((num(inW.value) + dir * db.settings.step) * 100) / 100); inW.value = fmtN(d.w); }
+    if (b.dataset.s === 'w') { d.w = Math.max(0, Math.round((num(inW.value) + dir * db.settings.step) * 100) / 100); inW.value = fmtN(d.w, 2); }
     else { d.r = Math.max(0, Math.round(num(inR.value)) + dir * rStep); inR.value = d.r; }
   }));
-
   $('#add-set', pane).addEventListener('click', () => {
     d.w = Math.max(0, num(inW.value));
     d.r = Math.max(0, Math.round(num(inR.value)));
-    if (!d.r) { toast(type === 'time' ? 'Süre gir' : 'Tekrar sayısı gir'); return; }
+    if (!d.r) return toast(type === 'time' ? 'Süre gir' : 'Tekrar sayısı gir', 'info');
     const prevBest = bestSet(ex, all);
     const s = { id: uid(), exId: ex.id, date: today, ts: Date.now(), w: d.w, r: d.r };
     db.sets.push(s);
     save();
-    if (prevBest && setScore(ex, s) > setScore(ex, prevBest)) toast('🏆 Yeni rekor!');
-    else toast('✓ Set kaydedildi');
+    if (prevBest && setScore(ex, s) > setScore(ex, prevBest)) toast('Yeni rekor!', 'trophy');
+    else toast('Set kaydedildi');
     unlockAudio();
     startRest(db.settings.rest);
     renderLog(pane, ex);
   });
-
   $$('.del', pane).forEach(b => b.addEventListener('click', () => {
     if (!confirm('Bu set silinsin mi?')) return;
     db.sets = db.sets.filter(s => s.id !== b.dataset.id);
@@ -378,29 +606,29 @@ function renderLog(pane, ex) {
 
 function renderHow(pane, ex, anim) {
   const src = ex.steps ? ex : anim;
-  if (!src?.steps) {
-    pane.innerHTML = `<div class="card empty">Bu özel hareket için açıklama yok.${anim ? `<br>Animasyon: ${esc(anim.name)}` : ''}</div>`;
-    return;
-  }
+  if (!src?.steps) { pane.innerHTML = emptyBox('info', 'Açıklama yok', 'Bu özel hareket için açıklama eklenmedi.'); return; }
+  const met = src.met || 5;
   pane.innerHTML = `
-    <div class="card"><span class="muted small">Çalışan kaslar</span><div style="font-weight:650;margin-top:2px">${esc(src.target)}</div></div>
-    <div class="section-title">Adımlar</div>
+    <div class="card">
+      <div class="kv"><span>Ana kaslar</span><span>${esc(src.primary.join(', '))}</span></div>
+      ${src.secondary?.length ? `<div class="kv"><span>Yardımcı kaslar</span><span>${esc(src.secondary.join(', '))}</span></div>` : ''}
+      ${src.level ? `<div class="kv"><span>Seviye</span><span>${LEVELS[src.level] || src.level}</span></div>` : ''}
+      <div class="kv"><span>Yoğunluk</span><span>${met >= 6 ? 'Yüksek' : met >= 4.5 ? 'Orta' : 'Düşük'} · set başı ~${fmtInt(met * bodyKg() * 130 / 3600)} kcal</span></div>
+    </div>
+    <div class="sec"><h2>Adım adım</h2></div>
     <div class="card"><ol class="steps">${src.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol></div>
-    ${src.tips?.length ? `<div class="section-title">İpuçları</div><div class="card"><ul class="tips">${src.tips.map(s => `<li>${esc(s)}</li>`).join('')}</ul></div>` : ''}`;
+    ${src.tips?.length ? `<div class="sec"><h2>İpuçları</h2></div><div class="card">${src.tips.map(s => `<div class="tip">${icon('bulb')}<span>${esc(s)}</span></div>`).join('')}</div>` : ''}`;
 }
 
-// ───────────────────────── Grafik
 let chartMetric = 'max';
 function renderChart(pane, ex) {
   const type = ex.type || 'weight';
   const days = groupByDay(setsOf(ex.id)).reverse();
-  const metrics = type === 'weight'
+  const list = type === 'weight'
     ? [['max', 'Maks ağırlık', 'kg'], ['1rm', 'Tahmini 1RM', 'kg'], ['vol', 'Hacim', 'kg']]
-    : type === 'time' ? [['max', 'En uzun süre', 'sn'], ['vol', 'Toplam süre', 'sn']]
-      : [['max', 'En çok tekrar', ''], ['vol', 'Toplam tekrar', '']];
-  if (!metrics.some(m => m[0] === chartMetric)) chartMetric = metrics[0][0];
-  const metric = metrics.find(m => m[0] === chartMetric);
-
+    : type === 'time' ? [['max', 'En uzun', 'sn'], ['vol', 'Toplam', 'sn']] : [['max', 'En çok tekrar', ''], ['vol', 'Toplam tekrar', '']];
+  if (!list.some(m => m[0] === chartMetric)) chartMetric = list[0][0];
+  const metric = list.find(m => m[0] === chartMetric);
   const value = ss => {
     if (type === 'weight') {
       if (chartMetric === 'max') return Math.max(...ss.map(s => s.w));
@@ -410,165 +638,321 @@ function renderChart(pane, ex) {
     return chartMetric === 'max' ? Math.max(...ss.map(s => s.r)) : ss.reduce((a, s) => a + s.r, 0);
   };
   const points = days.map(([d, ss]) => ({ d, v: value(ss) }));
-
   pane.innerHTML = `
-    <div class="chips" style="margin-bottom:10px">${metrics.map(m => `<button class="chip ${m[0] === chartMetric ? 'on' : ''}" data-m="${m[0]}">${m[1]}</button>`).join('')}</div>
-    <div class="card">${points.length >= 1 ? '<canvas class="chart"></canvas>' : '<div class="empty">Grafik için en az bir antrenman kaydı gerekli.</div>'}</div>
-    ${days.length ? `<div class="section-title">Tüm antrenmanlar</div><div class="list">
-      ${[...days].reverse().map(([d, ss]) => `<div class="item" style="display:block">
-        <div class="row"><div class="grow name">${esc(fmtDay(d, { day: 'numeric', month: 'long', year: 'numeric' }))}</div><span class="muted small">${ss.length} set</span></div>
-        <div class="set-chips">${ss.map(s => `<span class="set-chip">${esc(fmtSet(ex, s))}</span>`).join('')}</div></div>`).join('')}</div>` : ''}`;
-
+    <div class="chips" style="margin-bottom:10px">${list.map(m => `<button class="chip ${m[0] === chartMetric ? 'on' : ''}" data-m="${m[0]}">${m[1]}</button>`).join('')}</div>
+    ${points.length ? `<div class="card"><canvas class="chart"></canvas></div>` : emptyBox('bars', 'Henüz veri yok', 'İlk setini kaydettiğinde ilerlemen burada görünecek.')}
+    ${days.length ? `<div class="sec"><h2>Antrenmanlar</h2></div><div class="list">${[...days].reverse().map(([d, ss]) => `<div class="item" style="display:block">
+      <div class="row"><div class="grow name">${esc(fmtDay(d, { day: 'numeric', month: 'long', year: 'numeric' }))}</div><span class="faint small">${ss.length} set</span></div>
+      <div class="set-chips">${ss.map(s => `<span class="set-chip">${esc(fmtSet(ex, s))}</span>`).join('')}</div></div>`).join('')}</div>` : ''}`;
   $$('.chip', pane).forEach(c => c.addEventListener('click', () => { chartMetric = c.dataset.m; renderChart(pane, ex); }));
   const canvas = $('canvas', pane);
   if (canvas) drawChart(canvas, points, metric[2]);
 }
 
-function drawChart(canvas, pts, unit) {
-  const dpr = Math.min(window.devicePixelRatio || 1, 3);
+function drawChart(canvas, pts, unit, color) {
+  const dpr = Math.min(devicePixelRatio || 1, 3);
   const W = canvas.clientWidth, H = canvas.clientHeight;
   canvas.width = W * dpr; canvas.height = H * dpr;
   const c = canvas.getContext('2d');
   c.scale(dpr, dpr);
   const css = getComputedStyle(document.documentElement);
-  const accent = css.getPropertyValue('--accent').trim();
-  const muted = css.getPropertyValue('--muted').trim();
-  const line = css.getPropertyValue('--line').trim();
-
-  const L = 44, R = 12, T = 14, B = 26;
+  const accent = color || css.getPropertyValue('--accent').trim();
+  const muted = css.getPropertyValue('--text-3').trim();
+  const L = 40, R = 14, T = 22, B = 24;
   let min = Math.min(...pts.map(p => p.v)), max = Math.max(...pts.map(p => p.v));
-  if (min === max) { min = min * 0.9; max = max * 1.1 || 1; }
-  const padv = (max - min) * 0.12; min = Math.max(0, min - padv); max += padv;
+  if (min === max) { min *= 0.9; max = max * 1.1 || 1; }
+  const pad = (max - min) * 0.15; min = Math.max(0, min - pad); max += pad;
   const x = i => (pts.length === 1 ? L + (W - L - R) / 2 : L + (i * (W - L - R)) / (pts.length - 1));
   const y = v => T + (1 - (v - min) / (max - min)) * (H - T - B);
-
-  c.font = '11px -apple-system, sans-serif';
-  c.fillStyle = muted; c.strokeStyle = line; c.lineWidth = 1;
+  c.font = '500 11px -apple-system, sans-serif';
+  c.fillStyle = muted; c.strokeStyle = 'rgba(255,255,255,.06)'; c.lineWidth = 1;
   c.textAlign = 'right'; c.textBaseline = 'middle';
   for (let i = 0; i <= 3; i++) {
     const v = min + ((max - min) * i) / 3, yy = y(v);
     c.beginPath(); c.moveTo(L, yy); c.lineTo(W - R, yy); c.stroke();
-    c.fillText(fmtN(Math.round(v)), L - 8, yy);
+    c.fillText(fmtN(v, v < 10 ? 1 : 0), L - 8, yy);
   }
   c.textBaseline = 'top';
   const label = p => fmtDay(p.d, { day: 'numeric', month: 'short' });
   c.textAlign = 'left'; c.fillText(label(pts[0]), L, H - B + 8);
   if (pts.length > 1) { c.textAlign = 'right'; c.fillText(label(pts.at(-1)), W - R, H - B + 8); }
-
+  const path = () => { c.beginPath(); pts.forEach((p, i) => (i ? c.lineTo(x(i), y(p.v)) : c.moveTo(x(i), y(p.v)))); };
   if (pts.length > 1) {
     const g = c.createLinearGradient(0, T, 0, H - B);
-    g.addColorStop(0, accent + '55'); g.addColorStop(1, accent + '00');
-    c.beginPath(); pts.forEach((p, i) => (i ? c.lineTo(x(i), y(p.v)) : c.moveTo(x(i), y(p.v))));
-    c.lineTo(x(pts.length - 1), H - B); c.lineTo(x(0), H - B); c.closePath();
-    c.fillStyle = g; c.fill();
-    c.beginPath(); pts.forEach((p, i) => (i ? c.lineTo(x(i), y(p.v)) : c.moveTo(x(i), y(p.v))));
-    c.strokeStyle = accent; c.lineWidth = 2.5; c.lineJoin = 'round'; c.stroke();
+    g.addColorStop(0, accent + '40'); g.addColorStop(1, accent + '00');
+    path(); c.lineTo(x(pts.length - 1), H - B); c.lineTo(x(0), H - B); c.closePath(); c.fillStyle = g; c.fill();
+    path(); c.strokeStyle = accent; c.lineWidth = 2.5; c.lineJoin = 'round'; c.stroke();
   }
-  pts.forEach((p, i) => {
-    c.beginPath(); c.arc(x(i), y(p.v), pts.length > 30 ? 2 : 3.5, 0, Math.PI * 2);
-    c.fillStyle = accent; c.fill();
-  });
+  pts.forEach((p, i) => { c.beginPath(); c.arc(x(i), y(p.v), pts.length > 30 ? 2 : 3.5, 0, 7); c.fillStyle = accent; c.fill(); });
   const lp = pts.at(-1);
   c.fillStyle = css.getPropertyValue('--text').trim();
-  c.font = '600 12px -apple-system, sans-serif';
+  c.font = '700 12px -apple-system, sans-serif';
   c.textAlign = pts.length > 1 ? 'right' : 'center'; c.textBaseline = 'bottom';
-  c.fillText(`${fmtN(Math.round(lp.v * 10) / 10)} ${unit}`, Math.min(x(pts.length - 1), W - R), y(lp.v) - 7);
+  c.fillText(`${fmtN(lp.v)} ${unit}`, Math.min(x(pts.length - 1), W - R), y(lp.v) - 8);
 }
 
-// ───────────────────────── Geçmiş
+// ═════════════════════════ Geçmiş
 function renderHist() {
   setHeader('Geçmiş');
   const days = groupByDay(db.sets);
   const count = {};
   for (const [d, ss] of days) count[d] = ss.length;
-
-  // Son 16 haftanın ısı haritası (Pazartesi başlangıçlı)
-  const now = new Date();
-  const monday = new Date(now); monday.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  const monday = weekStart();
   const start = new Date(monday); start.setDate(monday.getDate() - 15 * 7);
-  let cells = '';
   const todayK = dayKey();
+  let cells = '';
   for (let i = 0; i < 16 * 7; i++) {
     const dt = new Date(start); dt.setDate(start.getDate() + i);
     const k = dayKey(dt);
     if (k > todayK) { cells += '<i style="visibility:hidden"></i>'; continue; }
     const n = count[k] || 0;
-    cells += `<i class="${n ? (n < 8 ? 'l1' : n < 16 ? 'l2' : 'l3') : ''} ${k === todayK ? 'today' : ''}" title="${k}"></i>`;
+    cells += `<i class="${n ? (n < 8 ? 'l1' : n < 16 ? 'l2' : 'l3') : ''} ${k === todayK ? 'today' : ''}"></i>`;
   }
-  const weekStart = dayKey(monday);
-  const thisWeek = days.filter(([d]) => d >= weekStart).length;
-
-  view.innerHTML = `
-    <div class="stats">
-      <div class="stat"><b>${thisWeek}</b><span>Bu hafta</span></div>
-      <div class="stat"><b>${days.length}</b><span>Toplam gün</span></div>
-      <div class="stat"><b>${db.sets.length}</b><span>Toplam set</span></div>
+  const ws = dayKey(monday);
+  const thisWeek = days.filter(([d]) => d >= ws).length;
+  const totalKcal = days.reduce((a, [, ss]) => a + sessionStats(ss).kcal, 0);
+  view.innerHTML = pageHead(`${days.length} antrenman`, 'Geçmiş') + `
+    <div class="stats3">
+      <div class="card"><b class="num">${thisWeek}</b><span>Bu hafta</span></div>
+      <div class="card"><b class="num">${days.length}</b><span>Toplam gün</span></div>
+      <div class="card"><b class="num">${totalKcal >= 10000 ? fmtN(totalKcal / 1000) + 'k' : fmtInt(totalKcal)}</b><span>Toplam kcal</span></div>
     </div>
-    <div class="card" style="margin-top:10px"><div class="heat">${cells}</div>
-      <div class="muted small" style="margin-top:8px">Son 16 hafta</div></div>
-    ${days.length ? '<div class="section-title">Antrenmanlar</div>' : '<div class="card empty" style="margin-top:14px"><div class="big">📅</div>Henüz antrenman kaydı yok.</div>'}
+    <div class="card" style="margin-top:10px"><div class="heat">${cells}</div><div class="faint small" style="margin-top:10px">Son 16 hafta</div></div>
+    ${days.length ? '<div class="sec"><h2>Antrenmanlar</h2></div>' : `<div style="margin-top:14px">${emptyBox('calendar', 'Henüz antrenman yok', 'Bir hareket seçip ilk setini kaydet.')}</div>`}
     ${days.map(([d, ss]) => {
+      const st = sessionStats(ss);
       const byEx = new Map();
       for (const s of ss) (byEx.get(s.exId) || byEx.set(s.exId, []).get(s.exId)).push(s);
-      const regions = [...new Set([...byEx.keys()].map(id => getEx(id)?.region).filter(Boolean))];
-      const vol = ss.reduce((a, s) => a + (getEx(s.exId)?.type === 'weight' ? s.w * s.r : 0), 0);
-      return `<details class="card day"><summary class="row">
-          <div class="grow"><div style="font-weight:650">${esc(fmtDay(d, { weekday: 'short', day: 'numeric', month: 'long', year: 'numeric' }))}</div>
-          <div class="muted small">${byEx.size} hareket · ${ss.length} set${vol ? ' · ' + fmtN(Math.round(vol)) + ' kg' : ''}</div></div>
-          <div class="row" style="gap:4px">${regions.map(r => `<span class="dot" style="background:${REGION_BY_ID[r].color}"></span>`).join('')}</div>
+      const dt = parseDay(d);
+      return `<details class="day"><summary>
+          <div class="day-date"><b>${dt.getDate()}</b><span>${dt.toLocaleDateString('tr-TR', { month: 'short' })}</span></div>
+          <div class="grow"><div class="card-title">${esc(fmtDay(d, { weekday: 'long' }))}</div>
+          <div class="faint small num">${byEx.size} hareket · ${st.sets} set · ${fmtInt(st.min)} dk</div></div>
+          <span class="pill fire num">${icon('flame')}${fmtInt(st.kcal)}</span>
         </summary>
         <div class="day-body">${[...byEx.entries()].map(([id, list]) => {
           const ex = getEx(id);
-          return `<a class="day-ex" style="display:block;color:inherit;text-decoration:none" href="#/ex/${encodeURIComponent(id)}">
-            <div style="font-weight:600">${esc(ex?.name || 'Silinmiş hareket')}</div>
-            <div class="set-chips" style="margin-top:4px">${list.map(s => `<span class="set-chip">${esc(fmtSet(ex, s))}</span>`).join('')}</div></a>`;
+          return `<a class="day-ex" href="#/ex/${encodeURIComponent(id)}"><div style="font-weight:600">${esc(ex?.name || 'Silinmiş hareket')}</div>
+            <div class="set-chips">${list.map(s => `<span class="set-chip">${esc(fmtSet(ex, s))}</span>`).join('')}</div></a>`;
         }).join('')}</div></details>`;
     }).join('')}`;
 }
 
-// ───────────────────────── Ayarlar
-function renderSettings() {
-  setHeader('Ayarlar');
-  const standalone = matchMedia('(display-mode: standalone)').matches || navigator.standalone;
+// ═════════════════════════ Profil
+function renderProfile() {
+  setHeader('Profil');
+  const p = db.profile, m = metrics(), w = currentWeight();
   const opt = (vals, cur, fmt) => vals.map(v => `<option value="${v}" ${v === cur ? 'selected' : ''}>${fmt(v)}</option>`).join('');
-  view.innerHTML = `
-    <div class="list">
-      <div class="setting"><span>Dinlenme süresi</span>
-        <select id="s-rest">${opt([0, 45, 60, 90, 120, 150, 180, 240], db.settings.rest, v => (v ? `${Math.floor(v / 60)}:${pad2(v % 60)}` : 'Kapalı'))}</select></div>
-      <div class="setting"><span>Ağırlık artış adımı</span>
-        <select id="s-step">${opt([0.5, 1, 1.25, 2, 2.5, 5], db.settings.step, v => fmtN(v) + ' kg')}</select></div>
-    </div>
+  const split = splitFor(p.days || 3);
 
-    <div class="section-title">Yedekleme</div>
+  let html = pageHead(profileReady() ? `${GOALS[p.goal]} · haftada ${p.days} gün` : 'Kişisel bilgiler', 'Profil') + `
+    <div class="form">
+      <div class="field"><label>Cinsiyet</label><div class="mini-seg" id="p-sex">
+        <button data-v="m" class="${p.sex === 'm' ? 'on' : ''}">Erkek</button><button data-v="f" class="${p.sex === 'f' ? 'on' : ''}">Kadın</button></div></div>
+      <div class="field"><label for="p-age">Yaş</label><input id="p-age" inputmode="numeric" placeholder="—" value="${p.age ?? ''}"><span class="unit"></span></div>
+      <div class="field"><label for="p-h">Boy</label><input id="p-h" inputmode="numeric" placeholder="—" value="${p.height ?? ''}"><span class="unit">cm</span></div>
+      <div class="field"><label for="p-w">Kilo</label><input id="p-w" inputmode="decimal" placeholder="—" value="${w ? fmtN(w) : ''}"><span class="unit">kg</span></div>
+      <div class="field"><label for="p-t">Hedef kilo</label><input id="p-t" inputmode="decimal" placeholder="—" value="${p.target ? fmtN(p.target) : ''}"><span class="unit">kg</span></div>
+      <div class="field"><label for="p-act">Aktivite</label><select id="p-act">${opt(ACTIVITY.map(a => a[0]), p.activity, v => ACTIVITY.find(a => a[0] === v)[1])}</select></div>
+      <div class="field"><label>Hedef</label><div class="mini-seg" id="p-goal">${Object.keys(GOALS).map(k => `<button data-v="${k}" class="${p.goal === k ? 'on' : ''}">${GOAL_SHORT[k]}</button>`).join('')}</div></div>
+      <div class="field"><label for="p-days">Haftalık antrenman</label><select id="p-days">${opt([2, 3, 4, 5, 6], p.days, v => `${v} gün`)}</select></div>
+    </div>`;
+
+  if (!m) {
+    html += `<div class="card" style="margin-top:10px"><div class="row">${icon('info')}<div class="grow muted small">Cinsiyet, yaş, boy ve kilonu girdiğinde kalori ihtiyacın, vücut analizin ve sana özel öneriler burada görünecek.</div></div></div>`;
+  } else {
+    const bmiPos = clamp(((m.bmi - 15) / (40 - 15)) * 100, 0, 100);
+    const kP = m.protein * 4, kF = m.fat * 9, kC = m.carbs * 4, tot = kP + kF + kC;
+    html += `
+      <div class="sec"><h2>Vücut analizi</h2></div>
+      <div class="metric-grid">
+        <div class="metric wide"><div class="row"><div class="grow"><div class="lbl">Vücut kitle indeksi (VKİ)</div>
+          <b class="num">${fmtN(m.bmi)}</b></div><span class="pill" style="color:${m.bmiCat[1]}">${m.bmiCat[0]}</span></div>
+          <div class="bmi-bar"><i style="left:${bmiPos}%"></i></div>
+          <div class="bmi-scale"><span>15</span><span>18,5</span><span>25</span><span>30</span><span>40</span></div>
+          <div class="note" style="margin-top:10px">Boyuna göre sağlıklı kilo aralığı: <b>${fmtInt(m.idealMin)}–${fmtInt(m.idealMax)} kg</b></div></div>
+        <div class="metric"><div class="lbl">Tahmini yağ oranı</div><b class="num">%${fmtInt(m.bodyFat)}</b><div class="note">VKİ'ye dayalı kaba tahmin</div></div>
+        <div class="metric"><div class="lbl">Bazal metabolizma</div><b class="num">${fmtInt(m.bmr)}<small>kcal</small></b><div class="note">Dinlenirken harcanan</div></div>
+      </div>
+
+      <div class="sec"><h2>Enerji ve beslenme</h2></div>
+      <div class="metric-grid">
+        <div class="metric"><div class="lbl">Günlük harcama</div><b class="num">${fmtInt(m.tdee)}<small>kcal</small></b><div class="note">Kilonu korumak için</div></div>
+        <div class="metric" style="border-color:rgba(212,245,60,.28)"><div class="lbl">Günlük hedefin</div><b class="num" style="color:var(--accent)">${fmtInt(m.goalKcal)}<small>kcal</small></b>
+          <div class="note">${p.goal === 'lose' ? '~0,5 kg/hafta yağ kaybı' : p.goal === 'gain' ? '~0,25 kg/hafta kontrollü artış' : 'Kilonu korursun'}</div></div>
+        <div class="metric wide"><div class="lbl">Günlük makro dağılımı</div>
+          <div class="macro-bar" style="margin-top:12px"><i style="width:${(kP / tot) * 100}%;background:var(--accent)"></i><i style="width:${(kF / tot) * 100}%;background:var(--fire)"></i><i style="width:${(kC / tot) * 100}%;background:var(--blue)"></i></div>
+          <div class="legend">
+            <div><i style="background:var(--accent)"></i>Protein<b class="num">${fmtInt(m.protein)} g</b></div>
+            <div><i style="background:var(--fire)"></i>Yağ<b class="num">${fmtInt(m.fat)} g</b></div>
+            <div><i style="background:var(--blue)"></i>Karbonhidrat<b class="num">${fmtInt(m.carbs)} g</b></div>
+          </div></div>
+        <div class="metric"><div class="lbl">Su</div><b class="num">${fmtN(m.water)}<small>L / gün</small></b><div class="note">Antrenman günü +0,5 L</div></div>
+        <div class="metric"><div class="lbl">Hedef kiloya</div><b class="num">${m.weeks ? `~${m.weeks}<small>hafta</small>` : '—'}</b><div class="note">${p.target ? `${fmtN(p.target)} kg hedefi` : 'Hedef kilo girilmedi'}</div></div>
+      </div>
+
+      <div class="sec"><h2>Sana özel öneriler</h2></div>
+      <div class="card">${recommendations(m, split).map(r => `<div class="reco"><div class="ic" style="background:${r.bg};color:${r.c}">${icon(r.i)}</div>
+        <div class="grow"><b>${esc(r.t)}</b><p>${esc(r.d)}</p></div></div>`).join('')}</div>
+      <div class="disclaimer">Hesaplamalar Mifflin-St Jeor formülüne ve genel spor bilimi önerilerine dayanır; tıbbi tavsiye değildir. Sağlık sorunun varsa bir uzmana danış.</div>`;
+  }
+
+  if (db.weights.length) {
+    html += `<div class="sec"><h2>Kilo takibi</h2><span class="faint small">${db.weights.length} ölçüm</span></div>
+      <div class="card">${db.weights.length > 1 ? '<canvas class="chart" id="w-chart"></canvas>' : `<div class="muted small">Kilonu farklı günlerde güncelledikçe burada grafik oluşur. Son ölçüm: <b>${fmtN(w)} kg</b></div>`}</div>`;
+  }
+
+  html += `
+    <div class="sec"><h2>Ayarlar</h2></div>
+    <div class="form">
+      <div class="setting"><span>Dinlenme süresi</span><select id="s-rest">${opt([0, 45, 60, 90, 120, 150, 180, 240], db.settings.rest, v => (v ? `${Math.floor(v / 60)}:${pad2(v % 60)}` : 'Kapalı'))}</select></div>
+      <div class="setting"><span>Ağırlık artış adımı</span><select id="s-step">${opt([0.5, 1, 1.25, 2, 2.5, 5], db.settings.step, v => fmtN(v, 2) + ' kg')}</select></div>
+    </div>
+    <div class="sec"><h2>Çevrimdışı videolar</h2></div>
+    <div id="offline-slot"></div>
+    <div class="sec"><h2>Yedekleme</h2></div>
     <div class="card">
-      <div class="muted small" style="margin-bottom:12px">Veriler yalnızca bu telefonda saklanır. Arada bir yedek alıp iCloud Drive'a kaydetmen önerilir.</div>
-      <button class="btn secondary" id="b-export">Yedek al (.json)</button>
-      <button class="btn secondary" id="b-import">Yedeği geri yükle</button>
+      <div class="muted small" style="margin-bottom:12px">Tüm veriler yalnızca bu telefonda saklanır. Düzenli yedek alıp iCloud Drive'a kaydet.</div>
+      <button class="btn ghost" id="b-export">${icon('download')} Yedek al</button>
+      <button class="btn ghost" id="b-import">Yedeği geri yükle</button>
       <input type="file" id="f-import" accept="application/json,.json" hidden>
     </div>
+    <div class="sec"><h2>Kaynaklar</h2></div>
+    <div class="card small muted" style="line-height:1.6">
+      Videolar: Goulart, <a class="lnk" href="https://wger.de" target="_blank" rel="noopener">wger.de</a> — CC BY-SA 4.0 (kısaltıldı, yeniden kodlandı).<br>
+      Fotoğraflar: <a class="lnk" href="https://github.com/yuhonas/free-exercise-db" target="_blank" rel="noopener">free-exercise-db</a> — kamu malı.
+    </div>
+    <div style="margin-top:22px"><button class="btn danger" id="b-reset">Tüm verileri sil</button></div>
+    <div class="faint small" style="text-align:center;margin-top:14px">${db.sets.length} set · ${db.custom.length} özel hareket</div>`;
+  view.innerHTML = html;
 
-    ${standalone ? '' : `<div class="section-title">Ana ekrana ekle</div>
-    <div class="card small">Safari'de alttaki <b>Paylaş</b> düğmesine dokun → <b>Ana Ekrana Ekle</b>. Uygulama tam ekran ve çevrimdışı çalışır.</div>`}
-
-    <div class="section-title">Tehlikeli bölge</div>
-    <button class="btn danger" id="b-reset">Tüm verileri sil</button>
-    <div class="muted small" style="text-align:center;margin-top:18px">${db.sets.length} set · ${db.custom.length} özel hareket</div>`;
-
+  const rerender = () => { const y = scrollY; renderProfile(); scrollTo(0, y); };
+  const bindNum = (sel, fn) => $(sel).addEventListener('change', e => { fn(num(e.target.value)); save(); rerender(); });
+  $$('#p-sex button').forEach(b => b.addEventListener('click', () => { p.sex = b.dataset.v; save(); rerender(); }));
+  $$('#p-goal button').forEach(b => b.addEventListener('click', () => { p.goal = b.dataset.v; save(); rerender(); }));
+  bindNum('#p-age', v => (p.age = v ? clamp(Math.round(v), 12, 100) : null));
+  bindNum('#p-h', v => (p.height = v ? clamp(Math.round(v), 120, 230) : null));
+  bindNum('#p-t', v => (p.target = v ? clamp(v, 30, 250) : null));
+  bindNum('#p-w', v => {
+    if (!v) return;
+    const kg = clamp(v, 30, 300), today = dayKey();
+    const e = db.weights.find(x => x.date === today);
+    if (e) e.kg = kg; else db.weights.push({ date: today, kg });
+  });
+  $('#p-act').addEventListener('change', e => { p.activity = +e.target.value; save(); rerender(); });
+  $('#p-days').addEventListener('change', e => { p.days = +e.target.value; save(); rerender(); });
   $('#s-rest').addEventListener('change', e => { db.settings.rest = +e.target.value; save(); });
   $('#s-step').addEventListener('change', e => { db.settings.step = +e.target.value; save(); });
   $('#b-export').addEventListener('click', exportData);
   $('#b-import').addEventListener('click', () => $('#f-import').click());
   $('#f-import').addEventListener('change', e => importData(e.target.files[0]));
   $('#b-reset').addEventListener('click', () => {
-    if (!confirm('Tüm set kayıtları ve özel hareketler silinecek. Emin misin?')) return;
+    if (!confirm('Tüm set kayıtları, kilo ölçümleri ve özel hareketler silinecek. Emin misin?')) return;
     if (!confirm('Bu işlem geri alınamaz. Son kez onaylıyor musun?')) return;
-    db = { sets: [], custom: [], settings: db.settings };
-    save(); toast('Veriler silindi'); renderSettings();
+    db = { sets: [], custom: [], weights: [], settings: db.settings, profile: db.profile };
+    save(); toast('Veriler silindi'); rerender();
   });
+  const wc = $('#w-chart');
+  if (wc) drawChart(wc, [...db.weights].sort((a, b) => (a.date < b.date ? -1 : 1)).map(x => ({ d: x.date, v: x.kg })), 'kg',
+    getComputedStyle(document.documentElement).getPropertyValue('--blue').trim());
+  offlineCard($('#offline-slot'), false);
 }
 
+function recommendations(m, split) {
+  const p = db.profile, g = p.goal, out = [];
+  out.push({
+    i: 'fork', c: 'var(--fire)', bg: 'var(--fire-soft)', t: `Günde ~${fmtInt(m.goalKcal)} kcal al`,
+    d: g === 'lose' ? 'Harcamandan ~500 kcal az yiyerek haftada yaklaşık 0,5 kg yağ kaybedersin. Antrenman günlerinde yaktığın kalorinin bir kısmını geri alabilirsin.'
+      : g === 'gain' ? 'Harcamandan ~300 kcal fazla yiyerek yağlanmayı en aza indirip kas kazanırsın. Ayda 1 kg\'dan hızlı alıyorsan kaloriyi biraz düşür.'
+        : 'Harcamana eşit kalori alarak kilonu korursun. Haftalık kilo ortalamana göre ±100–200 kcal ayarla.',
+  });
+  out.push({
+    i: 'bolt', c: 'var(--accent)', bg: 'var(--accent-soft)', t: `Günde ${fmtInt(m.protein)} g protein`,
+    d: `Kilogram başına ${fmtN(m.protein / m.w)} g. 4 öğüne bölersen (öğün başı ~${fmtInt(m.protein / 4)} g) kas onarımı için en verimli şekilde kullanılır.`,
+  });
+  out.push({
+    i: 'dumbbell', c: 'var(--violet)', bg: 'rgba(167,139,250,.14)', t: `${split.name} programı · haftada ${p.days} gün`,
+    d: g === 'gain' ? 'Ana hareketlerde 4×6–8, yardımcılarda 3×8–12 tekrar. Her hafta ağırlığı ya da tekrarı biraz artır (progressive overload). Setler arası 2–3 dk dinlen.'
+      : g === 'lose' ? 'Kas kaybını önlemek için ağır çalışmaya devam et: ana hareketlerde 3×8–10, diğerlerinde 3×12–15. Setler arası 60–90 sn dinlen.'
+        : 'Hareket başına 3×8–12 tekrar; son 1–2 tekrar zorlayıcı olsun. Setler arası 90 sn dinlen.',
+  });
+  if (g === 'lose' || m.bmi >= 25) {
+    out.push({ i: 'pulse', c: 'var(--blue)', bg: 'var(--blue-soft)', t: 'Haftada 150–300 dk kardiyo',
+      d: m.bmi >= 30 ? 'Eklemlerini korumak için tempolu yürüyüş, bisiklet veya eliptik gibi düşük darbeli kardiyo seç. Günde 8–10 bin adım hedefle.'
+        : 'Tempolu yürüyüş, bisiklet veya yüzme. Antrenman sonrası 15–20 dk kardiyo yağ yakımını destekler. Günde 8–10 bin adım hedefle.' });
+  } else if (m.bmi < 18.5) {
+    out.push({ i: 'heart', c: 'var(--blue)', bg: 'var(--blue-soft)', t: 'Kardiyoyu sınırlı tut',
+      d: 'VKİ\'n düşük; enerjini kas gelişimine ayırmak için kardiyoyu haftada 1–2 hafif seansla sınırla ve kalori fazlası ile beslen.' });
+  }
+  if (m.weeks) out.push({ i: 'target', c: 'var(--good)', bg: 'rgba(52,211,153,.14)', t: `Hedefine ~${m.weeks} haftada ulaşabilirsin`,
+    d: `${fmtN(m.w)} kg → ${fmtN(p.target)} kg. Güvenli hızda ilerlemek verilen kilonun geri gelmesini önler. Haftada 1–2 kez aynı saatte tartıl ve kilonu buraya gir.` });
+  const done = new Set(db.sets.filter(s => s.date >= dayKey(weekStart())).map(s => s.date)).size;
+  out.push({ i: 'calendar', c: 'var(--warn)', bg: 'rgba(251,191,36,.14)', t: done >= p.days ? 'Bu haftanın hedefi tamam!' : `Bu hafta ${p.days - done} antrenman kaldı`,
+    d: done >= p.days ? 'Harika gidiyorsun. Ekstra gün yapacaksan hafif kardiyo veya esneme tercih et.'
+      : `Hafta hedefin ${p.days} gün, şu ana kadar ${done} gün antrenman yaptın. Bugün ekranındaki programla devam et.` });
+  out.push({ i: 'moon', c: 'var(--text-2)', bg: 'var(--surface-2)', t: 'Her gece 7–9 saat uyu',
+    d: 'Kas gelişimi ve iştah kontrolü uykuda düzenlenir. Az uyku, güç ve yağ yakımını belirgin şekilde düşürür.' });
+  return out;
+}
+
+// ═════════════════════════ Çevrimdışı videolar
+let dlState = null;
+const dlListeners = new Set();
+async function downloadAllVideos(onProgress) {
+  if (onProgress) dlListeners.add(onProgress);
+  if (dlState) return dlState;
+  dlState = (async () => {
+    const cache = await caches.open(MEDIA_CACHE);
+    const all = EXERCISES.flatMap(e => e.videos || []).map(v => v.src);
+    let done = 0, failed = 0;
+    for (const src of all) {
+      if (!(await cache.match(src))) {
+        try { const r = await fetch(src); if (r.ok) await cache.put(src, r); else failed++; } catch { failed++; }
+      }
+      done++;
+      dlListeners.forEach(f => f(done, all.length, failed));
+    }
+    dlState = null;
+    dlListeners.clear();
+    return failed;
+  })();
+  return dlState;
+}
+async function cachedVideoCount() {
+  try { return (await (await caches.open(MEDIA_CACHE)).keys()).filter(r => r.url.endsWith('.mp4')).length; } catch { return 0; }
+}
+async function offlineCard(slot, onlyIfMissing) {
+  const total = videoCount();
+  const have = await cachedVideoCount();
+  if (!slot?.isConnected || (onlyIfMissing && have >= total && !dlState)) return;
+  const doneAll = have >= total;
+  slot.innerHTML = `<div class="card" ${onlyIfMissing ? 'style="margin-top:22px"' : ''}>
+    <div class="cta"><div class="ic">${icon(doneAll ? 'check' : 'download')}</div>
+      <div class="grow"><div class="card-title">${doneAll ? 'Videolar telefonda' : 'Videoları telefona indir'}</div>
+      <div class="muted small num" id="off-status">${have} / ${total} video · ~${VIDEO_MB} MB</div></div></div>
+    <div class="progress"><i style="width:${(have / total) * 100}%"></i></div>
+    ${doneAll ? '<div class="faint small" style="margin-top:10px">İnternet olmadan da tüm videolar oynar.</div>'
+      : `<button class="btn" id="off-dl" style="margin-top:14px">${dlState ? 'İndiriliyor…' : 'İnternetsiz kullanım için indir'}</button>`}
+  </div>`;
+  const btn = $('#off-dl', slot);
+  const progress = (d, t, f) => {
+    if (!slot.isConnected) return;
+    $('#off-status', slot).textContent = `${d} / ${t} video${f ? ` · ${f} hata` : ''}`;
+    $('.progress i', slot).style.width = `${(d / t) * 100}%`;
+  };
+  const start = async () => {
+    if (btn) { btn.disabled = true; btn.textContent = 'İndiriliyor… uygulamayı açık tut'; }
+    const failed = await downloadAllVideos(progress);
+    toast(failed ? `${failed} video indirilemedi` : 'Tüm videolar indirildi', failed ? 'info' : 'check');
+    offlineCard(slot, onlyIfMissing);
+  };
+  btn?.addEventListener('click', start);
+  if (dlState) start();
+}
+
+// ═════════════════════════ Yedekleme
 async function exportData() {
-  const json = JSON.stringify({ app: 'gymtakip', version: 1, exported: new Date().toISOString(), ...db }, null, 1);
+  const json = JSON.stringify({ app: 'gymtakip', version: 2, exported: new Date().toISOString(), ...db }, null, 1);
   const name = `gym-yedek-${dayKey()}.json`;
   const file = new File([json], name, { type: 'application/json' });
   try {
@@ -579,7 +963,6 @@ async function exportData() {
   document.body.appendChild(a); a.click(); a.remove();
   setTimeout(() => URL.revokeObjectURL(a.href), 5000);
 }
-
 function importData(file) {
   if (!file) return;
   const reader = new FileReader();
@@ -589,17 +972,19 @@ function importData(file) {
       if (!Array.isArray(d.sets)) throw new Error('format');
       const valid = d.sets.filter(s => s && s.exId && s.date && Number.isFinite(s.r));
       if (!confirm(`${valid.length} set içeren yedek yüklensin mi?\nMevcut veriler bu yedekle değiştirilecek.`)) return;
-      db = { sets: valid, custom: Array.isArray(d.custom) ? d.custom : [], settings: { ...DEFAULT_SETTINGS, ...d.settings } };
-      save(); toast('✓ Yedek yüklendi'); renderSettings();
-    } catch { toast('Geçersiz yedek dosyası'); }
+      db = {
+        sets: valid, custom: Array.isArray(d.custom) ? d.custom : [], weights: Array.isArray(d.weights) ? d.weights : [],
+        settings: { ...DEFAULT_SETTINGS, ...d.settings }, profile: { ...DEFAULT_PROFILE, ...d.profile },
+      };
+      save(); toast('Yedek yüklendi'); route();
+    } catch { toast('Geçersiz yedek dosyası', 'x'); }
   };
   reader.readAsText(file);
 }
 
-// ───────────────────────── Dinlenme sayacı
-let restEnd = 0, restTimer = null, audioCtx = null;
+// ═════════════════════════ Dinlenme sayacı
+let restEnd = 0, restTotal = 1, restTimer = null, audioCtx = null;
 const restEl = $('#rest');
-
 function unlockAudio() {
   try {
     audioCtx ||= new (window.AudioContext || window.webkitAudioContext)();
@@ -621,7 +1006,7 @@ function beep() {
 }
 function startRest(sec) {
   if (!sec) return;
-  restEnd = Date.now() + sec * 1000;
+  restEnd = Date.now() + sec * 1000; restTotal = sec;
   restEl.hidden = false; restEl.classList.remove('done');
   clearInterval(restTimer);
   restTimer = setInterval(tickRest, 250);
@@ -629,11 +1014,13 @@ function startRest(sec) {
 }
 function stopRest() { clearInterval(restTimer); restEl.hidden = true; }
 function tickRest() {
-  const left = Math.ceil((restEnd - Date.now()) / 1000);
+  const leftMs = restEnd - Date.now();
+  const left = Math.ceil(leftMs / 1000);
+  $('#rest-bar').style.strokeDashoffset = 106.8 * (1 - clamp(leftMs / 1000 / restTotal, 0, 1));
   if (left <= 0) {
     if (!restEl.classList.contains('done')) {
       restEl.classList.add('done'); beep();
-      $('#rest-time').textContent = 'Hazır! 💪';
+      $('#rest-time').textContent = 'Hazır!';
       setTimeout(stopRest, 4000);
     }
     return;
@@ -645,13 +1032,13 @@ restEl.addEventListener('click', e => {
   if (b.dataset.rest === 'skip') return stopRest();
   restEnd += +b.dataset.rest * 1000;
   if (restEnd < Date.now()) restEnd = Date.now();
+  restTotal = Math.max(restTotal, (restEnd - Date.now()) / 1000);
   tickRest();
 });
 
-// ───────────────────────── Başlat
-if (!location.hash) history.replaceState(null, '', '#/today');
+// ═════════════════════════ Başlat
+if (!location.hash || location.hash === '#/settings') history.replaceState(null, '', '#/today');
 route();
-
-if ('serviceWorker' in navigator && location.protocol === 'https:') {
+if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }

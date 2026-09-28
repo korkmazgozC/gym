@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
-  <meta name="theme-color" content="#0f1115">
+  <meta name="theme-color" content="#0a0a0b">
   <meta name="apple-mobile-web-app-capable" content="yes">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -13,56 +13,26 @@
   <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
   <link rel="icon" href="icons/icon-192.png">
   <link rel="stylesheet" href="styles.css">
-  <script type="importmap">
-    {
-      "imports": {
-        "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
-        "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
-      }
-    }
-  </script>
 </head>
 <body>
   <header id="top">
-    <button id="back" class="icon-btn" aria-label="Geri" hidden>
-      <svg viewBox="0 0 24 24" width="24" height="24"><path d="M15 5l-7 7 7 7" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/></svg>
-    </button>
-    <div class="titles">
-      <h1 id="title">Gym</h1>
-      <div id="subtitle"></div>
-    </div>
+    <button id="back" class="nav-back" aria-label="Geri" hidden></button>
+    <div id="top-title"></div>
     <div id="top-action"></div>
   </header>
 
   <main id="view"></main>
 
   <div id="rest" hidden>
-    <div class="rest-label">Dinlenme</div>
-    <div id="rest-time">1:30</div>
+    <svg class="rest-ring" viewBox="0 0 40 40"><circle cx="20" cy="20" r="17" class="track"/><circle cx="20" cy="20" r="17" class="bar" id="rest-bar"/></svg>
+    <div class="rest-info"><span>Dinlenme</span><b id="rest-time">1:30</b></div>
     <button data-rest="-15">−15</button>
     <button data-rest="15">+15</button>
     <button data-rest="skip" class="rest-skip">Geç</button>
   </div>
   <div id="toast" hidden></div>
 
-  <nav id="tabs">
-    <a href="#/today" data-tab="today">
-      <svg viewBox="0 0 24 24"><path d="M3 10h2v4H3zM19 10h2v4h-2zM6 7h3v10H6zM15 7h3v10h-3zM9 11h6v2H9z" fill="currentColor"/></svg>
-      <span>Bugün</span>
-    </a>
-    <a href="#/lib" data-tab="lib">
-      <svg viewBox="0 0 24 24"><path d="M4 5h16M4 12h16M4 19h10" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg>
-      <span>Hareketler</span>
-    </a>
-    <a href="#/hist" data-tab="hist">
-      <svg viewBox="0 0 24 24"><rect x="3.5" y="5" width="17" height="15" rx="3" fill="none" stroke="currentColor" stroke-width="2"/><path d="M3.5 10h17M8 3v4M16 3v4" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      <span>Geçmiş</span>
-    </a>
-    <a href="#/settings" data-tab="settings">
-      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3.2" fill="none" stroke="currentColor" stroke-width="2"/><path d="M12 2.8v2.6M12 18.6v2.6M21.2 12h-2.6M5.4 12H2.8M18.5 5.5l-1.8 1.8M7.3 16.7l-1.8 1.8M18.5 18.5l-1.8-1.8M7.3 7.3L5.5 5.5" stroke="currentColor" stroke-width="2" stroke-linecap="round"/></svg>
-      <span>Ayarlar</span>
-    </a>
-  </nav>
+  <nav id="tabs"></nav>
 
   <script type="module" src="app.js"></script>
 </body>
