@@ -2,7 +2,7 @@
 //  - Uygulama dosyaları, fotoğraflar ve video kapakları ilk açılışta önbelleğe alınır.
 //  - Videolar (vid/*.mp4) uygulama içinden "İnternetsiz kullanım için indir" ile ayrı önbelleğe (gym-media-*) kaydedilir.
 // Dosyaları değiştirdiğinde VERSION'u artır ki telefondaki eski sürüm yenilensin.
-const VERSION = 'gymtakip-v6';
+const VERSION = 'gymtakip-v7';
 const MEDIA = 'gym-media-v1';
 const SHELL = [
   './', './index.html', './styles.css', './app.js', './exercises.js',
