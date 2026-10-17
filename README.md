@@ -13,6 +13,10 @@ iPhone ve Android'de uygulama gibi çalışan, **internet olmadan da kullanılab
 - Hedefine ve haftada kaç gün spor yapabildiğine göre **otomatik program** (Tüm Vücut, Üst/Alt, İtme/Çekme/Bacak) ya da kendi programın
 - Antrenman ekranında set set kayıt: önceki antrenmanın değerleri, ısınma setleri, **dinlenme sayacı**
 - **İlerleme önerisi:** geçen sefer hedef tekrarların hepsini yaptıysan ağırlığı artırmayı, yapamadıysan tekrarı artırmayı önerir
+- **Hareket değiştirme:** makine doluysa aynı kası çalıştıran alternatiflerden birine tek dokunuşla geç
+- **Süperset:** iki hareketi art arda yap; uygulama aradaki dinlenmeyi atlar, tur bitince dinlenme başlar
+- **Rekor kutlaması:** rekor kırdığın anda önceki en iyinle birlikte gösterilir
+- **Notlar:** harekete kalıcı not (makine ayarı, tutuş) ve antrenmana günlük not
 - Antrenman özeti: süre, yakılan kalori, toplam kaldırılan ağırlık, rekorlar
 
 **Hareketler**

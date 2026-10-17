@@ -36,6 +36,7 @@ function weekStart(d = new Date()) {
 // ═════════════════════════ İkonlar
 const P = {
   home: '<path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9v11.5h13V9"/><path d="M10 20.5v-6h4v6"/>',
+  swap: '<path d="M7 4 3.5 7.5 7 11"/><path d="M3.5 7.5h13"/><path d="M17 13l3.5 3.5L17 20"/><path d="M20.5 16.5h-13"/>',
   dumbbell: '<path d="M6.5 6v12M17.5 6v12M3.5 9v6M20.5 9v6M6.5 12h11"/>',
   calendar: '<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
   user: '<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1.4-3.8 4.3-5.5 7.5-5.5s6.1 1.7 7.5 5.5"/>',
@@ -85,7 +86,7 @@ function normalize(d) {
   return {
     sets: d.sets || [], custom: d.custom || [], weights: d.weights || [],
     routines: d.routines || [], workouts: d.workouts || [], session: d.session || null,
-    measures: d.measures || [], cardio: d.cardio || [], food: d.food || {}, menu: d.menu || {},
+    measures: d.measures || [], cardio: d.cardio || [], food: d.food || {}, menu: d.menu || {}, notes: d.notes || {},
     settings: { ...DEFAULT_SETTINGS, ...d.settings },
     profile: { ...DEFAULT_PROFILE, ...d.profile },
   };
@@ -415,6 +416,7 @@ function renderWorkout() {
   const st = setStats(sets);
   const day = withProgress(s, s.start);
   if (s.cur >= day.items.length) s.cur = Math.max(0, day.items.length - 1);
+  const ssl = ssLabels(s);
   view.innerHTML = pageHead(`Başladı ${new Date(s.start).toLocaleTimeString('tr-TR', { hour: '2-digit', minute: '2-digit' })}`, s.name) + `
     <div class="w-hero">
       <div class="time"><b id="w-time">${fmtDur(Date.now() - s.start)}</b><span>Süre</span></div>
@@ -422,12 +424,16 @@ function renderWorkout() {
       <div><b>${fmtInt(st.kcal)}</b><span>kcal</span></div>
     </div>
     <div style="margin-top:14px">${day.items.map((it, i) => `
-      <div class="wex ${i === s.cur ? 'open' : ''} ${it.complete ? 'done' : ''}" data-i="${i}">
+      <div class="wex ${i === s.cur ? 'open' : ''} ${it.complete ? 'done' : ''} ${it.ss ? 'ss' : ''} ${it.ss && day.items[i + 1]?.ss === it.ss ? 'ss-next' : ''} ${it.ss && day.items[i - 1]?.ss === it.ss ? 'ss-prev' : ''}" data-i="${i}">
         <div class="wex-head">${thumb(it.ex)}<div class="grow"><div class="name">${esc(it.ex.name)}</div>
-          <div class="meta">${schemeText(it, it.ex)} · ${it.done}/${it.sets} set</div>
+          <div class="meta">${it.ss ? `<b class="ss-tag">Süperset ${ssl[it.ss]}</b> · ` : ''}${schemeText(it, it.ex)} · ${it.done}/${it.sets} set</div>
           <div class="dots">${[...Array(Math.max(it.sets, it.done))].map((_, k) => `<i class="${k < it.done ? 'on' : ''}"></i>`).join('')}</div></div>
           ${it.complete ? `<span class="wex-done">${icon('check')}</span>` : icon(i === s.cur ? 'down' : 'chev', 'chev')}</div>
-        ${i === s.cur ? `<div class="wex-body"><a class="wex-link" href="#/ex/${encodeURIComponent(it.exId)}">${icon('video')} Nasıl yapılır</a><div class="w-editor"></div></div>` : ''}
+        ${i === s.cur ? `<div class="wex-body">
+          <div class="wex-actions"><a href="#/ex/${encodeURIComponent(it.exId)}">${icon('video')} Video</a>
+            <button data-swap="${i}">${icon('swap')} Değiştir</button><button data-note="${i}">${icon('edit')} Not</button>
+            <button data-ss="${i}" class="${it.ss ? 'on' : ''}">${icon('bolt')} Süperset</button></div>
+          ${noteBox(it.ex, 'w-note')}<div class="w-editor"></div></div>` : ''}
       </div>`).join('') || emptyBox('dumbbell', 'Hareket yok', 'Aşağıdan antrenmanına hareket ekle.')}</div>
     <button class="btn ghost" id="w-add" style="margin-top:12px">${icon('plus')} Hareket ekle</button>
     <button class="btn" id="w-finish2" style="margin-top:10px">${icon('check')} Antrenmanı bitir</button>
@@ -438,17 +444,32 @@ function renderWorkout() {
     s.cur = s.cur === i ? -1 : i; save(); rerenderWorkout();
   }));
   const open = day.items[s.cur];
+  $('[data-swap]', view)?.addEventListener('click', () => swapSheet(s.cur, () => rerenderWorkout(true)));
+  $('[data-note]', view)?.addEventListener('click', () => noteSheet(open.ex, () => rerenderWorkout()));
+  $('#w-note', view)?.addEventListener('click', () => noteSheet(open.ex, () => rerenderWorkout()));
+  $('[data-ss]', view)?.addEventListener('click', () => supersetSheet(s.cur, () => rerenderWorkout(true)));
   if (open) {
     renderSetEditor($('.w-editor', view), open.ex, {
       target: open, since: s.start,
       onSaved: saved => {
         const d = withProgress(s, s.start);
         const it = d.items[s.cur];
-        if (it && saved && !saved.warm && db.sets.includes(saved) && it.done === it.sets) {
+        const advance = () => {
           const nextIdx = d.items.findIndex((x, k) => k > s.cur && !x.complete);
           const idx = nextIdx >= 0 ? nextIdx : d.items.findIndex(x => !x.complete);
           if (idx >= 0) { s.cur = idx; toast(`Sıradaki: ${d.items[idx].ex.name}`, 'chev'); }
           else toast('Tüm hareketler tamam! Antrenmanı bitirebilirsin', 'trophy');
+        };
+        if (it && saved && !saved.warm && db.sets.includes(saved)) {
+          if (it.ss) {
+            // Süperset: turun sıradaki hareketine dinlenmeden geç, tur bitince dinlen
+            const mem = ssMembers(s, it.ss), pos = mem.indexOf(s.cur);
+            const nextInRound = mem.slice(pos + 1).find(i => !d.items[i]?.complete);
+            const first = mem.find(i => !d.items[i]?.complete);
+            if (nextInRound !== undefined) { stopRest(); s.cur = nextInRound; toast(`Dinlenmeden: ${d.items[nextInRound].ex.name}`, 'bolt'); }
+            else if (first !== undefined) { s.cur = first; toast('Tur tamam · şimdi dinlen', 'pause'); }
+            else advance();
+          } else if (it.done === it.sets) advance();
           save();
         }
         rerenderWorkout(true);
@@ -504,7 +525,12 @@ function renderSummary(id) {
     <div class="list">${[...byEx.entries()].map(([exId, list]) => { const ex = getEx(exId); return `<a class="item" href="#/ex/${encodeURIComponent(exId)}" style="display:block">
       <div class="name">${esc(ex?.name || 'Silinmiş hareket')}</div>
       <div class="set-chips">${list.map(s => `<span class="set-chip">${s.warm ? 'Isınma · ' : ''}${esc(fmtSet(ex, s))}</span>`).join('')}</div></a>`; }).join('')}</div>
+    <div class="sec"><h2>Antrenman notu</h2></div>
+    <textarea class="note-in" id="w-note-in" maxlength="400" placeholder="Nasıl geçti? Örn. enerjim düşüktü, omzumda hafif ağrı vardı…">${esc(w.note || '')}</textarea>
     <a class="btn" href="#/today" style="margin-top:18px">Tamam</a>`;
+  let tmr;
+  $('#w-note-in').addEventListener('input', e => { clearTimeout(tmr); tmr = setTimeout(() => { w.note = e.target.value.trim() || undefined; save(); }, 400); });
+  $('#w-note-in').addEventListener('blur', e => { w.note = e.target.value.trim() || undefined; save(); });
 }
 
 // ═════════════════════════ Set girişi (antrenman ekranında)
@@ -574,7 +600,7 @@ function renderSetEditor(box, ex, { target = null, since = null, onSaved = null 
     db.sets.push(s);
     if (db.session) addToSession(ex.id);
     save();
-    if (isPR(ex, s)) toast('Yeni rekor!', 'trophy');
+    if (isPR(ex, s)) celebratePR(ex, s);
     else if (!onSaved) toast(s.warm ? 'Isınma seti kaydedildi' : 'Set kaydedildi');
     unlockAudio();
     startRest(s.warm ? Math.min(db.settings.rest, 60) : db.settings.rest);
@@ -1124,6 +1150,156 @@ function mountMedia(box, anim) {
   return () => clearTimeout(timer);
 }
 
+// ═════════════════════════ Hareket değiştirme ve notlar
+// Aynı kası çalıştıran alternatifler: önce aynı alt grup, sonra aynı bölge
+function alternatives(ex, exclude = []) {
+  const pool = allExercises().filter(e => e.id !== ex.id && !exclude.includes(e.id) && e.region === ex.region);
+  const same = pool.filter(e => ex.sub && e.sub === ex.sub);
+  const rank = e => (e.videos ? 0 : 1) + (e.equip === ex.equip ? 0.5 : 0);
+  return { same: same.sort((a, b) => rank(a) - rank(b)), other: pool.filter(e => !same.includes(e)).sort((a, b) => rank(a) - rank(b)) };
+}
+function swapSheet(idx, after) {
+  const s = db.session, it = s.items[idx], ex = getEx(it.exId);
+  const done = working(db.sets.filter(x => x.exId === it.exId && x.ts >= s.start)).length;
+  const { same, other } = alternatives(ex, s.items.map(i => i.exId));
+  const eqName = e => EQUIPMENT.find(x => x[0] === e.equip)?.[1] || '';
+  const row = e => `<button class="item" data-alt="${esc(e.id)}" style="width:100%;text-align:left">${thumb(e)}
+    <div class="grow"><div class="name">${esc(e.name)}</div><div class="meta">${esc([eqName(e), subName(e.region, e.sub)].filter(Boolean).join(' · '))}</div></div>${icon('swap', 'chev')}</button>`;
+  const { el, close } = openSheet(`
+    <div class="sheet-title">${esc(ex.name)} yerine</div>
+    <div class="faint small" style="margin:-6px 2px 12px">${done ? `Bu hareketle ${done} set yaptın; seçtiğin hareket antrenmana ayrıca eklenecek.` : 'Makine doluysa ya da ekipman yoksa aynı kası çalıştıran bir hareket seç.'}</div>
+    ${same.length ? `<div class="group-title" style="margin-top:4px">Aynı kas · ${esc(subName(ex.region, ex.sub))}</div><div class="list">${same.map(row).join('')}</div>` : ''}
+    ${other.length ? `<details class="alt-more"${same.length ? '' : ' open'}><summary class="group-title">${esc(REGION_BY_ID[ex.region]?.name || '')} bölgesinden diğerleri · ${other.length}</summary><div class="list">${other.map(row).join('')}</div></details>` : ''}`);
+  $$('[data-alt]', el).forEach(b => b.addEventListener('click', () => {
+    const id = b.dataset.alt, nex = getEx(id);
+    if (done) { s.items.splice(idx + 1, 0, { ...it, exId: id }); s.cur = idx + 1; }
+    else { s.items[idx] = { ...it, exId: id }; s.cur = idx; }
+    if (nex.type !== ex.type) Object.assign(s.items[s.cur], schemeObj(1, id), { sets: it.sets });
+    save(); close(); toast(`${nex.name} ile devam`, 'swap'); after();
+  }));
+}
+const exNote = id => (db.notes[id] || '').trim();
+function noteSheet(ex, after) {
+  const { el, close } = openSheet(`
+    <div class="sheet-title">${esc(ex.name)} · not</div>
+    <textarea class="note-in" id="n-text" maxlength="300" placeholder="Örn. makine koltuğu 4. kademe, dar tutuşta bileğim ağrıyor…">${esc(db.notes[ex.id] || '')}</textarea>
+    <div class="faint small" style="margin-top:8px">Bu hareketi her açtığında ve antrenmanda görünür.</div>
+    <div class="sheet-actions"><button class="btn ghost" id="n-del">${exNote(ex.id) ? 'Notu sil' : 'Vazgeç'}</button><button class="btn" id="n-save">Kaydet</button></div>`);
+  const t = $('#n-text', el);
+  setTimeout(() => t.focus(), 250);
+  $('#n-del', el).addEventListener('click', () => { if (exNote(ex.id)) { delete db.notes[ex.id]; save(); after(); } close(); });
+  $('#n-save', el).addEventListener('click', () => {
+    const v = t.value.trim();
+    if (v) db.notes[ex.id] = v; else delete db.notes[ex.id];
+    save(); close(); toast(v ? 'Not kaydedildi' : 'Not silindi', 'edit'); after();
+  });
+}
+const noteBox = (ex, id = 'ex-note') => exNote(ex.id)
+  ? `<button class="note-box" id="${id}">${icon('edit')}<span>${esc(exNote(ex.id))}</span></button>` : '';
+
+// ═════════════════════════ Rekor kutlaması
+let prTimer;
+function celebratePR(ex, s) {
+  const prev = bestSet(ex, setsOf(ex.id).filter(x => x.ts < s.ts));
+  if (!prev) return;
+  const type = ex.type || 'weight';
+  let detail = `Önceki en iyi: ${fmtSet(ex, prev)}`;
+  if (type === 'weight') {
+    const gain = e1rm(s.w, s.r) - e1rm(prev.w, prev.r);
+    if (s.w > prev.w) detail += ` · en ağır setin +${fmtN(s.w - prev.w)} kg`;
+    else if (gain >= 0.5) detail += ` · tahmini maksimum +${fmtN(gain, 1)} kg`;
+  }
+  let el = $('#pr');
+  if (!el) { el = document.createElement('div'); el.id = 'pr'; document.body.appendChild(el); el.addEventListener('click', () => el.classList.remove('show')); }
+  el.innerHTML = `<div class="pr-card">
+    <div class="pr-burst">${[...Array(12)].map((_, i) => `<i style="--a:${i * 30}deg;--d:${(i % 3) * 60}ms"></i>`).join('')}</div>
+    <div class="pr-ic">${icon('trophy')}</div>
+    <div class="pr-t">Yeni rekor!</div>
+    <div class="pr-v num">${esc(fmtSet(ex, s))}</div>
+    <div class="pr-ex">${esc(ex.name)}</div>
+    <div class="pr-d">${esc(detail)}</div></div>`;
+  el.classList.remove('show'); void el.offsetWidth; el.classList.add('show');
+  chime();
+  clearTimeout(prTimer);
+  prTimer = setTimeout(() => el.classList.remove('show'), 3200);
+}
+function chime() {
+  if (!audioCtx) return;
+  const t = audioCtx.currentTime;
+  [[0, 523], [0.12, 659], [0.24, 784], [0.36, 1047]].forEach(([i, f]) => {
+    const o = audioCtx.createOscillator(), g = audioCtx.createGain();
+    o.type = 'triangle'; o.frequency.value = f; o.connect(g); g.connect(audioCtx.destination);
+    g.gain.setValueAtTime(0.0001, t + i); g.gain.exponentialRampToValueAtTime(0.25, t + i + 0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001, t + i + 0.35);
+    o.start(t + i); o.stop(t + i + 0.4);
+  });
+}
+
+// ═════════════════════════ Süperset: art arda yapılan, aralarında dinlenilmeyen hareketler
+const ssMembers = (s, tag) => s.items.map((it, i) => (it.ss === tag ? i : -1)).filter(i => i >= 0);
+function ssLabels(s) {
+  // Grupları sırayla A, B, C… olarak adlandır
+  const out = {}; let n = 0;
+  for (const it of s.items) if (it.ss && !(it.ss in out)) out[it.ss] = String.fromCharCode(65 + n++);
+  return out;
+}
+function cleanSupersets(s) {
+  // Tek kalan üyeleri gruptan çıkar
+  for (const it of s.items) if (it.ss && ssMembers(s, it.ss).length < 2) delete it.ss;
+}
+function supersetSheet(idx, after) {
+  const s = db.session, it = s.items[idx], ex = getEx(it.exId);
+  if (it.ss) {
+    const names = ssMembers(s, it.ss).map(i => getEx(s.items[i].exId)?.name).join(' + ');
+    const { el, close } = openSheet(`
+      <div class="sheet-title">Süperset</div>
+      <div class="muted" style="margin-bottom:14px">${esc(names)}</div>
+      <div class="faint small" style="margin-bottom:6px">Süpersette bir hareketin setini bitirince dinlenmeden diğerine geçersin; tur bitince dinlenirsin.</div>
+      <div class="sheet-actions"><button class="btn ghost" id="ss-close">Kapat</button><button class="btn danger" id="ss-remove">Süperseti kaldır</button></div>`);
+    $('#ss-close', el).addEventListener('click', close);
+    $('#ss-remove', el).addEventListener('click', () => {
+      const tag = it.ss; for (const i of ssMembers(s, tag)) delete s.items[i].ss;
+      save(); close(); toast('Süperset kaldırıldı', 'x'); after();
+    });
+    return;
+  }
+  const others = s.items.map((x, i) => ({ x, i })).filter(({ x, i }) => i !== idx && getEx(x.exId));
+  const join = j => {
+    const partner = s.items[j];
+    const tag = partner.ss || uid();
+    if (partner.ss) {
+      // Mevcut bir süperset grubuna katıl: bu hareketi grubun sonuna taşı
+      s.items.splice(s.items.indexOf(it), 1);
+      s.items.splice(Math.max(...ssMembers(s, tag)) + 1, 0, it);
+    } else {
+      // Seçilen hareketi bu hareketin hemen altına taşı
+      s.items.splice(j, 1);
+      s.items.splice(s.items.indexOf(it) + 1, 0, partner);
+    }
+    it.ss = tag; partner.ss = tag;
+    s.cur = s.items.indexOf(it);
+    cleanSupersets(s); save(); after();
+    toast('Süperset oluşturuldu', 'bolt');
+  };
+  const { el, close } = openSheet(`
+    <div class="sheet-title">${esc(ex.name)} ile süperset</div>
+    <div class="faint small" style="margin:-6px 2px 12px">İki hareketi art arda yap, ikisi bitince dinlen. Zamandan kazandırır; genelde zıt kaslarla (göğüs + sırt, biceps + triceps) yapılır.</div>
+    ${others.length ? `<div class="group-title" style="margin-top:4px">Antrenmandaki hareketler</div><div class="list">${others.map(({ x, i }) => {
+      const e = getEx(x.exId);
+      return `<button class="item" data-j="${i}" style="width:100%;text-align:left">${thumb(e)}<div class="grow"><div class="name">${esc(e.name)}</div>
+        <div class="meta">${esc(subName(e.region, e.sub) || REGION_BY_ID[e.region]?.name || '')}${x.ss ? ' · süpersette' : ''}</div></div>${icon('plus', 'chev')}</button>`;
+    }).join('')}</div>` : ''}
+    <button class="btn ghost" id="ss-new" style="margin-top:12px">${icon('plus')} Yeni hareket seç</button>`);
+  $$('[data-j]', el).forEach(b => b.addEventListener('click', () => { close(); join(+b.dataset.j); }));
+  $('#ss-new', el).addEventListener('click', () => {
+    close();
+    pickExercise(`${ex.name} ile süperset`, id => {
+      if (!s.items.some(i => i.exId === id)) s.items.push({ exId: id, ...schemeObj(1, id), sets: it.sets });
+      join(s.items.findIndex(i => i.exId === id));
+    });
+  });
+}
+
 // ═════════════════════════ Hareket detayı (bilgi + ilerleme; set girişi antrenman ekranında)
 const LEVELS = { beginner: 'Başlangıç', intermediate: 'Orta', expert: 'İleri' };
 let exTab = 'how';
@@ -1157,10 +1333,14 @@ function renderEx(id) {
     </div>
     <button class="btn ex-cta" id="ex-log">${icon(inSession ? 'chev' : 'plus')} ${inSession ? 'Antrenmanda bu harekete git' : db.session ? 'Antrenmana ekle ve set gir' : 'Set kaydet'}</button>
     ${!db.session ? '<div class="faint small" style="text-align:center;margin-top:8px">Hızlı bir antrenman başlar; istediğin kadar hareket ekleyebilirsin.</div>' : ''}
+    ${exNote(ex.id) ? `<div style="margin-top:14px">${noteBox(ex)}</div>` : `<div style="text-align:center;margin-top:10px"><button class="lnk small" id="ex-note-add">${icon('edit')} Not ekle</button></div>`}
     <div class="seg"><button data-t="how">Nasıl yapılır</button><button data-t="chart">İlerleme</button></div>
     <div id="pane"></div>`;
   const unmount = anim ? mountMedia($('#media'), anim) : () => {};
   $('#ex-log').addEventListener('click', () => quickLog(ex.id));
+  const reNote = () => { const y = scrollY; route(); scrollTo(0, y); };
+  $('#ex-note')?.addEventListener('click', () => noteSheet(ex, reNote));
+  $('#ex-note-add')?.addEventListener('click', () => noteSheet(ex, reNote));
   $('#del-ex')?.addEventListener('click', () => {
     const n = setsOf(ex.id).length;
     if (!confirm(`"${ex.name}" silinsin mi?${n ? `\n${n} set kaydı da silinecek.` : ''}`)) return;
@@ -1341,6 +1521,7 @@ function renderHist() {
             <div class="set-chips">${list.map(s => `<span class="set-chip">${s.warm ? 'Isınma · ' : ''}${esc(fmtSet(ex, s))}</span>`).join('')}</div></a>`;
         }).join('')}${cardioOn(d).map(c => `<div class="day-ex"><div style="font-weight:600">${esc(CARDIO.find(x => x[0] === c.type)?.[1] || 'Kardiyo')}</div>
           <div class="set-chips"><span class="set-chip">${c.min} dk · ${fmtInt(c.kcal)} kcal</span></div></div>`).join('')}
+          ${ws2.filter(w => w.note).map(w => `<div class="day-ex"><div class="note-line">${icon('edit')}<span>${esc(w.note)}</span></div></div>`).join('')}
           ${ws2.map(w => `<a class="day-ex lnk small" href="#/summary/${w.id}">${esc(w.name)} özetini gör ›</a>`).join('')}</div></details>`;
     }).join('')}`;
 }
