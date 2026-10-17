@@ -2431,6 +2431,277 @@ export const EXERCISES = [
   "equip": "machine"
  },
  {
+  "id": "lateral-bound",
+  "region": "bacak",
+  "name": "Yana Sıçrama (Lateral Bound)",
+  "type": "bodyweight",
+  "img": [
+   "img/lateral-bound-0.jpg",
+   "img/lateral-bound-1.jpg"
+  ],
+  "primary": [
+   "Kalça",
+   "Ön bacak"
+  ],
+  "secondary": [
+   "Baldır"
+  ],
+  "level": "beginner",
+  "steps": [
+   "Tek ayak üzerinde hafif çömelerek dur.",
+   "Yana doğru güçlü şekilde sıçra ve diğer ayağının üzerine yumuşakça kon.",
+   "Bir an dengede kal, ardından ters yöne sıçra."
+  ],
+  "tips": [
+   "Tenisteki yana çıkışları ve yön değiştirmeyi geliştirir.",
+   "Dizin içe çökmesin; inişte diz ayak ucu yönünde kalsın."
+  ],
+  "met": 8.0,
+  "sub": "patlayici",
+  "equip": "body"
+ },
+ {
+  "id": "box-jump",
+  "region": "bacak",
+  "name": "Kutu Atlama (Box Jump)",
+  "type": "bodyweight",
+  "img": [
+   "img/box-jump-0.jpg",
+   "img/box-jump-1.jpg"
+  ],
+  "primary": [
+   "Ön bacak",
+   "Kalça"
+  ],
+  "secondary": [
+   "Baldır"
+  ],
+  "level": "intermediate",
+  "steps": [
+   "Kutunun önünde ayaklar kalça genişliğinde dur.",
+   "Kollarını geri savurup çömel, kolları öne savurarak kutuya sıçra.",
+   "Kutuya iki ayakla yumuşakça kon, dik dur; adım atarak in."
+  ],
+  "tips": [
+   "Alçak kutuyla başla; amaç yükseklik değil, patlayıcı kalkış.",
+   "Kutudan aşağı zıplayarak inme, adım at."
+  ],
+  "met": 8.0,
+  "sub": "patlayici",
+  "equip": "other"
+ },
+ {
+  "id": "split-jump",
+  "region": "bacak",
+  "name": "Lunge Sıçraması (Split Jump)",
+  "type": "bodyweight",
+  "img": [
+   "img/split-jump-0.jpg",
+   "img/split-jump-1.jpg"
+  ],
+  "primary": [
+   "Ön bacak"
+  ],
+  "secondary": [
+   "Kalça",
+   "Baldır"
+  ],
+  "level": "intermediate",
+  "steps": [
+   "Lunge pozisyonunda başla.",
+   "Güçlü şekilde yukarı sıçra, havada bacakların yerini değiştir.",
+   "Diğer bacak önde lunge pozisyonuna yumuşakça kon ve hemen tekrarla."
+  ],
+  "tips": [
+   "Gövde dik kalsın.",
+   "Sessiz ve yumuşak iniş hedefle."
+  ],
+  "met": 8.0,
+  "sub": "patlayici",
+  "equip": "body"
+ },
+ {
+  "id": "jump-rope",
+  "region": "bacak",
+  "name": "İp Atlama",
+  "type": "time",
+  "img": [
+   "img/jump-rope-0.jpg",
+   "img/jump-rope-1.jpg"
+  ],
+  "primary": [
+   "Baldır"
+  ],
+  "secondary": [
+   "Ön bacak",
+   "Omuz"
+  ],
+  "level": "beginner",
+  "steps": [
+   "İpi bileklerinle çevir, dirsekler gövdeye yakın.",
+   "Parmak uçlarında, alçak ve ritmik sıçra.",
+   "Belirlenen süre boyunca devam et."
+  ],
+  "tips": [
+   "Tenisteki hafif ayak ritmi ve kondisyon için mükemmel.",
+   "Yüksek zıplama; ipin geçeceği kadar yeterli."
+  ],
+  "met": 11.0,
+  "sub": "patlayici",
+  "equip": "other"
+ },
+ {
+  "id": "carioca",
+  "region": "bacak",
+  "name": "Karioka (Çapraz Adım)",
+  "type": "time",
+  "img": [
+   "img/carioca-0.jpg",
+   "img/carioca-1.jpg"
+  ],
+  "primary": [
+   "İç bacak",
+   "Kalça"
+  ],
+  "secondary": [
+   "Baldır"
+  ],
+  "level": "beginner",
+  "steps": [
+   "Yana doğru hareket ederken arka ayağını önden, sonra arkadan çaprazla.",
+   "Kalçanı döndürerek hızlı ve ritmik adımlar at.",
+   "Mesafe bitince ters yöne aynı şekilde dön."
+  ],
+  "tips": [
+   "Isınma ve yan çeviklik için ideal.",
+   "Omuzlar mümkün olduğunca ileriye baksın."
+  ],
+  "met": 7.0,
+  "sub": "patlayici",
+  "equip": "body"
+ },
+ {
+  "id": "box-shuffle",
+  "region": "bacak",
+  "name": "Basamakta Yan Geçiş",
+  "type": "time",
+  "img": [
+   "img/box-shuffle-0.jpg",
+   "img/box-shuffle-1.jpg"
+  ],
+  "primary": [
+   "Ön bacak"
+  ],
+  "secondary": [
+   "Baldır",
+   "Kalça"
+  ],
+  "level": "beginner",
+  "steps": [
+   "Bir ayağın alçak bir basamağın üstünde olacak şekilde yanına dur.",
+   "Basamağın üstünden yana geçerek ayakların yerini değiştir.",
+   "Hızlı ve ritmik şekilde iki yöne devam et."
+  ],
+  "tips": [
+   "Kollarını koşar gibi kullan.",
+   "Basamağa tüm tabanla bas."
+  ],
+  "met": 8.0,
+  "sub": "patlayici",
+  "equip": "other"
+ },
+ {
+  "id": "lateral-hop",
+  "region": "bacak",
+  "name": "Tek Ayak Yan Sekme",
+  "type": "bodyweight",
+  "img": [
+   "img/lateral-hop-0.jpg",
+   "img/lateral-hop-1.jpg"
+  ],
+  "primary": [
+   "Ön bacak"
+  ],
+  "secondary": [
+   "Baldır",
+   "Kalça"
+  ],
+  "level": "intermediate",
+  "steps": [
+   "Tek ayak üzerinde dur, yanına küçük bir engel veya koni koy.",
+   "Engelin üzerinden yana sek, aynı ayakla kon.",
+   "Hemen geri sek; tekrarlar bitince ayak değiştir."
+  ],
+  "tips": [
+   "Ayak bileği stabilitesini ve denge tepkisini geliştirir.",
+   "İnişte diz hafif bükülü olsun."
+  ],
+  "met": 8.0,
+  "sub": "patlayici",
+  "equip": "other"
+ },
+ {
+  "id": "star-jump",
+  "region": "bacak",
+  "name": "Yıldız Sıçrama",
+  "type": "bodyweight",
+  "img": [
+   "img/star-jump-0.jpg",
+   "img/star-jump-1.jpg"
+  ],
+  "primary": [
+   "Ön bacak"
+  ],
+  "secondary": [
+   "Omuz",
+   "Baldır"
+  ],
+  "level": "beginner",
+  "steps": [
+   "Hafif çömel, kollar önde.",
+   "Yukarı sıçrarken kol ve bacaklarını yıldız gibi aç.",
+   "Havada kapat ve yumuşakça kon."
+  ],
+  "tips": [
+   "Isınma sonunda vücudu harekete hazırlar.",
+   "İnişte dizlerini kilitleme."
+  ],
+  "met": 8.0,
+  "sub": "patlayici",
+  "equip": "body"
+ },
+ {
+  "id": "mb-scoop-throw",
+  "region": "bacak",
+  "name": "Sağlık Topu Fırlatma",
+  "type": "weight",
+  "img": [
+   "img/mb-scoop-throw-0.jpg",
+   "img/mb-scoop-throw-1.jpg"
+  ],
+  "primary": [
+   "Kalça",
+   "Ön bacak"
+  ],
+  "secondary": [
+   "Omuz",
+   "Bel"
+  ],
+  "level": "intermediate",
+  "steps": [
+   "Sağlık topunu iki elinle dizlerin arasında tut, çömel.",
+   "Bacaklarla güçlü şekilde iterek topu yukarı ve geriye fırlat.",
+   "Topu al, tekrar pozisyona geç."
+  ],
+  "tips": [
+   "Tüm vücudun patlayıcı gücünü geliştirir.",
+   "Açık alanda ve çevrende kimse yokken yap."
+  ],
+  "met": 7.0,
+  "sub": "patlayici",
+  "equip": "other"
+ },
+ {
   "id": "db-shoulder-press",
   "region": "omuz",
   "name": "Dumbbell Shoulder Press",
@@ -2944,6 +3215,116 @@ export const EXERCISES = [
   "met": 3.5,
   "sub": "arka",
   "equip": "cable"
+ },
+ {
+  "id": "ext-rot-band",
+  "region": "omuz",
+  "name": "Bantla Omuz Dış Rotasyon",
+  "type": "weight",
+  "img": [
+   "img/ext-rot-band-0.jpg",
+   "img/ext-rot-band-1.jpg"
+  ],
+  "primary": [
+   "Omuz"
+  ],
+  "secondary": [],
+  "level": "beginner",
+  "steps": [
+   "Bandı dirsek hizasında sabitle, dirseğin 90° bükülü ve gövdene yapışık olsun.",
+   "Ön kolunu dışa doğru döndürerek bandı ger.",
+   "Yavaşça geri gel; tekrarlar bitince kol değiştir."
+  ],
+  "tips": [
+   "Tenisçiler için en önemli omuz koruma hareketi.",
+   "Hafif direnç, yüksek tekrar (15–20)."
+  ],
+  "met": 3.0,
+  "sub": "rotator",
+  "equip": "other"
+ },
+ {
+  "id": "ext-rot-cable",
+  "region": "omuz",
+  "name": "Kablo Omuz Dış Rotasyon",
+  "type": "weight",
+  "img": [
+   "img/ext-rot-cable-0.jpg",
+   "img/ext-rot-cable-1.jpg"
+  ],
+  "primary": [
+   "Omuz"
+  ],
+  "secondary": [],
+  "level": "beginner",
+  "steps": [
+   "Kabloyu dirsek hizasına ayarla, makineye yan dur.",
+   "Dirseğin gövdene yapışık ve 90° bükülü; tutacağı dışa doğru döndür.",
+   "Kontrollü şekilde geri gel."
+  ],
+  "tips": [
+   "Dirseğin altına katlanmış havlu koymak formu korur.",
+   "Ağırlık değil kontrol önemli."
+  ],
+  "met": 3.0,
+  "sub": "rotator",
+  "equip": "cable"
+ },
+ {
+  "id": "int-rot-band",
+  "region": "omuz",
+  "name": "Bantla Omuz İç Rotasyon",
+  "type": "weight",
+  "img": [
+   "img/int-rot-band-0.jpg",
+   "img/int-rot-band-1.jpg"
+  ],
+  "primary": [
+   "Omuz"
+  ],
+  "secondary": [],
+  "level": "beginner",
+  "steps": [
+   "Bandı dirsek hizasında yanına sabitle, dirseğin 90° bükülü.",
+   "Ön kolunu karnına doğru içe döndür.",
+   "Yavaşça geri bırak."
+  ],
+  "tips": [
+   "Dış rotasyonla birlikte yaparak omuzu dengeli güçlendir.",
+   "Omzunu öne düşürme."
+  ],
+  "met": 3.0,
+  "sub": "rotator",
+  "equip": "other"
+ },
+ {
+  "id": "band-pull-apart",
+  "region": "omuz",
+  "name": "Band Pull Apart",
+  "type": "weight",
+  "img": [
+   "img/band-pull-apart-0.jpg",
+   "img/band-pull-apart-1.jpg"
+  ],
+  "primary": [
+   "Omuz"
+  ],
+  "secondary": [
+   "Orta sırt"
+  ],
+  "level": "beginner",
+  "steps": [
+   "Bandı omuz genişliğinde, kollar önde düz tut.",
+   "Kürek kemiklerini sıkarak bandı göğsüne doğru iki yana aç.",
+   "Kontrollü şekilde başlangıca dön."
+  ],
+  "tips": [
+   "Arka omuz ve duruş için; ısınmada da kullanılır.",
+   "Omuzlarını kulaklarına doğru kaldırma."
+  ],
+  "met": 3.0,
+  "sub": "arka",
+  "equip": "other"
  },
  {
   "id": "biceps-curl",
@@ -4288,11 +4669,100 @@ export const EXERCISES = [
   "met": 3.8,
   "sub": "ust",
   "equip": "machine"
+ },
+ {
+  "id": "mb-twist",
+  "region": "karin",
+  "name": "Sağlık Topu Rotasyon Pası",
+  "type": "weight",
+  "img": [
+   "img/mb-twist-0.jpg",
+   "img/mb-twist-1.jpg"
+  ],
+  "primary": [
+   "Karın"
+  ],
+  "secondary": [
+   "Omuz",
+   "Bel"
+  ],
+  "level": "beginner",
+  "steps": [
+   "Partnerinle sırt sırta veya yan yana dur, top sende.",
+   "Gövdeni döndürerek topu partnerine ver.",
+   "Ters yönden döndürerek topu geri al; yön değiştir."
+  ],
+  "tips": [
+   "Forehand ve backhand'deki gövde rotasyonunu güçlendirir.",
+   "Dönüş kalçadan başlasın, sadece kollarla verme."
+  ],
+  "met": 5.0,
+  "sub": "yan",
+  "equip": "other"
+ },
+ {
+  "id": "overhead-slam",
+  "region": "karin",
+  "name": "Sağlık Topu Yere Vurma",
+  "type": "weight",
+  "img": [
+   "img/overhead-slam-0.jpg",
+   "img/overhead-slam-1.jpg"
+  ],
+  "primary": [
+   "Karın"
+  ],
+  "secondary": [
+   "Sırt",
+   "Omuz"
+  ],
+  "level": "beginner",
+  "steps": [
+   "Topu başının üstüne kaldır, parmak uçlarına yüksel.",
+   "Karın kaslarınla gücü yaratarak topu önüne, yere sertçe vur.",
+   "Topu dizlerini bükerek al ve tekrarla."
+  ],
+  "tips": [
+   "Servis ve smaçtaki gücün temelidir.",
+   "Sıçrayan top kullanma; yüzüne gelebilir."
+  ],
+  "met": 7.0,
+  "sub": "core",
+  "equip": "other"
+ },
+ {
+  "id": "pallof-press",
+  "region": "karin",
+  "name": "Pallof Press",
+  "type": "weight",
+  "img": [
+   "img/pallof-press-0.jpg",
+   "img/pallof-press-1.jpg"
+  ],
+  "primary": [
+   "Karın"
+  ],
+  "secondary": [
+   "Omuz"
+  ],
+  "level": "beginner",
+  "steps": [
+   "Kabloyu göğüs hizasına ayarla, makineye yan dur ve tutacağı göğsünde tut.",
+   "Kolları öne uzatırken gövdenin dönmesine izin verme.",
+   "2 sn tut, göğsüne geri getir; tekrarlar bitince taraf değiştir."
+  ],
+  "tips": [
+   "Rotasyona direnç gösteren core gücü kazandırır.",
+   "Kalça ve omuzlar hep önde kalsın."
+  ],
+  "met": 4.0,
+  "sub": "core",
+  "equip": "cable"
  }
 ];
 
 // Bölgelerin alt grupları ve ekipman türleri
-export const SUBS = {"gogus": [["ust", "Üst göğüs"], ["orta", "Orta göğüs"], ["alt", "Alt göğüs"]], "sirt": [["kanat", "Kanat"], ["orta", "Orta sırt"], ["trapez", "Trapez"], ["bel", "Bel"]], "bacak": [["on", "Ön bacak"], ["arka", "Arka bacak"], ["kalca", "Kalça"], ["baldir", "Baldır"]], "omuz": [["on", "Ön omuz"], ["yan", "Yan omuz"], ["arka", "Arka omuz"]], "kol": [["biceps", "Biceps"], ["triceps", "Triceps"], ["onkol", "Ön kol"]], "karin": [["ust", "Üst karın"], ["alt", "Alt karın"], ["yan", "Yan karın"], ["core", "Core"]]};
+export const SUBS = {"gogus": [["ust", "Üst göğüs"], ["orta", "Orta göğüs"], ["alt", "Alt göğüs"]], "sirt": [["kanat", "Kanat"], ["orta", "Orta sırt"], ["trapez", "Trapez"], ["bel", "Bel"]], "bacak": [["on", "Ön bacak"], ["arka", "Arka bacak"], ["kalca", "Kalça"], ["baldir", "Baldır"], ["patlayici", "Sıçrama & çeviklik"]], "omuz": [["on", "Ön omuz"], ["yan", "Yan omuz"], ["arka", "Arka omuz"], ["rotator", "Rotator cuff"]], "kol": [["biceps", "Biceps"], ["triceps", "Triceps"], ["onkol", "Ön kol"]], "karin": [["ust", "Üst karın"], ["alt", "Alt karın"], ["yan", "Yan karın"], ["core", "Core"]]};
 export const EQUIPMENT = [["barbell", "Halter"], ["dumbbell", "Dambıl"], ["machine", "Makine"], ["cable", "Kablo"], ["body", "Vücut ağırlığı"], ["other", "Diğer"]];
 
 export const ALIAS = {"superman": "hyperextension"};

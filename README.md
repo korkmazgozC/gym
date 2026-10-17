@@ -1,6 +1,6 @@
 # Gym Takip
 
-**Set, tekrar ve ağırlık takibi · gerçek egzersiz videoları · kişisel program ve beslenme planı.**
+**Gym, tenis ve pilates için kişisel takip · gerçek egzersiz videoları · hareketli çizimler · kişisel program ve beslenme planı.**
 iPhone ve Android'de uygulama gibi çalışan, **internet olmadan da kullanılabilen** ücretsiz bir web uygulaması (PWA).
 
 **▶ Uygulamayı aç: [korkmazgozc.github.io/gym](https://korkmazgozc.github.io/gym/)**
@@ -8,6 +8,21 @@ iPhone ve Android'de uygulama gibi çalışan, **internet olmadan da kullanılab
 ![Gym Takip ekranları](docs/banner.jpg)
 
 ## Özellikler
+
+İlk açılışta sporunu seçersin (**Gym**, **Tenis** veya **Pilates**); uygulama seçtiğin spora göre şekillenir. Spor istediğin zaman Ayarlar'dan değiştirilebilir.
+
+**Tenis**
+- Maç ve antrenman kaydı: tür (tekli, çiftli, antrenman, top atma), süre, yoğunluk, skor, sonuç, kort zemini; galibiyet oranı, saat ve zemin istatistikleri
+- 9 vuruş tekniği (forehand, backhand, servis, vole, smaç…) hareketli çizim, adım adım anlatım, sık yapılan hatalar ve alıştırmalarla
+- Tenise özel 3 kondisyon programı: alt vücut ve çeviklik, omuz koruma (rotator cuff), core ve rotasyon
+- Rehberli maç öncesi ısınma ve maç sonrası esneme rutinleri (süreli, sesli uyarılı)
+
+**Pilates**
+- 29 mat ve 9 reformer hareketi hareketli çizimlerle; nefes, ipuçları, kolaylaştırma ve zorlaştırma
+- Seviyeye göre hazır seanslar ve rehberli akış: hareketler sırayla, süreli ve sesli uyarıyla ekrana gelir
+- Stüdyo (reformer) seanslarını kaydetme
+
+**Gym**
 
 **Antrenman**
 - Hedefine ve haftada kaç gün spor yapabildiğine göre **otomatik program** (Tüm Vücut, Üst/Alt, İtme/Çekme/Bacak) ya da kendi programın
@@ -72,6 +87,8 @@ Framework ve derleme adımı olmadan düz HTML, CSS ve JavaScript (ES modülleri
 | `exercises.js` | 138 hareketin bilgileri, alt grupları, ekipmanı, görselleri ve videoları |
 | `nutrition.js` | Yiyecek değerleri ve menü oluşturucu |
 | `bodymap.js` | Ön ve arka vücut haritası (SVG) |
+| `sports.js` | Tenis ve pilates içerikleri: vuruşlar, programlar, rutinler, seanslar |
+| `figure.js` | Hareketli çizim motoru (2D figür, reformer) |
 | `sw.js` | Service worker: çevrimdışı önbellek, video indirme |
 | `img/`, `vid/` | Hareket fotoğrafları ve videoları |
 

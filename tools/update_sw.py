@@ -1,4 +1,4 @@
-"""sw.js içindeki IMAGES listesini exercises.js'deki fotoğraf ve video kapaklarından yeniden üretir.
+"""sw.js içindeki IMAGES listesini img/ klasöründeki fotoğraflardan ve video kapaklarından yeniden üretir.
 
 Kullanım (repo kökünden):  python tools/update_sw.py
 Ardından sw.js içindeki VERSION değerini artırmayı unutma.
@@ -8,10 +8,14 @@ import os
 import re
 
 ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-ex_src = open(os.path.join(ROOT, 'exercises.js'), encoding='utf-8').read()
-paths = set(re.findall(r'"((?:img|vid)/[^"]+\.jpg)"', ex_src))
-paths |= set(re.findall(r"'((?:img|vid)/[^']+\.jpg)'", open(os.path.join(ROOT, 'app.js'), encoding='utf-8').read()))
-missing = [p for p in paths if not os.path.exists(os.path.join(ROOT, p))]
+# img/ klasöründeki tüm fotoğraflar + video kapakları (vid/*.jpg)
+paths = {f'img/{f}' for f in os.listdir(os.path.join(ROOT, 'img')) if f.endswith('.jpg')}
+paths |= {f'vid/{f}' for f in os.listdir(os.path.join(ROOT, 'vid')) if f.endswith('.jpg')}
+# Kodda adı geçen ama diskte olmayan görsel var mı?
+refs = set()
+for name in ('exercises.js', 'app.js', 'sports.js'):
+    refs |= set(re.findall(r"""["'`]((?:img|vid)/[^"'`$]+\.jpg)""", open(os.path.join(ROOT, name), encoding='utf-8').read()))
+missing = sorted(r for r in refs if r not in paths)
 if missing:
     raise SystemExit(f'Eksik dosyalar: {missing}')
 images = sorted(f'./{p}' for p in paths)

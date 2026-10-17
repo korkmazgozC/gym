@@ -593,9 +593,10 @@ body.bare #view { padding: 0; max-width: none; }
 .next .eyebrow { color: var(--accent); }
 .next h2 { font: 800 27px/1.15 var(--font-d); letter-spacing: -0.025em; margin-top: 6px; }
 .next .meta { display: flex; flex-wrap: wrap; gap: 6px; margin: 12px 0 16px; }
-.next .ex-strip { display: flex; gap: 6px; margin-bottom: 16px; }
-.next .ex-strip .thumb { width: 52px; height: 40px; border-radius: 10px; }
-.next .ex-strip .more { width: 52px; height: 40px; border-radius: 10px; background: var(--surface-2); display: grid; place-items: center; font-size: 13px; font-weight: 700; color: var(--text-2); }
+.ex-strip { display: flex; gap: 6px; overflow: hidden; }
+.next .ex-strip { margin-bottom: 16px; }
+.ex-strip .thumb { width: 52px; height: 40px; border-radius: 10px; flex: none; }
+.ex-strip .more { width: 52px; height: 40px; border-radius: 10px; background: var(--surface-2); display: grid; place-items: center; font-size: 13px; font-weight: 700; color: var(--text-2); }
 .next .btn { height: 56px; font-size: 17px; }
 .next .alt { display: block; text-align: center; margin-top: 12px; color: var(--text-2); font-weight: 600; font-size: 14px; width: 100%; }
 .mini-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-top: 10px; }
@@ -754,3 +755,91 @@ body.bare #view { padding: 0; max-width: none; }
 .health-warn b { display: flex; align-items: center; gap: 8px; }
 .health-warn b svg.i { width: 18px; height: 18px; color: var(--warn); }
 .health-warn p { margin: 8px 0 0; color: var(--text-2); font-size: 14px; line-height: 1.5; }
+
+/* ═══════════════ Hareket çizimleri */
+.fig { width: 100%; height: 100%; display: block; }
+.fig .near { fill: #ececef; }
+.fig .far { fill: #8e8e98; }
+.fig .near.hl { fill: var(--accent); }
+.fig .far.hl { fill: #8ea52b; }
+.fig .racket { fill: #d6d6db; }
+.fig .racket-h { fill: none; stroke: #d6d6db; stroke-width: 2.2; }
+.fig-mat { fill: #2a2a31; }
+.fig-floor { stroke: #2e2e35; stroke-width: 2; }
+.fig-rail, .fig-leg { fill: #34343c; }
+.fig-carriage { fill: #4d4d57; }
+.fig-box { fill: #44444d; }
+.fig-bar { stroke: #6b6b76; stroke-width: 4; stroke-linecap: round; }
+.fig-bar-c { fill: #8b8b96; }
+.fig-card { position: relative; margin: 0 -16px; background: radial-gradient(120% 90% at 50% 20%, #1b1c20, #0d0d0f 70%); aspect-ratio: 1.3; max-height: 52vh; }
+.fig-card .fig-stage { position: absolute; inset: 40px 18px 14px; }
+.fig-ctl { position: absolute; right: 12px; top: 12px; display: flex; gap: 6px; }
+.fig-ctl button { height: 30px; padding: 0 12px; border-radius: 999px; font-size: 12.5px; font-weight: 700; color: #fff; }
+.fig-ctl button.on { background: var(--accent); color: var(--accent-ink); }
+.fig-thumb { width: 64px; height: 50px; border-radius: 12px; background: #17171a; flex: none; padding: 3px; overflow: hidden; }
+.thumb.fig-thumb { padding: 3px; background: #17171a; }
+.item .fig-thumb { width: 60px; height: 46px; }
+
+/* Etkinlik satırları */
+.act-row { display: flex; align-items: center; gap: 12px; padding: 10px 0; cursor: pointer; }
+.act-row + .act-row { border-top: 1px solid var(--line); }
+.act-ic { width: 38px; height: 38px; border-radius: 12px; display: grid; place-items: center; flex: none; }
+.act-ic svg.i { width: 19px; height: 19px; }
+.act-ic.tennis { background: rgba(212,245,60,.12); color: var(--accent); }
+.act-ic.pilates { background: rgba(167,139,250,.14); color: var(--violet); }
+.pill.good { background: rgba(52,211,153,.14); color: var(--good); }
+.prog-card .card-title { font-size: 16.5px; }
+.prog-card .btn { margin-top: 0; }
+
+/* Spor seçimi (Ayarlar) */
+.sport-pick { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.sport-pick button { padding: 14px 6px 12px; border-radius: 18px; background: var(--surface); border: 1.5px solid var(--line); display: grid; justify-items: center; gap: 6px; color: var(--text-2); }
+.sport-pick button svg.i { width: 26px; height: 26px; }
+.sport-pick button b { font-size: 14px; }
+.sport-pick button.on { border-color: var(--accent); background: var(--accent-soft); color: var(--accent); }
+.choice.compact { padding: 14px 16px; }
+
+/* Teknik adımları, alıştırma ve nefes kartları */
+ol.steps.phase li b { display: block; font-size: 15px; margin-bottom: 2px; }
+ol.steps.phase li span { color: var(--text-2); }
+.card.drill + .card.drill { margin-top: 10px; }
+.card.drill b { font-size: 15px; }
+.card.drill p { margin: 6px 0 0; color: var(--text-2); font-size: 14px; line-height: 1.5; }
+.card.breath { display: flex; gap: 12px; align-items: flex-start; }
+.card.breath svg.i { width: 20px; height: 20px; color: var(--blue); flex: none; margin-top: 2px; }
+.card.breath b { display: block; }
+.card.breath span { color: var(--text-2); font-size: 14px; line-height: 1.5; }
+
+/* ═══════════════ Rehberli oynatıcı */
+body.playing { overscroll-behavior: none; }
+.player { min-height: 100vh; min-height: 100dvh; display: flex; flex-direction: column; padding: calc(env(safe-area-inset-top) + 10px) 18px calc(env(safe-area-inset-bottom) + 18px); }
+.pl-top { display: flex; align-items: center; gap: 12px; }
+.pl-x { width: 38px; height: 38px; border-radius: 50%; background: var(--surface); display: grid; place-items: center; color: var(--text-2); flex: none; }
+.pl-prog { flex: 1; height: 6px; border-radius: 3px; background: var(--surface-3); overflow: hidden; }
+.pl-prog i { display: block; height: 100%; width: 0; background: var(--accent); border-radius: 3px; transition: width .3s linear; }
+.pl-count { font-size: 13px; font-weight: 700; color: var(--text-2); min-width: 44px; text-align: right; }
+.pl-media { margin: 16px -18px 0; aspect-ratio: 1.3; max-height: 40vh; background: radial-gradient(120% 90% at 50% 20%, #1b1c20, #0d0d0f 70%); position: relative; padding: 10px 16px; }
+.pl-photos { position: absolute; inset: 0; background: #000; }
+.pl-photos img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: contain; opacity: 0; transition: opacity .5s ease; }
+.pl-photos img.on { opacity: 1; }
+.pl-info { text-align: center; margin-top: 16px; }
+.pl-phase { font-size: 12.5px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--accent); }
+.pl-info h1 { font: 800 26px/1.15 var(--font-d); letter-spacing: -0.02em; margin: 6px 0 0; }
+.pl-sub { color: var(--text-2); font-weight: 600; margin-top: 4px; min-height: 20px; }
+.pl-cue { color: var(--text-2); font-size: 14px; line-height: 1.5; margin: 10px auto 0; max-width: 460px; min-height: 42px; }
+.pl-timer { position: relative; width: 132px; height: 132px; margin: 12px auto 0; }
+.pl-timer svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+.pl-timer .trk { fill: none; stroke: var(--surface-3); stroke-width: 8; }
+.pl-timer .val { fill: none; stroke: var(--accent); stroke-width: 8; stroke-linecap: round; transition: stroke-dashoffset .2s linear; }
+.pl-timer .val.ready { stroke: var(--blue); }
+.pl-time { position: absolute; inset: 0; display: grid; place-items: center; font: 800 32px var(--font-d); }
+.pl-ctl { display: flex; justify-content: center; align-items: center; gap: 22px; margin-top: auto; padding-top: 14px; }
+.pl-ctl button { width: 54px; height: 54px; border-radius: 50%; background: var(--surface-2); display: grid; place-items: center; color: var(--text); }
+.pl-ctl button.main { width: 74px; height: 74px; background: var(--accent); color: var(--accent-ink); }
+.pl-ctl button.main svg.i { width: 30px; height: 30px; }
+.pl-next { text-align: center; color: var(--text-3); font-size: 13.5px; margin-top: 14px; min-height: 18px; }
+.pl-next b { color: var(--text-2); }
+.pl-done { margin: auto 0; text-align: center; }
+.pl-done .ok { width: 76px; height: 76px; border-radius: 24px; display: grid; place-items: center; margin: 0 auto 16px; background: var(--accent); color: var(--accent-ink); }
+.pl-done .ok svg.i { width: 40px; height: 40px; }
+.pl-done h1 { font: 800 30px var(--font-d); margin: 0 0 6px; }

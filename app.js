@@ -1,6 +1,8 @@
 import { REGIONS, EXERCISES, EX_BY_ID, REGION_BY_ID, VIDEO_MB, SUBS, EQUIPMENT } from './exercises.js';
 import { FOODS, DIETS, HEALTH, HEALTH_BY_ID, buildDayMenu } from './nutrition.js';
 import { bodyMap } from './bodymap.js';
+import { mountFigure, figureThumb } from './figure.js';
+import { SPORTS, TENNIS_TYPES, SURFACES, INTENSITY, STROKES, TENNIS_PROGRAMS, ROUTINE_MOVES, ROUTINES, PFOCUS, PILATES, PILATES_BY_ID, PILATES_SESSIONS } from './sports.js';
 
 // ═════════════════════════ Yardımcılar
 const $ = (s, el = document) => el.querySelector(s);
@@ -37,6 +39,8 @@ function weekStart(d = new Date()) {
 const P = {
   home: '<path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9v11.5h13V9"/><path d="M10 20.5v-6h4v6"/>',
   swap: '<path d="M7 4 3.5 7.5 7 11"/><path d="M3.5 7.5h13"/><path d="M17 13l3.5 3.5L17 20"/><path d="M20.5 16.5h-13"/>',
+  tennis: '<circle cx="12" cy="12" r="8.5"/><path d="M5.2 7.2c2.6 1.4 4 3 4 4.8s-1.4 3.4-4 4.8M18.8 7.2c-2.6 1.4-4 3-4 4.8s1.4 3.4 4 4.8"/>',
+  pilates: '<circle cx="12" cy="5" r="2.2"/><path d="M3.5 11.5c3 .8 5.6 1.2 8.5 1.2s5.5-.4 8.5-1.2M12 12.7V16l-3.5 4.5M12 16l3.5 4.5"/>',
   dumbbell: '<path d="M6.5 6v12M17.5 6v12M3.5 9v6M20.5 9v6M6.5 12h11"/>',
   calendar: '<rect x="3.5" y="5" width="17" height="15.5" rx="3"/><path d="M3.5 10h17M8 3v4M16 3v4"/>',
   user: '<circle cx="12" cy="8" r="4"/><path d="M4.5 20.5c1.4-3.8 4.3-5.5 7.5-5.5s6.1 1.7 7.5 5.5"/>',
@@ -86,7 +90,7 @@ function normalize(d) {
   return {
     sets: d.sets || [], custom: d.custom || [], weights: d.weights || [],
     routines: d.routines || [], workouts: d.workouts || [], session: d.session || null,
-    measures: d.measures || [], cardio: d.cardio || [], food: d.food || {}, menu: d.menu || {}, notes: d.notes || {},
+    measures: d.measures || [], cardio: d.cardio || [], food: d.food || {}, menu: d.menu || {}, notes: d.notes || {}, activities: d.activities || [],
     settings: { ...DEFAULT_SETTINGS, ...d.settings },
     profile: { ...DEFAULT_PROFILE, ...d.profile },
   };
@@ -206,6 +210,7 @@ const cardioOn = day => db.cardio.filter(c => c.date === day);
 function dayStats(day) {
   const st = setStats(setsOn(day));
   for (const c of cardioOn(day)) { st.kcal += c.kcal; st.min += c.min; }
+  for (const a of db.activities) if (a.date === day) { st.kcal += a.kcal || 0; st.min += a.min || 0; }
   return st;
 }
 
@@ -314,8 +319,6 @@ $('#back').innerHTML = icon('back');
 $('#back').addEventListener('click', () => (history.length > 1 ? history.back() : (location.hash = '#/today')));
 addEventListener('scroll', () => top.classList.toggle('scrolled', scrollY > 30), { passive: true });
 
-const TABS = [['today', 'Bugün', 'home'], ['lib', 'Hareketler', 'dumbbell'], ['nutrition', 'Beslenme', 'fork'], ['hist', 'Geçmiş', 'calendar'], ['profile', 'Profil', 'user']];
-$('#tabs').innerHTML = TABS.map(([id, t, ic]) => `<a href="#/${id}" data-tab="${id}">${icon(ic)}<span>${t}</span></a>`).join('');
 
 function thumb(ex) {
   const a = animOf(ex);
@@ -345,15 +348,17 @@ const routes = {
   today: renderToday, lib: renderLib, pick: renderPick, ex: renderEx, hist: renderHist, profile: renderProfile, new: renderNew,
   workout: renderWorkout, summary: renderSummary, programs: renderPrograms, routine: renderRoutine,
   nutrition: renderNutrition, settings: renderSettings, welcome: renderWelcome,
+  tennis: renderTennis, stroke: renderStroke, pilates: renderPilates, pmove: renderPMove, player: renderPlayer,
 };
-const TAB_OF = { ex: 'lib', new: 'lib', pick: 'lib', workout: 'today', summary: 'today', programs: 'profile', routine: 'profile', settings: 'profile', welcome: 'today' };
+const TAB_OF = { workout: 'today', summary: 'today', programs: 'profile', routine: 'profile', settings: 'profile', welcome: 'today', player: 'today', stroke: 'tennis', pmove: 'pilates' };
 function route() {
   const [name = 'today', ...args] = location.hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
   const fn = routes[name] || renderToday;
   if (cleanup) { cleanup(); cleanup = null; }
   closeSheet();
   document.body.classList.remove('bare');
-  const tab = TAB_OF[name] || (routes[name] ? name : 'today');
+  const second = SPORT_TAB[sport()][0];
+  const tab = ['ex', 'new', 'pick', 'lib'].includes(name) ? (sport() === 'gym' ? 'lib' : second) : TAB_OF[name] || (routes[name] ? name : 'today');
   $$('#tabs a').forEach(a => a.classList.toggle('on', a.dataset.tab === tab));
   currentRoute = name;
   view.innerHTML = '';
@@ -648,6 +653,8 @@ function editSetSheet(ex, s, after) {
 
 // ═════════════════════════ Bugün
 function renderToday() {
+  if (sport() === 'tennis') return renderTodayTennis();
+  if (sport() === 'pilates') return renderTodayPilates();
   const today = dayKey();
   const st = dayStats(today);
   const m = metrics();
@@ -1308,6 +1315,515 @@ function supersetSheet(idx, after) {
   });
 }
 
+// ═════════════════════════ Spor modları (gym / tenis / pilates)
+const sport = () => (SPORTS[db.settings.sport] ? db.settings.sport : 'gym');
+const SPORT_TAB = { gym: ['lib', 'Hareketler', 'dumbbell'], tennis: ['tennis', 'Tenis', 'tennis'], pilates: ['pilates', 'Pilates', 'pilates'] };
+function renderTabs() {
+  const tabs = [['today', 'Bugün', 'home'], SPORT_TAB[sport()], ['nutrition', 'Beslenme', 'fork'], ['hist', 'Geçmiş', 'calendar'], ['profile', 'Profil', 'user']];
+  $('#tabs').innerHTML = tabs.map(([id, t, ic]) => `<a href="#/${id}" data-tab="${id}">${icon(ic)}<span>${t}</span></a>`).join('');
+}
+const LEVEL_NAMES = { tennis: ['Yeni başlıyorum', 'Bir süredir oynuyorum', 'İleri / turnuva'], pilates: ['Başlangıç', 'Orta', 'İleri'] };
+const levelOf = () => clamp(db.profile.level || 1, 1, 3);
+
+// Etkinlik kayıtları (tenis maçı/antrenmanı, rutin, pilates seansı)
+const actOn = day => db.activities.filter(a => a.date === day);
+const actKcal = (met, min, factor = 1) => met * factor * bodyKg() * (min / 60);
+const typeName = a => a.sport === 'tennis' && a.kind !== 'routine' ? (TENNIS_TYPES.find(t => t[0] === a.kind)?.[1] || 'Tenis') : (a.name || 'Etkinlik');
+function addActivity(a) {
+  db.activities.push({ id: uid(), date: dayKey(), ts: Date.now(), ...a });
+  save();
+}
+function activityRow(a, { del = false } = {}) {
+  const ic = a.sport === 'tennis' ? 'tennis' : a.sport === 'pilates' ? 'pilates' : 'run';
+  const res = a.result === 'win' ? '<span class="pill good">Galibiyet</span>' : a.result === 'loss' ? '<span class="pill fire">Mağlubiyet</span>' : '';
+  const meta = [a.min ? `${fmtInt(a.min)} dk` : '', a.score ? esc(a.score) : '', a.surface ? SURFACES.find(s => s[0] === a.surface)?.[1] : ''].filter(Boolean).join(' · ');
+  return `<div class="act-row" ${del ? `data-act="${a.id}"` : ''}><div class="plan-icon act-ic ${a.sport}">${icon(ic)}</div>
+    <div class="grow"><div style="font-weight:600">${esc(typeName(a))}</div><div class="faint small num">${meta}${a.note ? ` · ${esc(a.note)}` : ''}</div></div>
+    ${res}<span class="pill fire num">${icon('flame')}${fmtInt(a.kcal)}</span></div>`;
+}
+function bindActivityDelete(root, after) {
+  $$('[data-act]', root).forEach(r => r.addEventListener('click', () => {
+    if (!confirm('Bu kayıt silinsin mi?')) return;
+    db.activities = db.activities.filter(a => a.id !== r.dataset.act); save(); after();
+  }));
+}
+
+// Tenis maçı / antrenmanı kaydı
+function tennisLogSheet(after, preset = {}) {
+  let type = preset.kind || 'single', intensity = 'medium', result = '', surface = db.settings.surface || 'hard';
+  const isMatch = () => type === 'single' || type === 'double';
+  const { el, close } = openSheet(`
+    <div class="sheet-title">Tenis kaydı</div>
+    <div class="opt-grid" id="tl-type">${TENNIS_TYPES.map(([k, n]) => `<button class="opt ${k === type ? 'on' : ''}" data-k="${k}">${n}</button>`).join('')}</div>
+    <div class="in-row" style="margin-top:10px">
+      <div class="in-box"><label>Süre · dk</label><input id="tl-min" inputmode="numeric" value="${preset.min || 60}"></div>
+      <div class="in-box"><label>Yoğunluk</label><div class="mini-seg" id="tl-int">${INTENSITY.map(([k, n]) => `<button data-v="${k}" class="${k === intensity ? 'on' : ''}">${n}</button>`).join('')}</div></div>
+    </div>
+    <div id="tl-match">
+      <div class="card-label" style="margin:14px 4px 8px">Sonuç</div>
+      <div class="mini-seg" id="tl-res"><button data-v="win">Kazandım</button><button data-v="loss">Kaybettim</button><button data-v="" class="on">Belirtme</button></div>
+      <div class="in-row" style="margin-top:10px">
+        <div class="in-box"><label>Skor</label><input id="tl-score" placeholder="6-4 3-6 10-7" autocomplete="off"></div>
+        <div class="in-box"><label>Rakip (isteğe bağlı)</label><input id="tl-opp" placeholder="—" autocomplete="off"></div>
+      </div>
+    </div>
+    <div class="card-label" style="margin:14px 4px 8px">Kort</div>
+    <div class="mini-seg" id="tl-surf">${SURFACES.map(([k, n]) => `<button data-v="${k}" class="${k === surface ? 'on' : ''}">${n}</button>`).join('')}</div>
+    <textarea class="note-in" id="tl-note" style="min-height:64px;margin-top:12px" maxlength="200" placeholder="Not: ör. servis iyiydi, backhand hatası çoktu">${esc(preset.note || '')}</textarea>
+    <div class="sheet-actions"><button class="btn ghost" id="tl-cancel">Vazgeç</button><button class="btn" id="tl-save">Kaydet</button></div>`);
+  const sync = () => { $('#tl-match', el).hidden = !isMatch(); };
+  const seg = (sel, set) => $$(`${sel} button`, el).forEach(b => b.addEventListener('click', () => { set(b.dataset.v); $$(`${sel} button`, el).forEach(x => x.classList.toggle('on', x === b)); }));
+  $$('#tl-type .opt', el).forEach(b => b.addEventListener('click', () => {
+    type = b.dataset.k; $$('#tl-type .opt', el).forEach(x => x.classList.toggle('on', x === b));
+    if (isMatch() && num($('#tl-min', el).value) === 60) $('#tl-min', el).value = 90;
+    sync();
+  }));
+  seg('#tl-int', v => (intensity = v)); seg('#tl-res', v => (result = v)); seg('#tl-surf', v => (surface = v));
+  sync();
+  $('#tl-cancel', el).addEventListener('click', close);
+  $('#tl-save', el).addEventListener('click', () => {
+    const min = clamp(Math.round(num($('#tl-min', el).value)), 1, 600);
+    const met = TENNIS_TYPES.find(t => t[0] === type)[2], f = INTENSITY.find(i => i[0] === intensity)[2];
+    const a = { sport: 'tennis', kind: type, min, intensity, surface, kcal: actKcal(met, min, f), note: $('#tl-note', el).value.trim() || undefined };
+    if (isMatch()) { a.result = result || undefined; a.score = $('#tl-score', el).value.trim() || undefined; a.opp = $('#tl-opp', el).value.trim() || undefined; }
+    db.settings.surface = surface;
+    addActivity(a); close();
+    toast(a.result === 'win' ? 'Tebrikler! Galibiyet kaydedildi' : 'Kaydedildi', a.result === 'win' ? 'trophy' : 'check');
+    after();
+  });
+}
+// Pilates stüdyo / ev seansı kaydı (rehberli akış dışında)
+function pilatesLogSheet(after) {
+  const kinds = [['reformer', 'Reformer (stüdyo)', 3.5], ['mat-studio', 'Mat (stüdyo / ders)', 3.0], ['home', 'Evde', 3.0]];
+  let kind = db.profile.place === 'mat' ? 'mat-studio' : 'reformer', intensity = 'medium';
+  const { el, close } = openSheet(`
+    <div class="sheet-title">Pilates seansı kaydet</div>
+    <div class="opt-grid" id="pl-kind" style="grid-template-columns:1fr">${kinds.map(([k, n]) => `<button class="opt ${k === kind ? 'on' : ''}" data-k="${k}">${n}</button>`).join('')}</div>
+    <div class="in-row" style="margin-top:10px">
+      <div class="in-box"><label>Süre · dk</label><input id="pl-min" inputmode="numeric" value="50"></div>
+      <div class="in-box"><label>Yoğunluk</label><div class="mini-seg" id="pl-int">${INTENSITY.map(([k, n]) => `<button data-v="${k}" class="${k === intensity ? 'on' : ''}">${n}</button>`).join('')}</div></div>
+    </div>
+    <textarea class="note-in" id="pl-note" style="min-height:64px;margin-top:12px" maxlength="200" placeholder="Not: ör. yay ayarı, eğitmen önerisi"></textarea>
+    <div class="sheet-actions"><button class="btn ghost" id="pl-cancel">Vazgeç</button><button class="btn" id="pl-save">Kaydet</button></div>`);
+  $$('#pl-kind .opt', el).forEach(b => b.addEventListener('click', () => { kind = b.dataset.k; $$('#pl-kind .opt', el).forEach(x => x.classList.toggle('on', x === b)); }));
+  $$('#pl-int button', el).forEach(b => b.addEventListener('click', () => { intensity = b.dataset.v; $$('#pl-int button', el).forEach(x => x.classList.toggle('on', x === b)); }));
+  $('#pl-cancel', el).addEventListener('click', close);
+  $('#pl-save', el).addEventListener('click', () => {
+    const min = clamp(Math.round(num($('#pl-min', el).value)), 1, 300);
+    const k = kinds.find(x => x[0] === kind), f = INTENSITY.find(i => i[0] === intensity)[2];
+    addActivity({ sport: 'pilates', kind, name: `Pilates · ${k[1]}`, min, intensity, kcal: actKcal(k[2], min, f), note: $('#pl-note', el).value.trim() || undefined });
+    close(); toast('Seans kaydedildi', 'check'); after();
+  });
+}
+
+// Bugün ekranının ortak parçaları
+function nutritionSummary(m, st, today) {
+  if (!m) return '';
+  const f = db.food[today] || { kcal: 0, protein: 0, water: 0 };
+  const kcalT = m.goalKcal + st.kcal, waterT = (m.water + (st.min > 20 ? 0.5 : 0)) * 1000;
+  const bar = (v, t, c) => `<div class="bar" style="margin-top:6px"><i style="width:${clamp((v / t) * 100, 0, 100)}%;background:${c}"></i></div>`;
+  return `<div class="sec"><h2>Beslenme</h2><a href="#/nutrition">Menüyü gör</a></div>
+    <a class="card" href="#/nutrition" style="display:block">
+      <div class="row"><div class="grow"><div class="card-label">Kalori</div><div class="kcal-big" style="margin-top:4px"><b>${fmtInt(f.kcal)}</b><span>/ ${fmtInt(kcalT)} kcal</span></div></div>${icon('chev', 'chev')}</div>
+      ${bar(f.kcal, kcalT, 'var(--fire)')}
+      <div class="targets" style="grid-template-columns:1fr 1fr;margin-top:14px">
+        <div><div class="card-label">Protein</div><b class="num" style="font-size:16px">${fmtInt(f.protein)} / ${fmtInt(m.protein)} g</b>${bar(f.protein, m.protein, 'var(--accent)')}</div>
+        <div><div class="card-label">Su</div><b class="num" style="font-size:16px">${fmtN(f.water / 1000)} / ${fmtN(waterT / 1000)} L</b>${bar(f.water, waterT, 'var(--blue)')}</div>
+      </div></a>`;
+}
+function weekBlock(today) {
+  const ws = weekStart();
+  const days = [...Array(7)].map((_, i) => { const d = new Date(ws); d.setDate(ws.getDate() + i); return dayKey(d); });
+  const kc = days.map(d => dayStats(d).kcal), maxK = Math.max(...kc, 1);
+  return `<div class="sec"><h2>Bu hafta</h2><span class="faint small num">${fmtInt(kc.reduce((a, b) => a + b, 0))} kcal</span></div>
+    <div class="card"><div class="week">${days.map((d, i) => `<div class="d ${d === today ? 'today' : ''}">
+      <div class="b ${kc[i] ? 'on' : ''}" style="height:${kc[i] ? Math.max(14, (kc[i] / maxK) * 70) : 6}px"></div>
+      <span>${['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'][i]}</span></div>`).join('')}</div></div>`;
+}
+function activeDaysThisWeek() {
+  const ws = dayKey(weekStart());
+  return new Set([...db.sets.map(s => s.date), ...db.cardio.map(c => c.date), ...db.activities.map(a => a.date)].filter(d => d >= ws)).size;
+}
+const helloText = () => { const h = new Date().getHours(); return h < 6 ? 'İyi geceler' : h < 12 ? 'Günaydın' : h < 18 ? 'İyi günler' : 'İyi akşamlar'; };
+function miniStats(st) {
+  return `<div class="mini-stats">
+    <div><span>${icon('flame')} Yakılan</span><b>${fmtInt(st.kcal)}<small>kcal</small></b></div>
+    <div><span>${icon('pulse')} Süre</span><b>${fmtInt(st.min)}<small>dk</small></b></div>
+    <a href="#/hist"><span>${icon('calendar')} Bu hafta</span><b>${activeDaysThisWeek()}/${db.profile.days || 3}<small>gün</small></b></a>
+  </div>`;
+}
+// Sıradaki tenis kondisyon programı
+function nextTennisProgram() {
+  const last = [...db.workouts].sort((a, b) => b.end - a.end).find(w => w.key?.startsWith('tennis-'));
+  const i = last ? (TENNIS_PROGRAMS.findIndex(p => p.key === last.key) + 1) % TENNIS_PROGRAMS.length : 0;
+  return TENNIS_PROGRAMS[i];
+}
+const programDay = p => ({ key: p.key, name: `Tenis kondisyonu · ${p.name}`, items: p.items.filter(i => getEx(i.exId)) });
+
+// ═════════════════════════ Tenis: Bugün
+function renderTodayTennis() {
+  const today = dayKey(), st = dayStats(today), m = metrics();
+  setHeader('Bugün');
+  const ws = dayKey(weekStart());
+  const tennis = db.activities.filter(a => a.sport === 'tennis' && a.kind !== 'routine');
+  const week = tennis.filter(a => a.date >= ws);
+  const hours = week.reduce((s, a) => s + a.min, 0) / 60;
+  const matches = tennis.filter(a => a.result);
+  const recent = matches.slice(-20), wins = recent.filter(a => a.result === 'win').length;
+  const prog = nextTennisProgram();
+  let html = pageHead(fmtDay(today), helloText());
+  html += `<div class="next tennis-hero"><div class="eyebrow">Tenis · bu hafta</div>
+    <h2>${week.length ? `${fmtN(hours, 1)} saat · ${week.length} seans` : 'Korta çıkmaya hazır mısın?'}</h2>
+    <div class="meta">${recent.length ? `<span class="pill accent">${icon('trophy')}Galibiyet %${fmtInt((wins / recent.length) * 100)}</span>` : ''}<span class="pill">${matches.length} maç</span><span class="pill">${esc(LEVEL_NAMES.tennis[levelOf() - 1])}</span></div>
+    <button class="btn" id="t-log">${icon('plus')} Maç / antrenman kaydet</button>
+    <div class="row" style="justify-content:center;gap:22px;margin-top:12px">
+      <a class="alt" href="#/player/routine/tennis-warmup" style="width:auto;margin:0">Maç öncesi ısınma</a>
+      <a class="alt" href="#/player/routine/tennis-stretch" style="width:auto;margin:0">Maç sonrası esneme</a></div></div>`;
+  html += miniStats(st);
+  html += `<div class="sec"><h2>Kondisyon</h2><a href="#/tennis/kondisyon">Programlar</a></div>
+    <div class="card prog-card"><div class="row"><div class="grow"><div class="card-label">Sıradaki program</div><div class="card-title" style="margin-top:4px">${esc(prog.name)}</div><div class="faint small">${esc(prog.desc)} · ${prog.items.length} hareket</div></div></div>
+      <div class="ex-strip" style="margin-top:12px">${prog.items.slice(0, 5).map(i => thumb(getEx(i.exId))).join('')}</div>
+      <button class="btn ghost" id="t-prog" style="margin-top:12px">${icon('play')} Başla</button></div>`;
+  if (!profileReady()) html += `<a class="slim" href="#/profile"><div class="ic" style="background:var(--blue-soft);color:var(--blue)">${icon('user')}</div><div class="grow"><b>Profilini tamamla</b><span>Kalori ihtiyacın ve beslenme planın hesaplansın</span></div>${icon('chev', 'chev')}</a>`;
+  html += backupReminder();
+  const last = [...db.activities].filter(a => a.sport === 'tennis').slice(-5).reverse();
+  if (last.length) html += `<div class="sec"><h2>Son kayıtlar</h2><a href="#/hist">Tümü</a></div><div class="card">${last.map(a => activityRow(a, { del: true })).join('')}</div>`;
+  html += nutritionSummary(m, st, today) + weekBlock(today);
+  view.innerHTML = html;
+  const rerender = () => { const y = scrollY; renderTodayTennis(); scrollTo(0, y); };
+  $('#t-log').addEventListener('click', () => tennisLogSheet(rerender));
+  $('#t-prog').addEventListener('click', () => startSession(programDay(prog)));
+  bindActivityDelete(view, rerender);
+  bindBackupReminder();
+}
+
+// ═════════════════════════ Tenis sekmesi
+function renderTennis(seg = 'teknik') {
+  if (!['teknik', 'kondisyon', 'rutinler'].includes(seg)) seg = 'teknik';
+  setHeader('Tenis', { action: `<button class="top-btn" id="t-log2" aria-label="Kayıt ekle">${icon('plus')}</button>` });
+  let body = '';
+  if (seg === 'teknik') {
+    body = `<div class="list">${STROKES.map(s => `<a class="item" href="#/stroke/${s.id}"><div class="fig-thumb">${figureThumb(s.fig, s.fig.poses[1] || s.fig.poses[0])}</div>
+      <div class="grow"><div class="name">${esc(s.name)}</div><div class="meta">${['', 'Temel', 'Orta', 'İleri'][s.level]} · ${esc(s.summary.split('.')[0])}</div></div>${icon('chev', 'chev')}</a>`).join('')}</div>`;
+  } else if (seg === 'kondisyon') {
+    const next = nextTennisProgram();
+    body = `<div class="faint small" style="margin:0 2px 12px">Haftada 1–2 kondisyon antrenmanı; kortta hız, güç ve sakatlıklardan korunma sağlar.</div>
+      ${TENNIS_PROGRAMS.map(p => `<div class="card prog-card" style="margin-bottom:10px">
+        <div class="row"><div class="grow"><div class="card-title">${esc(p.name)}</div><div class="faint small">${esc(p.desc)} · ${p.items.length} hareket</div></div>${p === next ? '<span class="pill accent">Sıradaki</span>' : ''}</div>
+        <div class="ex-strip" style="margin-top:12px">${p.items.slice(0, 6).map(i => thumb(getEx(i.exId))).join('')}</div>
+        <div class="row" style="gap:8px;margin-top:12px"><button class="btn ghost" data-see="${p.key}" style="margin:0">Hareketler</button><button class="btn" data-go="${p.key}" style="margin:0">${icon('play')} Başla</button></div></div>`).join('')}`;
+  } else {
+    body = ROUTINES.filter(r => r.sport !== 'pilates').map(routineCard).join('');
+  }
+  view.innerHTML = pageHead('Teknik, kondisyon ve rutinler', 'Tenis') + `
+    <div class="seg">${[['teknik', 'Teknik'], ['kondisyon', 'Kondisyon'], ['rutinler', 'Rutinler']].map(([k, n]) => `<button data-s="${k}" class="${k === seg ? 'on' : ''}">${n}</button>`).join('')}</div>${body}`;
+  $$('.seg button', view).forEach(b => b.addEventListener('click', () => location.replace(`#/tennis/${b.dataset.s}`)));
+  $('#t-log2').addEventListener('click', () => tennisLogSheet(() => toast('Geçmiş\'te görebilirsin', 'calendar')));
+  $$('[data-go]', view).forEach(b => b.addEventListener('click', () => startSession(programDay(TENNIS_PROGRAMS.find(p => p.key === b.dataset.go)))));
+  $$('[data-see]', view).forEach(b => b.addEventListener('click', () => {
+    const p = TENNIS_PROGRAMS.find(x => x.key === b.dataset.see);
+    const { el, close } = openSheet(`<div class="sheet-title">${esc(p.name)}</div>
+      <div class="list">${p.items.filter(i => getEx(i.exId)).map(i => `<a class="item" href="#/ex/${encodeURIComponent(i.exId)}">${thumb(getEx(i.exId))}
+        <div class="grow"><div class="name">${esc(getEx(i.exId).name)}</div><div class="meta">${schemeText(i, getEx(i.exId))}</div></div>${icon('chev', 'chev')}</a>`).join('')}</div>
+      <div class="sheet-actions"><button class="btn ghost" id="ps-close">Kapat</button><button class="btn" id="ps-start">Başla</button></div>`);
+    $('#ps-close', el).addEventListener('click', close);
+    $('#ps-start', el).addEventListener('click', () => { close(); startSession(programDay(p)); });
+  }));
+}
+function routineCard(r) {
+  const moves = r.items.map(i => ROUTINE_MOVES[i.m]);
+  const sec = r.items.reduce((s, i) => s + i.sec * (i.sides ? 2 : 1), 0);
+  return `<div class="card prog-card" style="margin-bottom:10px">
+    <div class="row"><div class="grow"><div class="card-title">${esc(r.name)}</div><div class="faint small">~${Math.round(sec / 60 + r.items.length * 0.08)} dk · ${r.items.length} hareket</div></div></div>
+    <div class="muted small" style="margin-top:8px">${esc(r.desc)}</div>
+    <div class="ex-strip" style="margin-top:12px">${moves.slice(0, 6).map(mv => mv.img ? `<div class="thumb"><img src="${mv.img[1]}" alt="" loading="lazy"></div>` : `<div class="thumb fig-thumb">${figureThumb(STROKES.find(s => s.id === mv.fig).fig)}</div>`).join('')}</div>
+    <a class="btn" href="#/player/routine/${r.id}" style="margin-top:12px">${icon('play')} Rutini başlat</a></div>`;
+}
+
+// Hareket çizimi kartı: oynat/durdur ve yavaş çekim
+function figurePlayer(box, fig) {
+  let speed = 1, stop = () => {};
+  box.innerHTML = `<div class="fig-stage"></div><div class="fig-ctl"><button class="glass" data-sp="1">Normal</button><button class="glass" data-sp="0.5">Yavaş</button></div>`;
+  const stage = $('.fig-stage', box);
+  const play = () => { stop(); stop = mountFigure(stage, { ...fig, dur: (fig.dur || 2) / speed }); };
+  $$('[data-sp]', box).forEach(b => {
+    b.classList.toggle('on', +b.dataset.sp === speed);
+    b.addEventListener('click', () => { speed = +b.dataset.sp; $$('[data-sp]', box).forEach(x => x.classList.toggle('on', x === b)); play(); });
+  });
+  play();
+  return () => stop();
+}
+
+function renderStroke(id) {
+  const s = STROKES.find(x => x.id === id);
+  if (!s) { location.replace('#/tennis'); return; }
+  setHeader(s.name, { back: true, always: true });
+  view.innerHTML = `<div class="fig-card" id="fig"></div>
+    <div class="ex-head"><h1>${esc(s.name)}</h1><div class="ex-tags"><span class="pill">${['', 'Temel', 'Orta', 'İleri'][s.level]}</span><span class="pill accent">${icon('tennis')}Teknik</span></div></div>
+    <div class="muted" style="margin:6px 2px 0;line-height:1.5">${esc(s.summary)}</div>
+    <button class="btn ex-cta" id="st-log">${icon('plus')} Pratik kaydet</button>
+    <div class="seg"><button data-t="how" class="on">Nasıl yapılır</button><button data-t="fix">Hatalar ve alıştırmalar</button></div>
+    <div id="pane"></div>`;
+  const stop = figurePlayer($('#fig'), s.fig);
+  const pane = $('#pane');
+  const show = t => {
+    $$('.seg button', view).forEach(b => b.classList.toggle('on', b.dataset.t === t));
+    pane.innerHTML = t === 'how'
+      ? `<div class="card"><ol class="steps phase">${s.phases.map(([h, d]) => `<li><b>${esc(h)}</b><span>${esc(d)}</span></li>`).join('')}</ol></div>`
+      : `<div class="sec"><h2>Sık yapılan hatalar</h2></div><div class="card">${s.mistakes.map(x => `<div class="tip">${icon('x')}<span>${esc(x)}</span></div>`).join('')}</div>
+        <div class="sec"><h2>Alıştırmalar</h2></div>${s.drills.map(([h, d]) => `<div class="card drill"><b>${esc(h)}</b><p>${esc(d)}</p></div>`).join('')}`;
+  };
+  $$('.seg button', view).forEach(b => b.addEventListener('click', () => show(b.dataset.t)));
+  show('how');
+  $('#st-log').addEventListener('click', () => tennisLogSheet(() => {}, { kind: 'practice', note: `${s.name} çalışması` }));
+  return stop;
+}
+
+// ═════════════════════════ Pilates: Bugün
+function recommendedSession() {
+  const lvl = levelOf(), place = db.profile.place || 'mat';
+  let pool = PILATES_SESSIONS.filter(s => s.level <= lvl && (place === 'both' || s.kind === place || (place === 'reformer' && s.kind === 'mat' && false)));
+  if (!pool.length) pool = PILATES_SESSIONS.filter(s => s.level <= lvl);
+  pool.sort((a, b) => b.level - a.level || 0);
+  const last = [...db.activities].reverse().find(a => a.sport === 'pilates' && a.ref);
+  const i = last ? (pool.findIndex(s => s.id === last.ref) + 1) % pool.length : 0;
+  return pool[Math.max(0, i)];
+}
+function renderTodayPilates() {
+  const today = dayKey(), st = dayStats(today), m = metrics();
+  setHeader('Bugün');
+  const ses = recommendedSession();
+  const moves = ses.items.map(i => PILATES_BY_ID[i.p]);
+  const ws = dayKey(weekStart());
+  const weekMin = db.activities.filter(a => a.sport === 'pilates' && a.date >= ws).reduce((s, a) => s + a.min, 0);
+  let html = pageHead(fmtDay(today), helloText());
+  html += `<div class="next"><div class="eyebrow">Bugünün seansı</div><h2>${esc(ses.name)}</h2>
+    <div class="meta"><span class="pill">${moves.length} hareket</span><span class="pill">~${ses.min} dk</span><span class="pill">${esc(LEVEL_NAMES.pilates[ses.level - 1])}</span>${ses.kind === 'reformer' ? '<span class="pill blue">Reformer</span>' : ''}</div>
+    <div class="ex-strip">${moves.slice(0, 4).map(p => `<div class="thumb fig-thumb">${figureThumb(p.fig)}</div>`).join('')}${moves.length > 4 ? `<div class="more">+${moves.length - 4}</div>` : ''}</div>
+    <a class="btn" href="#/player/pilates/${ses.id}">${icon('play')} Seansa başla</a>
+    <div class="row" style="justify-content:center;gap:22px;margin-top:12px">
+      <a class="alt" href="#/pilates/seanslar" style="width:auto;margin:0">Diğer seanslar</a>
+      <button class="alt" id="p-log" style="width:auto;margin:0">Stüdyo seansı kaydet</button></div></div>`;
+  html += miniStats(st);
+  html += `<div class="card" style="margin-top:10px"><div class="row"><div class="grow"><div class="card-label">Bu hafta pilates</div><div class="kcal-big" style="margin-top:4px"><b>${fmtInt(weekMin)}</b><span>/ 150 dk</span></div></div></div>
+    <div class="bar" style="margin-top:8px"><i style="width:${clamp((weekMin / 150) * 100, 0, 100)}%;background:var(--violet)"></i></div>
+    <div class="faint small" style="margin-top:8px">Haftada 2–3 seans (toplam 120–150 dk) core gücü ve duruşta belirgin fark yaratır.</div></div>`;
+  if (!profileReady()) html += `<a class="slim" href="#/profile"><div class="ic" style="background:var(--blue-soft);color:var(--blue)">${icon('user')}</div><div class="grow"><b>Profilini tamamla</b><span>Kalori ihtiyacın ve beslenme planın hesaplansın</span></div>${icon('chev', 'chev')}</a>`;
+  html += backupReminder();
+  const last = db.activities.filter(a => a.sport === 'pilates').slice(-5).reverse();
+  if (last.length) html += `<div class="sec"><h2>Son seanslar</h2><a href="#/hist">Tümü</a></div><div class="card">${last.map(a => activityRow(a, { del: true })).join('')}</div>`;
+  html += nutritionSummary(m, st, today) + weekBlock(today);
+  view.innerHTML = html;
+  const rerender = () => { const y = scrollY; renderTodayPilates(); scrollTo(0, y); };
+  $('#p-log').addEventListener('click', () => pilatesLogSheet(rerender));
+  bindActivityDelete(view, rerender);
+  bindBackupReminder();
+}
+
+// ═════════════════════════ Pilates sekmesi
+function renderPilates(seg = 'seanslar') {
+  if (!['seanslar', 'mat', 'reformer'].includes(seg)) seg = 'seanslar';
+  setHeader('Pilates', { action: `<button class="top-btn" id="p-log2" aria-label="Seans kaydet">${icon('plus')}</button>` });
+  const lvl = levelOf(), rec = recommendedSession();
+  let body = '';
+  if (seg === 'seanslar') {
+    body = PILATES_SESSIONS.map(s => {
+      const moves = s.items.map(i => PILATES_BY_ID[i.p]);
+      return `<div class="card prog-card" style="margin-bottom:10px">
+        <div class="row"><div class="grow"><div class="card-title">${esc(s.name)}</div><div class="faint small">~${s.min} dk · ${moves.length} hareket · ${esc(LEVEL_NAMES.pilates[s.level - 1])}${s.kind === 'reformer' ? ' · Reformer' : ''}</div></div>
+          ${s.id === rec.id ? '<span class="pill accent">Önerilen</span>' : s.level > lvl ? '<span class="pill">Zorlayıcı</span>' : ''}</div>
+        <div class="muted small" style="margin-top:8px">${esc(s.desc)}</div>
+        <div class="ex-strip" style="margin-top:12px">${moves.slice(0, 5).map(p => `<div class="thumb fig-thumb">${figureThumb(p.fig)}</div>`).join('')}</div>
+        <div class="row" style="gap:8px;margin-top:12px"><button class="btn ghost" data-see="${s.id}" style="margin:0">Hareketler</button><a class="btn" href="#/player/pilates/${s.id}" style="margin:0">${icon('play')} Başla</a></div></div>`;
+    }).join('') + ROUTINES.filter(r => r.sport === 'all').map(routineCard).join('');
+  } else {
+    const list = PILATES.filter(p => p.kind === (seg === 'mat' ? 'mat' : 'reformer'));
+    body = (seg === 'reformer' ? `<button class="slim" id="p-log3" style="margin-top:0"><div class="ic" style="background:rgba(167,139,250,.14);color:var(--violet)">${icon('plus')}</div>
+      <div class="grow"><b>Stüdyo seansını kaydet</b><span>Süre ve yoğunluk gir, kalorisi günlük toplama eklensin</span></div>${icon('chev', 'chev')}</button>` : '')
+      + [1, 2, 3].map(l => {
+        const ls = list.filter(p => p.level === l);
+        return ls.length ? `<div class="group-title">${LEVEL_NAMES.pilates[l - 1]} · ${ls.length}</div><div class="list">${ls.map(p => `<a class="item" href="#/pmove/${p.id}">
+          <div class="fig-thumb">${figureThumb(p.fig)}</div><div class="grow"><div class="name">${esc(p.name)}</div><div class="meta">${esc(p.tr)} · ${p.focus.map(f => PFOCUS[f]).join(', ')}</div></div>${icon('chev', 'chev')}</a>`).join('')}</div>` : '';
+      }).join('');
+  }
+  view.innerHTML = pageHead('Mat, reformer ve rehberli seanslar', 'Pilates') + `
+    <div class="seg">${[['seanslar', 'Seanslar'], ['mat', 'Mat'], ['reformer', 'Reformer']].map(([k, n]) => `<button data-s="${k}" class="${k === seg ? 'on' : ''}">${n}</button>`).join('')}</div>${body}`;
+  $$('.seg button', view).forEach(b => b.addEventListener('click', () => location.replace(`#/pilates/${b.dataset.s}`)));
+  const logged = () => toast('Geçmiş\'te görebilirsin', 'calendar');
+  $('#p-log2').addEventListener('click', () => pilatesLogSheet(logged));
+  $('#p-log3')?.addEventListener('click', () => pilatesLogSheet(logged));
+  $$('[data-see]', view).forEach(b => b.addEventListener('click', () => {
+    const s = PILATES_SESSIONS.find(x => x.id === b.dataset.see);
+    const { el, close } = openSheet(`<div class="sheet-title">${esc(s.name)}</div>
+      <div class="list">${s.items.map(i => { const p = PILATES_BY_ID[i.p]; return `<a class="item" href="#/pmove/${p.id}"><div class="fig-thumb">${figureThumb(p.fig)}</div>
+        <div class="grow"><div class="name">${esc(p.name)}</div><div class="meta">${esc(repText(p, i))}</div></div>${icon('chev', 'chev')}</a>`; }).join('')}</div>
+      <div class="sheet-actions"><button class="btn ghost" id="ps-close">Kapat</button><a class="btn" href="#/player/pilates/${s.id}">Başla</a></div>`);
+    $('#ps-close', el).addEventListener('click', close);
+  }));
+}
+const repText = (p, it = {}) => (p.sec ? `${it.sec || p.reps} sn${p.unit?.includes('her') ? ' her taraf' : ''}` : `${it.n || p.reps} ${p.unit || 'tekrar'}`);
+
+function renderPMove(id) {
+  const p = PILATES_BY_ID[id];
+  if (!p) { location.replace('#/pilates'); return; }
+  setHeader(p.name, { back: true, always: true });
+  const inSessions = PILATES_SESSIONS.filter(s => s.items.some(i => i.p === id));
+  view.innerHTML = `<div class="fig-card" id="fig"></div>
+    <div class="ex-head"><h1>${esc(p.name)}</h1><div class="muted" style="margin-top:2px">${esc(p.tr)}</div>
+      <div class="ex-tags" style="margin-top:10px"><span class="pill">${LEVEL_NAMES.pilates[p.level - 1]}</span>${p.kind === 'reformer' ? '<span class="pill blue">Reformer</span>' : '<span class="pill">Mat</span>'}
+        ${p.focus.map(f => `<span class="pill accent">${PFOCUS[f]}</span>`).join('')}<span class="pill">${esc(repText(p))}</span></div></div>
+    <div class="sec"><h2>Adım adım</h2></div>
+    <div class="card"><ol class="steps">${p.steps.map(s => `<li>${esc(s)}</li>`).join('')}</ol></div>
+    <div class="card breath" style="margin-top:10px">${icon('drop')}<div><b>Nefes</b><span>${esc(p.breath)}</span></div></div>
+    <div class="sec"><h2>İpuçları</h2></div><div class="card">${p.tips.map(t => `<div class="tip">${icon('bulb')}<span>${esc(t)}</span></div>`).join('')}</div>
+    <div class="metric-grid" style="margin-top:10px">
+      <div class="metric"><div class="lbl">Kolaylaştır</div><div class="note" style="font-size:14px;color:var(--text-2);margin-top:6px">${esc(p.easier)}</div></div>
+      <div class="metric"><div class="lbl">Zorlaştır</div><div class="note" style="font-size:14px;color:var(--text-2);margin-top:6px">${esc(p.harder)}</div></div></div>
+    ${inSessions.length ? `<div class="sec"><h2>Bu hareketin olduğu seanslar</h2></div><div class="list">${inSessions.map(s => `<a class="item" href="#/player/pilates/${s.id}">
+      <div class="badge">${icon('play')}</div><div class="grow"><div class="name">${esc(s.name)}</div><div class="meta">~${s.min} dk · ${s.items.length} hareket</div></div>${icon('chev', 'chev')}</a>`).join('')}</div>` : ''}`;
+  return figurePlayer($('#fig'), p.fig);
+}
+
+// ═════════════════════════ Rehberli oynatıcı (rutinler ve pilates seansları)
+let wakeLock = null;
+async function keepAwake(on) {
+  try {
+    if (on && 'wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+    else if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
+  } catch { /* desteklenmiyor */ }
+}
+function tick(freq = 660) {
+  if (!audioCtx) return;
+  const t = audioCtx.currentTime, o = audioCtx.createOscillator(), g = audioCtx.createGain();
+  o.frequency.value = freq; o.connect(g); g.connect(audioCtx.destination);
+  g.gain.setValueAtTime(0.0001, t); g.gain.exponentialRampToValueAtTime(0.22, t + 0.01); g.gain.exponentialRampToValueAtTime(0.0001, t + 0.12);
+  o.start(t); o.stop(t + 0.13);
+}
+function buildSteps(kind, id) {
+  if (kind === 'routine') {
+    const r = ROUTINES.find(x => x.id === id);
+    if (!r) return null;
+    const steps = [];
+    for (const it of r.items) {
+      const mv = ROUTINE_MOVES[it.m];
+      const media = mv.img ? { img: mv.img } : { fig: STROKES.find(s => s.id === mv.fig)?.fig };
+      if (it.sides) ['Sağ taraf', 'Sol taraf'].forEach(side => steps.push({ name: mv.name, side, sec: it.sec, cue: mv.cue, ...media }));
+      else steps.push({ name: mv.name, sec: it.sec, cue: mv.cue, ...media });
+    }
+    return { title: r.name, met: r.met, sport: r.sport === 'tennis' ? 'tennis' : 'pilates', ref: r.id, kind: 'routine', steps };
+  }
+  const s = PILATES_SESSIONS.find(x => x.id === id);
+  if (!s) return null;
+  const steps = s.items.map(it => {
+    const p = PILATES_BY_ID[it.p];
+    const perRep = p.unit === 'nefes' ? 5 : 4;
+    const twoSide = /her (bacak|taraf|yön)/.test(p.unit || '');
+    const sec = p.sec ? (it.sec || p.reps) * (twoSide ? 2 : 1) + 5 : Math.round((it.n || p.reps) * perRep * (twoSide ? 2 : 1));
+    return { name: p.name, tr: p.tr, sec: clamp(sec, 20, 150), reps: repText(p, it), cue: p.steps.slice(0, 2).join(' '), breath: p.breath, fig: p.fig, pid: p.id };
+  });
+  return { title: s.name, met: s.kind === 'reformer' ? 3.5 : 3.0, sport: 'pilates', ref: s.id, kind: s.kind, steps };
+}
+function renderPlayer(kind, id) {
+  const plan = buildSteps(kind, id);
+  if (!plan) { location.replace('#/today'); return; }
+  document.body.classList.add('bare', 'playing');
+  const READY = 6;
+  let i = 0, phase = 'intro', left = 0, paused = false, timer = 0, startedAt = 0, activeMs = 0, lastTick = 0, stopMedia = () => {};
+  const total = plan.steps.reduce((s, x) => s + x.sec + READY, 0);
+  view.innerHTML = `<div class="player">
+    <div class="pl-top"><button class="pl-x" id="pl-x" aria-label="Kapat">${icon('x')}</button>
+      <div class="pl-prog"><i id="pl-bar"></i></div><span class="pl-count num" id="pl-count"></span></div>
+    <div class="pl-media" id="pl-media"></div>
+    <div class="pl-info"><div class="pl-phase" id="pl-phase"></div><h1 id="pl-name"></h1><div class="pl-sub" id="pl-sub"></div><p class="pl-cue" id="pl-cue"></p></div>
+    <div class="pl-timer"><svg viewBox="0 0 120 120"><circle class="trk" cx="60" cy="60" r="52"/><circle class="val" id="pl-ring" cx="60" cy="60" r="52" stroke-dasharray="326.7" stroke-dashoffset="0"/></svg>
+      <div class="pl-time num" id="pl-time"></div></div>
+    <div class="pl-ctl"><button id="pl-prev" aria-label="Önceki">${icon('back')}</button><button class="main" id="pl-play" aria-label="Başlat">${icon('play')}</button><button id="pl-next" aria-label="Sonraki">${icon('chev')}</button></div>
+    <div class="pl-next" id="pl-upnext"></div></div>`;
+  const $p = s => $(s, view);
+  const media = step => {
+    stopMedia();
+    const box = $p('#pl-media');
+    if (step.fig) { stopMedia = mountFigure(box, step.fig); return; }
+    box.innerHTML = `<div class="pl-photos"><img src="${step.img[0]}" class="on" alt=""><img src="${step.img[1]}" alt=""></div>`;
+    const imgs = $$('img', box); let k = 0;
+    const t = setInterval(() => { k ^= 1; imgs.forEach((im, n) => im.classList.toggle('on', n === k)); }, 1300);
+    stopMedia = () => clearInterval(t);
+  };
+  const doneSec = () => plan.steps.slice(0, i).reduce((s, x) => s + x.sec + READY, 0) + (phase === 'work' ? READY + (plan.steps[i].sec - left) : phase === 'ready' ? READY - left : 0);
+  const paint = () => {
+    const st = plan.steps[i], nx = plan.steps[i + 1];
+    $p('#pl-count').textContent = phase === 'done' ? '' : `${i + 1} / ${plan.steps.length}`;
+    $p('#pl-bar').style.width = `${clamp((doneSec() / total) * 100, 0, 100)}%`;
+    if (phase === 'done') return;
+    $p('#pl-phase').textContent = phase === 'intro' ? plan.title : phase === 'ready' ? 'Hazırlan' : st.side || (st.reps ? st.reps : 'Şimdi');
+    $p('#pl-name').textContent = st.name;
+    $p('#pl-sub').textContent = [st.tr, phase === 'ready' && st.side ? st.side : '', phase !== 'work' && st.reps ? st.reps : ''].filter(Boolean).join(' · ');
+    $p('#pl-cue').textContent = st.cue + (st.breath && phase === 'work' ? ` Nefes: ${st.breath}` : '');
+    const dur = phase === 'ready' ? READY : st.sec;
+    $p('#pl-time').textContent = phase === 'intro' ? `${Math.round(total / 60)} dk` : fmtClock(left);
+    $p('#pl-ring').style.strokeDashoffset = phase === 'intro' ? 0 : 326.7 * (1 - left / dur);
+    $p('#pl-ring').classList.toggle('ready', phase === 'ready');
+    $p('#pl-play').innerHTML = icon(paused || phase === 'intro' ? 'play' : 'pause');
+    $p('#pl-upnext').innerHTML = nx ? `Sıradaki: <b>${esc(nx.name)}</b>${nx.side ? ` · ${nx.side}` : ''}` : 'Son hareket';
+  };
+  const go = (n, ph = 'ready') => {
+    if (n >= plan.steps.length) return finish();
+    i = clamp(n, 0, plan.steps.length - 1); phase = ph;
+    left = ph === 'ready' ? READY : plan.steps[i].sec;
+    media(plan.steps[i]); paint();
+  };
+  const loop = () => {
+    const now = Date.now();
+    if (!paused && phase !== 'intro' && phase !== 'done') {
+      activeMs += now - lastTick;
+      left -= (now - lastTick) / 1000;
+      const sec = Math.ceil(left);
+      if (sec <= 3 && sec >= 1 && sec !== loop.last) { tick(phase === 'ready' ? 520 : 660); loop.last = sec; }
+      if (left <= 0) {
+        loop.last = null;
+        if (phase === 'ready') { phase = 'work'; left = plan.steps[i].sec; beep(); paint(); }
+        else go(i + 1);
+      } else paint();
+    }
+    lastTick = now;
+  };
+  const finish = () => {
+    phase = 'done'; stopMedia(); keepAwake(false);
+    const min = Math.max(1, Math.round(activeMs / 60000));
+    const kcal = actKcal(plan.met, min);
+    $p('#pl-bar').style.width = '100%';
+    view.querySelector('.player').innerHTML = `<div class="pl-done">
+      <div class="ok">${icon('check')}</div><h1>Tebrikler!</h1><div class="muted">${esc(plan.title)} tamamlandı</div>
+      <div class="metric-grid" style="margin-top:22px">
+        <div class="metric"><div class="lbl">Süre</div><b class="num">${min}<small>dk</small></b></div>
+        <div class="metric"><div class="lbl">Kalori</div><b class="num">${fmtInt(kcal)}<small>kcal</small></b></div></div>
+      <button class="btn" id="pl-save" style="margin-top:22px">Kaydet ve bitir</button>
+      <button class="alt" id="pl-skip" style="margin-top:10px">Kaydetmeden çık</button></div>`;
+    $p('#pl-save').addEventListener('click', () => {
+      addActivity({ sport: plan.sport, kind: plan.kind === 'routine' ? 'routine' : 'session', name: plan.title, ref: plan.ref, min, kcal });
+      toast('Kaydedildi', 'check'); location.hash = '#/today';
+    });
+    $p('#pl-skip').addEventListener('click', () => (location.hash = '#/today'));
+  };
+  const start = () => { unlockAudio(); keepAwake(true); startedAt = Date.now(); lastTick = Date.now(); paused = false; go(0); };
+  $p('#pl-play').addEventListener('click', () => {
+    if (phase === 'intro') return start();
+    paused = !paused; lastTick = Date.now(); paint();
+  });
+  $p('#pl-next').addEventListener('click', () => { if (phase === 'intro') return start(); go(i + 1); });
+  $p('#pl-prev').addEventListener('click', () => { if (phase !== 'intro') go(phase === 'work' && left < plan.steps[i].sec - 3 ? i : i - 1); });
+  $p('#pl-x').addEventListener('click', () => {
+    if (phase !== 'intro' && phase !== 'done' && activeMs > 60000 && confirm('Seansı bitirmek ister misin? Yaptığın kısım kaydedilebilir.')) return finish();
+    history.length > 1 ? history.back() : (location.hash = '#/today');
+  });
+  media(plan.steps[0]); paint();
+  timer = setInterval(loop, 200);
+  const onVis = () => { if (!document.hidden && phase !== 'done' && phase !== 'intro') keepAwake(true); };
+  document.addEventListener('visibilitychange', onVis);
+  return () => { clearInterval(timer); stopMedia(); keepAwake(false); document.removeEventListener('visibilitychange', onVis); document.body.classList.remove('bare', 'playing'); };
+}
+const fmtClock = s => { s = Math.max(0, Math.ceil(s)); return `${Math.floor(s / 60)}:${pad2(s % 60)}`; };
+
 // ═════════════════════════ Hareket detayı (bilgi + ilerleme; set girişi antrenman ekranında)
 const LEVELS = { beginner: 'Başlangıç', intermediate: 'Orta', expert: 'İleri' };
 let exTab = 'how';
@@ -1468,9 +1984,10 @@ function drawChart(canvas, pts, unit, color) {
 // ═════════════════════════ Geçmiş
 function renderHist() {
   setHeader('Geçmiş');
-  const dates = [...new Set([...db.sets.map(s => s.date), ...db.cardio.map(c => c.date)])].sort().reverse();
+  const dates = [...new Set([...db.sets.map(s => s.date), ...db.cardio.map(c => c.date), ...db.activities.map(a => a.date)])].sort().reverse();
   const count = {};
   for (const s of db.sets) count[s.date] = (count[s.date] || 0) + 1;
+  for (const a of db.activities) count[a.date] = (count[a.date] || 0) + Math.max(4, Math.round(a.min / 6));
   const monday = weekStart();
   const start = new Date(monday); start.setDate(monday.getDate() - 15 * 7);
   const todayK = dayKey();
@@ -1507,6 +2024,7 @@ function renderHist() {
       <div class="card"><b class="num">${totalKcal >= 10000 ? fmtN(totalKcal / 1000) + 'k' : fmtInt(totalKcal)}</b><span>Toplam kcal</span></div>
     </div>
     <div class="card" style="margin-top:10px"><div class="heat">${cells}</div><div class="faint small" style="margin-top:10px">Son 16 hafta</div></div>
+    ${tennisStats()}
     ${balance}
     ${dates.length ? '<div class="sec"><h2>Antrenmanlar</h2></div>' : `<div style="margin-top:14px">${emptyBox('calendar', 'Henüz antrenman yok', 'Bir antrenman başlat veya set kaydet.')}</div>`}
     ${dates.map(d => {
@@ -1515,7 +2033,8 @@ function renderHist() {
       const byEx = new Map();
       for (const s of ss) (byEx.get(s.exId) || byEx.set(s.exId, []).get(s.exId)).push(s);
       const ws2 = db.workouts.filter(w => w.date === d);
-      const title = ws2.length ? ws2.map(w => w.name).join(' + ') : fmtDay(d, { weekday: 'long' });
+      const acts = actOn(d);
+      const title = ws2.length || acts.length ? [...ws2.map(w => w.name), ...acts.map(typeName)].join(' + ') : fmtDay(d, { weekday: 'long' });
       const dt = parseDay(d);
       return `<details class="day"><summary>
           <div class="day-date"><b>${dt.getDate()}</b><span>${dt.toLocaleDateString('tr-TR', { month: 'short' })}</span></div>
@@ -1529,9 +2048,29 @@ function renderHist() {
             <div class="set-chips">${list.map(s => `<span class="set-chip">${s.warm ? 'Isınma · ' : ''}${esc(fmtSet(ex, s))}</span>`).join('')}</div></a>`;
         }).join('')}${cardioOn(d).map(c => `<div class="day-ex"><div style="font-weight:600">${esc(CARDIO.find(x => x[0] === c.type)?.[1] || 'Kardiyo')}</div>
           <div class="set-chips"><span class="set-chip">${c.min} dk · ${fmtInt(c.kcal)} kcal</span></div></div>`).join('')}
+          ${acts.length ? `<div class="day-ex">${acts.map(a => activityRow(a, { del: true })).join('')}</div>` : ''}
           ${ws2.filter(w => w.note).map(w => `<div class="day-ex"><div class="note-line">${icon('edit')}<span>${esc(w.note)}</span></div></div>`).join('')}
           ${ws2.map(w => `<a class="day-ex lnk small" href="#/summary/${w.id}">${esc(w.name)} özetini gör ›</a>`).join('')}</div></details>`;
     }).join('')}`;
+  bindActivityDelete(view, () => { const y = scrollY; renderHist(); scrollTo(0, y); });
+}
+
+// Tenis istatistikleri (Geçmiş)
+function tennisStats() {
+  const all = db.activities.filter(a => a.sport === 'tennis' && a.kind !== 'routine');
+  if (!all.length) return '';
+  const matches = all.filter(a => a.kind === 'single' || a.kind === 'double'), decided = matches.filter(a => a.result);
+  const wins = decided.filter(a => a.result === 'win').length;
+  const hours = all.reduce((s, a) => s + a.min, 0) / 60;
+  const bySurf = SURFACES.map(([k, n]) => [n, decided.filter(a => a.surface === k)]).filter(([, l]) => l.length);
+  return `<div class="sec"><h2>Tenis</h2><span class="faint small">tüm zamanlar</span></div>
+    <div class="stats3">
+      <div class="card"><b class="num">${matches.length}</b><span>Maç</span></div>
+      <div class="card"><b class="num">${decided.length ? '%' + fmtInt((wins / decided.length) * 100) : '—'}</b><span>Galibiyet</span></div>
+      <div class="card"><b class="num">${fmtN(hours, hours < 10 ? 1 : 0)}</b><span>Saat</span></div>
+    </div>
+    ${bySurf.length ? `<div class="card" style="margin-top:10px">${bySurf.map(([n, l]) => { const w = l.filter(a => a.result === 'win').length; return `<div class="track-row"><div class="top"><b>${n}</b><span>${w}G · ${l.length - w}M</span></div>
+      <div class="bar"><i style="width:${(w / l.length) * 100}%;background:var(--good)"></i></div></div>`; }).join('')}</div>` : ''}`;
 }
 
 // ═════════════════════════ Profil
@@ -1572,8 +2111,10 @@ function renderProfile() {
       <div class="field"><label for="p-days">Haftalık antrenman</label><select id="p-days">${opt([2, 3, 4, 5, 6], p.days, v => `${v} gün`)}</select></div>
     </div>
     <div class="list" style="margin-top:10px">
-      <a class="link-row" href="#/programs"><div class="ic" style="background:rgba(167,139,250,.14);color:var(--violet)">${icon('list')}</div>
-        <div class="grow"><div style="font-weight:600">Antrenman programı</div><div class="faint small">${esc(programName())}${usingRoutines() ? ` · ${db.routines.length} gün` : ''}</div></div>${icon('chev', 'chev')}</a>
+      ${sport() === 'gym' ? `<a class="link-row" href="#/programs"><div class="ic" style="background:rgba(167,139,250,.14);color:var(--violet)">${icon('list')}</div>
+        <div class="grow"><div style="font-weight:600">Antrenman programı</div><div class="faint small">${esc(programName())}${usingRoutines() ? ` · ${db.routines.length} gün` : ''}</div></div>${icon('chev', 'chev')}</a>`
+        : `<a class="link-row" href="#/${sport()}"><div class="ic" style="background:rgba(167,139,250,.14);color:var(--violet)">${icon(SPORTS[sport()].icon)}</div>
+        <div class="grow"><div style="font-weight:600">${SPORTS[sport()].name}</div><div class="faint small">${esc(LEVEL_NAMES[sport()][levelOf() - 1])} · haftada ${p.days} gün</div></div>${icon('chev', 'chev')}</a>`}
       <a class="link-row" href="#/nutrition"><div class="ic" style="background:var(--fire-soft);color:var(--fire)">${icon('fork')}</div>
         <div class="grow"><div style="font-weight:600">Beslenme planı</div><div class="faint small">${m ? `Günde ${fmtInt(m.goalKcal)} kcal · ${fmtInt(m.protein)} g protein` : 'Profili doldurunca hazırlanır'}</div></div>${icon('chev', 'chev')}</a>
     </div>`;
@@ -1656,7 +2197,11 @@ function measureSheet(last, after) {
 function recommendations(m, split) {
   const p = db.profile, g = p.goal, out = [];
   for (const h of m.health.filter(x => x.train)) out.push({ i: 'shield', c: 'var(--warn)', bg: 'rgba(251,191,36,.14)', t: h.name, d: h.train });
-  out.push({
+  if (sport() === 'tennis') out.push({ i: 'tennis', c: 'var(--violet)', bg: 'rgba(167,139,250,.14)', t: `Haftada ${p.days} gün tenis + 1–2 kondisyon`,
+    d: 'Maçtan önce 9 dakikalık dinamik ısınma, sonra esneme yap. Haftada 1–2 kez kondisyon programı (çeviklik, omuz koruma, core) kortta hızını artırır ve sakatlık riskini düşürür.' });
+  else if (sport() === 'pilates') out.push({ i: 'pilates', c: 'var(--violet)', bg: 'rgba(167,139,250,.14)', t: `Haftada ${p.days} pilates seansı`,
+    d: 'Her seansta kaliteye odaklan: yavaş, kontrollü ve nefesle uyumlu. Seviyen ilerledikçe orta ve ileri seanslara geç; haftada toplam 120–150 dk idealdir.' });
+  else out.push({
     i: 'dumbbell', c: 'var(--violet)', bg: 'rgba(167,139,250,.14)', t: `${usingRoutines() ? 'Kendi programın' : split.name + ' programı'} · haftada ${p.days} gün`,
     d: g === 'gain' ? 'Ana hareketlerde 4×6–8, yardımcılarda 3×8–12 tekrar. Tüm setlerde üst sınıra ulaştığında uygulama ağırlık artırmanı önerir. Setler arası 2–3 dk dinlen.'
       : g === 'lose' ? 'Kas kaybını önlemek için ağır çalışmaya devam et: ana hareketlerde 3×8–10, diğerlerinde 3×12–15. Setler arası 60–90 sn dinlen.'
@@ -1856,6 +2401,11 @@ function renderSettings() {
   setHeader('Ayarlar', { back: true, always: true });
   const opt = (vals, cur, fmt) => vals.map(v => `<option value="${v}" ${v === cur ? 'selected' : ''}>${fmt(v)}</option>`).join('');
   view.innerHTML = pageHead('Uygulama', 'Ayarlar') + `
+    <div class="sec" style="margin-top:6px"><h2>Spor</h2></div>
+    <div class="sport-pick">${Object.entries(SPORTS).map(([k, sp]) => `<button data-sport="${k}" class="${sport() === k ? 'on' : ''}">${icon(sp.icon)}<b>${sp.name}</b></button>`).join('')}</div>
+    ${sport() !== 'gym' ? `<div class="form" style="margin-top:10px"><div class="setting"><span>Seviyen</span><select id="s-level">${LEVEL_NAMES[sport()].map((n, i) => `<option value="${i + 1}" ${levelOf() === i + 1 ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+      ${sport() === 'pilates' ? `<div class="setting"><span>Nerede</span><select id="s-place">${[['mat', 'Evde / mat'], ['reformer', 'Stüdyo / reformer'], ['both', 'İkisi de']].map(([k, n]) => `<option value="${k}" ${(db.profile.place || 'mat') === k ? 'selected' : ''}>${n}</option>`).join('')}</select></div>` : ''}</div>` : ''}
+    <div class="sec"><h2>Antrenman</h2></div>
     <div class="form">
       <div class="setting"><span>Setler arası dinlenme</span><select id="s-rest">${opt([0, 45, 60, 90, 120, 150, 180, 240], db.settings.rest, v => (v ? `${Math.floor(v / 60)}:${pad2(v % 60)}` : 'Kapalı'))}</select></div>
       <div class="setting"><span>Ağırlık artırma adımı</span><select id="s-step">${opt([0.5, 1, 1.25, 2, 2.5, 5], db.settings.step, v => fmtN(v, 2) + ' kg')}</select></div>
@@ -1881,6 +2431,12 @@ function renderSettings() {
     </div>
     <div style="margin-top:22px"><button class="btn danger" id="b-reset">Tüm verileri sil</button></div>
     <div class="faint small" style="text-align:center;margin-top:14px">${db.sets.length} set · ${db.workouts.length} antrenman · ${db.custom.length} özel hareket</div>`;
+  $$('.sport-pick button', view).forEach(b => b.addEventListener('click', () => {
+    db.settings.sport = b.dataset.sport; save(); renderTabs(); renderSettings();
+    toast(`${SPORTS[b.dataset.sport].name} moduna geçildi`, SPORTS[b.dataset.sport].icon);
+  }));
+  $('#s-level')?.addEventListener('change', e => { db.profile.level = +e.target.value; save(); });
+  $('#s-place')?.addEventListener('change', e => { db.profile.place = e.target.value; save(); });
   $('#s-rest').addEventListener('change', e => { db.settings.rest = +e.target.value; save(); });
   $('#s-step').addEventListener('change', e => { db.settings.step = +e.target.value; save(); });
   $('#b-export').addEventListener('click', async () => { if (await exportData()) renderSettings(); });
@@ -1903,29 +2459,44 @@ const PROGRAM_INFO = {
   ppl: 'İtme, çekme ve bacak günleri — sık antrenman için ideal.',
 };
 function renderWelcome(step = '0') {
-  step = clamp(+step || 0, 0, 3);
+  step = clamp(+step || 0, 0, 4);
   const p = db.profile;
-  ob ||= { goal: p.goal || 'maintain', days: p.days || 3, sex: p.sex, age: p.age, height: p.height, weight: currentWeight(), health: [...(p.health || [])] };
+  ob ||= { sport: sport(), goal: p.goal || 'maintain', days: p.days || 3, level: p.level || 1, place: p.place || 'mat', sex: p.sex, age: p.age, height: p.height, weight: currentWeight(), health: [...(p.health || [])] };
   document.body.classList.add('bare');
   const go = s => (location.hash = '#/welcome/' + s);
-  const finish = () => { db.settings.onboarded = true; save(); ob = null; location.hash = '#/today'; };
-  const dots = [0, 1, 2, 3].map(i => `<i class="${i <= step ? 'on' : ''}"></i>`).join('');
+  const finish = () => { db.settings.onboarded = true; save(); ob = null; renderTabs(); location.hash = '#/today'; };
+  const dots = [0, 1, 2, 3, 4].map(i => `<i class="${i <= step ? 'on' : ''}"></i>`).join('');
   const head = `<div class="ob-top">${step ? `<button class="ob-back" id="ob-back" aria-label="Geri">${icon('back')}</button>` : '<span style="width:36px"></span>'}
-    <div class="ob-dots">${dots}</div>${step < 3 ? '<button class="ob-skip" id="ob-skip">Atla</button>' : '<span style="width:36px"></span>'}</div>`;
+    <div class="ob-dots">${dots}</div>${step < 4 && step > 0 ? '<button class="ob-skip" id="ob-skip">Atla</button>' : '<span style="width:36px"></span>'}</div>`;
+  const sp = ob.sport;
   let body = '', foot = '';
   if (step === 0) {
-    const goals = [['lose', 'flame', 'Yağ yakmak', 'Kilo ver, sıkılaş'], ['maintain', 'heart', 'Formda kalmak', 'Sağlıklı ve güçlü kal'], ['gain', 'dumbbell', 'Kas kazanmak', 'Güçlen, kas kütleni artır']];
-    body = `<div class="ob-logo">${icon('dumbbell')}</div><h1>Hoş geldin!<br>Hedefin ne?</h1>
-      <p class="lead">Antrenman programını ve beslenme planını buna göre hazırlayacağız.</p>
-      ${goals.map(([k, ic, t, d]) => `<button class="choice ${ob.goal === k ? 'on' : ''}" data-goal="${k}"><div class="ic">${icon(ic)}</div><div><b>${t}</b><span>${d}</span></div></button>`).join('')}`;
+    body = `<div class="ob-logo">${icon('bolt')}</div><h1>Hoş geldin!<br>Hangi sporu yapıyorsun?</h1>
+      <p class="lead">Uygulama seçtiğin spora göre şekillenir. Daha sonra Ayarlar'dan değiştirebilirsin.</p>
+      ${Object.entries(SPORTS).map(([k, s]) => `<button class="choice ${sp === k ? 'on' : ''}" data-sport="${k}"><div class="ic">${icon(s.icon)}</div><div><b>${s.name}</b><span>${s.desc}</span></div></button>`).join('')}`;
     foot = `<button class="btn" id="ob-next">Devam</button>`;
   } else if (step === 1) {
-    const k = splitKey(ob.days);
-    body = `<h1>Haftada kaç gün spor yapabilirsin?</h1><p class="lead">Gerçekçi ol; düzenli 3 gün, ara sıra 5 günden iyidir.</p>
-      <div class="day-pick">${[2, 3, 4, 5, 6].map(d => `<button class="${ob.days === d ? 'on' : ''}" data-days="${d}">${d}</button>`).join('')}</div>
-      <div class="ob-note"><b>${SPLITS[k].name} programı</b><br>${PROGRAM_INFO[k]}</div>`;
+    const goals = [['lose', 'flame', 'Yağ yakmak', 'Kilo ver, sıkılaş'], ['maintain', 'heart', 'Formda kalmak', sp === 'tennis' ? 'Kondisyonunu ve oyununu koru' : 'Sağlıklı ve güçlü kal'],
+      ['gain', 'dumbbell', sp === 'gym' ? 'Kas kazanmak' : sp === 'tennis' ? 'Güç ve performans' : 'Güçlenmek ve şekillenmek', sp === 'gym' ? 'Güçlen, kas kütleni artır' : 'Daha güçlü, daha dayanıklı']];
+    body = `<div class="ob-logo">${icon(SPORTS[sp].icon)}</div><h1>Hedefin ne?</h1>
+      <p class="lead">Programını ve beslenme planını buna göre hazırlayacağız.</p>
+      ${goals.map(([k, ic, t, d]) => `<button class="choice ${ob.goal === k ? 'on' : ''}" data-goal="${k}"><div class="ic">${icon(ic)}</div><div><b>${t}</b><span>${d}</span></div></button>`).join('')}`;
     foot = `<button class="btn" id="ob-next">Devam</button>`;
   } else if (step === 2) {
+    const dayPick = `<div class="day-pick" style="grid-template-columns:repeat(${sp === 'gym' ? 5 : 6},1fr)">${[1, 2, 3, 4, 5, 6].filter(d => sp !== 'gym' || d >= 2).map(d => `<button class="${ob.days === d ? 'on' : ''}" data-days="${d}">${d}</button>`).join('')}</div>`;
+    if (sp === 'gym') {
+      const k = splitKey(ob.days);
+      body = `<h1>Haftada kaç gün spor yapabilirsin?</h1><p class="lead">Gerçekçi ol; düzenli 3 gün, ara sıra 5 günden iyidir.</p>${dayPick}
+        <div class="ob-note"><b>${SPLITS[k].name} programı</b><br>${PROGRAM_INFO[k]}</div>`;
+    } else {
+      body = `<h1>${sp === 'tennis' ? 'Tenis seviyen' : 'Pilates seviyen'}</h1><p class="lead">${sp === 'tennis' ? 'Teknik içerikler ve öneriler seviyene göre şekillenir.' : 'Sana uygun seansları önerelim.'}</p>
+        ${LEVEL_NAMES[sp].map((n, i) => `<button class="choice compact ${ob.level === i + 1 ? 'on' : ''}" data-level="${i + 1}"><div><b>${n}</b></div></button>`).join('')}
+        ${sp === 'pilates' ? `<div class="card-label" style="margin:18px 2px 8px">Nerede yapıyorsun?</div>
+          <div class="mini-seg" id="ob-place">${[['mat', 'Evde / mat'], ['reformer', 'Stüdyo / reformer'], ['both', 'İkisi de']].map(([k, n]) => `<button data-v="${k}" class="${ob.place === k ? 'on' : ''}">${n}</button>`).join('')}</div>` : ''}
+        <div class="card-label" style="margin:18px 2px 8px">Haftada kaç gün ${sp === 'tennis' ? 'oynuyorsun' : 'yapabilirsin'}?</div>${dayPick}`;
+    }
+    foot = `<button class="btn" id="ob-next">Devam</button>`;
+  } else if (step === 3) {
     body = `<h1>Seni biraz tanıyalım</h1><p class="lead">Kalori ihtiyacını ve kişisel önerilerini hesaplamak için.</p>
       <div class="mini-seg" id="ob-sex"><button data-v="m" class="${ob.sex === 'm' ? 'on' : ''}">Erkek</button><button data-v="f" class="${ob.sex === 'f' ? 'on' : ''}">Kadın</button></div>
       <div class="in-row" style="margin-top:12px"><div class="in-box"><label>Yaş</label><input id="ob-age" inputmode="numeric" placeholder="—" value="${ob.age ?? ''}"></div>
@@ -1935,47 +2506,69 @@ function renderWelcome(step = '0') {
       <div class="card-label" style="margin:18px 2px 8px">Sağlık durumun (varsa)</div>
       <div id="ob-health" style="display:flex;flex-wrap:wrap;gap:8px">${HEALTH.map(h => `<button class="chip ${(ob.health || []).includes(h.id) ? 'on' : ''}" data-k="${h.id}">${esc(h.name)}</button>`).join('')}</div>
       <div class="faint small" style="margin-top:12px">Bilgilerin sadece bu telefonda saklanır.</div>`;
-    foot = `<button class="btn" id="ob-next">Programımı hazırla</button>`;
+    foot = `<button class="btn" id="ob-next">${sp === 'gym' ? 'Programımı hazırla' : 'Devam'}</button>`;
   } else {
     const m = metrics();
-    const days = autoDays();
-    body = `<div class="ob-logo">${icon('check')}</div><h1>Programın hazır!</h1><p class="lead">${esc(SPLITS[splitKey(db.profile.days)].name)} · haftada ${db.profile.days} gün · ${GOALS[db.profile.goal]}</p>
-      <div class="card ready-list">${days.map(d => `<div class="kv"><span>${esc(d.name)}</span><span class="small">${d.items.map(i => getEx(i.exId)?.name).join(', ')}</span></div>`).join('')}</div>
+    let plan = '';
+    if (sp === 'gym') {
+      plan = `<p class="lead">${esc(SPLITS[splitKey(db.profile.days)].name)} · haftada ${db.profile.days} gün · ${GOALS[db.profile.goal]}</p>
+        <div class="card ready-list">${autoDays().map(d => `<div class="kv"><span>${esc(d.name)}</span><span class="small">${d.items.map(i => getEx(i.exId)?.name).join(', ')}</span></div>`).join('')}</div>`;
+    } else if (sp === 'tennis') {
+      plan = `<p class="lead">${esc(LEVEL_NAMES.tennis[levelOf() - 1])} · haftada ${db.profile.days} gün tenis</p>
+        <div class="card ready-list">
+          <div class="kv"><span>Maç ve antrenman</span><span class="small">Süre, skor ve kortu kaydet; galibiyet oranın ve saatlerin takip edilsin</span></div>
+          <div class="kv"><span>Maç öncesi</span><span class="small">9 dakikalık dinamik ısınma rutini</span></div>
+          <div class="kv"><span>Haftada 1–2 gün</span><span class="small">Kondisyon: alt vücut & çeviklik, omuz koruma, core & rotasyon</span></div>
+          <div class="kv"><span>Teknik</span><span class="small">Forehand, backhand, servis, vole ve daha fazlası adım adım</span></div></div>`;
+    } else {
+      const rec = recommendedSession();
+      plan = `<p class="lead">${esc(LEVEL_NAMES.pilates[levelOf() - 1])} · haftada ${db.profile.days} gün</p>
+        <div class="card ready-list">
+          <div class="kv"><span>İlk seansın</span><span class="small">${esc(rec.name)} · ~${rec.min} dk · ${rec.items.length} hareket</span></div>
+          <div class="kv"><span>Rehberli akış</span><span class="small">Hareketler sırayla, süreli ve sesli uyarıyla ekrana gelir</span></div>
+          <div class="kv"><span>Kütüphane</span><span class="small">${PILATES.filter(x => x.kind === 'mat').length} mat ve ${PILATES.filter(x => x.kind === 'reformer').length} reformer hareketi, hareketli çizimlerle</span></div></div>`;
+    }
+    body = `<div class="ob-logo">${icon('check')}</div><h1>${sp === 'gym' ? 'Programın hazır!' : 'Her şey hazır!'}</h1>${plan}
       ${m ? `<div class="metric-grid" style="margin-top:10px">
         <div class="metric"><div class="lbl">Günlük kalori</div><b class="num" style="color:var(--accent)">${fmtInt(m.goalKcal)}<small>kcal</small></b></div>
         <div class="metric"><div class="lbl">Günlük protein</div><b class="num">${fmtInt(m.protein)}<small>g</small></b></div></div>` : ''}
-      <div id="offline-slot" style="margin-top:10px"></div>`;
-    foot = `<button class="btn" id="ob-done">Başlayalım</button><div class="faint small" style="text-align:center;margin-top:10px">Programı ve bilgilerini istediğin zaman Profil'den değiştirebilirsin.</div>`;
+      ${sp === 'gym' ? '<div id="offline-slot" style="margin-top:10px"></div>' : ''}`;
+    foot = `<button class="btn" id="ob-done">Başlayalım</button><div class="faint small" style="text-align:center;margin-top:10px">Sporu, programı ve bilgilerini istediğin zaman Ayarlar ve Profil'den değiştirebilirsin.</div>`;
   }
   view.innerHTML = `<div class="ob fade-in">${head}${body}<div class="ob-foot">${foot}</div></div>`;
 
+  const pick = (sel, fn) => $$(sel, view).forEach(b => b.addEventListener('click', () => { fn(b); $$(sel, view).forEach(x => x.classList.toggle('on', x === b)); }));
   $('#ob-back')?.addEventListener('click', () => go(step - 1));
-  $('#ob-skip')?.addEventListener('click', finish);
-  $$('[data-goal]', view).forEach(b => b.addEventListener('click', () => { ob.goal = b.dataset.goal; $$('[data-goal]', view).forEach(x => x.classList.toggle('on', x === b)); }));
-  $$('[data-days]', view).forEach(b => b.addEventListener('click', () => { ob.days = +b.dataset.days; renderWelcome(1); }));
-  $$('#ob-sex button').forEach(b => b.addEventListener('click', () => { ob.sex = b.dataset.v; $$('#ob-sex button').forEach(x => x.classList.toggle('on', x === b)); }));
+  $('#ob-skip')?.addEventListener('click', () => { db.settings.sport = ob.sport; finish(); });
+  pick('[data-sport]', b => { ob.sport = b.dataset.sport; });
+  pick('[data-goal]', b => { ob.goal = b.dataset.goal; });
+  pick('[data-level]', b => { ob.level = +b.dataset.level; });
+  pick('#ob-place button', b => { ob.place = b.dataset.v; });
+  $$('[data-days]', view).forEach(b => b.addEventListener('click', () => { ob.days = +b.dataset.days; renderWelcome(2); }));
+  pick('#ob-sex button', b => { ob.sex = b.dataset.v; });
   $$('#ob-health .chip').forEach(b => b.addEventListener('click', () => {
     const set = new Set(ob.health || []);
     set.has(b.dataset.k) ? set.delete(b.dataset.k) : set.add(b.dataset.k);
     ob.health = [...set]; b.classList.toggle('on', set.has(b.dataset.k));
   }));
   $('#ob-next')?.addEventListener('click', () => {
-    if (step === 2) {
+    if (step === 0) { db.settings.sport = ob.sport; if (ob.sport !== 'gym' && ob.days > 4) ob.days = 2; save(); renderTabs(); }
+    if (step === 3) {
       ob.age = Math.round(num($('#ob-age').value)); ob.height = Math.round(num($('#ob-h').value)); ob.weight = num($('#ob-w').value);
       if (!ob.sex || !ob.age || !ob.height || !ob.weight) return toast('Tüm alanları doldur', 'info');
+      // Spor dışındaki gün sayısı da hareketliliği belirler; tenis ve pilates de aktif günler
       Object.assign(db.profile, {
-        goal: ob.goal, days: ob.days, sex: ob.sex, age: clamp(ob.age, 12, 100), height: clamp(ob.height, 120, 230),
+        sex: ob.sex, age: clamp(ob.age, 12, 100), height: clamp(ob.height, 120, 230),
         activity: ob.days <= 2 ? 1.375 : ob.days <= 4 ? 1.55 : 1.725, health: ob.health || [],
       });
       setWeight(ob.weight);
-      save();
-    } else if (step < 2) {
-      db.profile.goal = ob.goal; db.profile.days = ob.days; save();
     }
+    if (step <= 3) Object.assign(db.profile, { goal: ob.goal, days: ob.days, level: ob.level, place: ob.place });
+    save();
     go(step + 1);
   });
   $('#ob-done')?.addEventListener('click', finish);
-  if (step === 3) offlineCard($('#offline-slot'), false);
+  if (step === 4 && sp === 'gym') offlineCard($('#offline-slot'), false);
   return () => document.body.classList.remove('bare');
 }
 
@@ -2125,6 +2718,7 @@ if (!db.settings.onboarded) {
   if (profileReady() || db.sets.length) { db.settings.onboarded = true; save(); }
   else history.replaceState(null, '', '#/welcome/0');
 }
+renderTabs();
 route();
 if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost')) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
