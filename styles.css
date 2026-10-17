@@ -735,3 +735,22 @@ body.bare #view { padding: 0; max-width: none; }
 .pr-burst i:nth-child(3n) { background: var(--fire); }
 .pr-burst i:nth-child(3n+1) { background: var(--blue); }
 @keyframes burst { 0% { opacity: 1; transform: rotate(var(--a)) translateY(-10px); } 100% { opacity: 0; transform: rotate(var(--a)) translateY(-90px); } }
+
+/* Sağlık durumu kartı */
+.card.health { padding: 4px 16px; }
+.card.health details + details { border-top: 1px solid var(--line); }
+.card.health summary { list-style: none; display: flex; align-items: center; gap: 10px; padding: 14px 0; cursor: pointer; }
+.card.health summary::-webkit-details-marker { display: none; }
+.card.health summary b { flex: 1; font-size: 15px; }
+.card.health summary svg.i { width: 18px; height: 18px; color: var(--warn); flex: none; }
+.card.health summary svg.chev { color: var(--text-3); transition: transform .2s; }
+.card.health details[open] summary svg.chev { transform: rotate(180deg); }
+.card.health ul { margin: 0 0 12px; padding-left: 18px; color: var(--text-2); font-size: 14px; line-height: 1.5; }
+.card.health li + li { margin-top: 6px; }
+.health-train { display: flex; gap: 8px; align-items: flex-start; margin: 0 0 14px; padding: 10px 12px; border-radius: 12px; background: var(--surface-2); font-size: 13.5px; line-height: 1.45; color: var(--text-2); }
+.health-train svg.i { width: 16px; height: 16px; flex: none; color: var(--violet); margin-top: 2px; }
+.health-train b { color: var(--text); }
+.health-warn { border-color: rgba(251,191,36,.35); background: rgba(251,191,36,.07); }
+.health-warn b { display: flex; align-items: center; gap: 8px; }
+.health-warn b svg.i { width: 18px; height: 18px; color: var(--warn); }
+.health-warn p { margin: 8px 0 0; color: var(--text-2); font-size: 14px; line-height: 1.5; }

@@ -1,5 +1,5 @@
 import { REGIONS, EXERCISES, EX_BY_ID, REGION_BY_ID, VIDEO_MB, SUBS, EQUIPMENT } from './exercises.js';
-import { FOODS, DIETS, buildDayMenu } from './nutrition.js';
+import { FOODS, DIETS, HEALTH, HEALTH_BY_ID, buildDayMenu } from './nutrition.js';
 import { bodyMap } from './bodymap.js';
 
 // ═════════════════════════ Yardımcılar
@@ -161,16 +161,24 @@ function metrics() {
   const bmr = 10 * w + 6.25 * p.height - 5 * p.age + (p.sex === 'm' ? 5 : -161); // Mifflin-St Jeor
   const tdee = bmr * p.activity;
   const floor = p.sex === 'm' ? 1500 : 1200;
-  const goalKcal = p.goal === 'lose' ? Math.max(floor, tdee - 500) : p.goal === 'gain' ? tdee + 300 : tdee;
-  const protein = w * (p.goal === 'maintain' ? 1.6 : p.goal === 'gain' ? 1.8 : 2.0);
-  const fat = w * 0.9;
-  const carbs = Math.max(0, (goalKcal - protein * 4 - fat * 9) / 4);
+  const health = (p.health || []).map(h => HEALTH_BY_ID[h]).filter(Boolean);
+  const noDeficit = health.some(h => h.noDeficit);
+  const goalKcal = p.goal === 'lose' && !noDeficit ? Math.max(floor, tdee - 500) : p.goal === 'gain' ? tdee + 300 : tdee;
+  const capPerKg = Math.min(...health.map(h => h.proteinPerKg || Infinity));
+  const protein = w * Math.min(capPerKg, p.goal === 'maintain' ? 1.6 : p.goal === 'gain' ? 1.8 : 2.0);
+  let fat = w * 0.9;
+  let carbs = Math.max(0, (goalKcal - protein * 4 - fat * 9) / 4);
+  // Diyabette karbonhidrat enerjinin en fazla %40'ı; kalan enerji yağdan
+  if (health.some(h => h.lowCarb) && carbs * 4 > goalKcal * 0.4) {
+    carbs = (goalKcal * 0.4) / 4;
+    fat = (goalKcal - protein * 4 - carbs * 4) / 9;
+  }
   const water = w * 0.035;
   const idealMin = 18.5 * h * h, idealMax = 24.9 * h * h;
   const bodyFat = clamp(1.2 * bmi + 0.23 * p.age - 10.8 * (p.sex === 'm' ? 1 : 0) - 5.4, 3, 60); // Deurenberg (kaba)
   let weeks = null;
   if (p.target && Math.abs(p.target - w) > 0.2) weeks = Math.ceil(Math.abs(p.target - w) / (p.target < w ? 0.5 : 0.25));
-  return { w, bmi, bmiCat, bmr, tdee, goalKcal, protein, fat, carbs, water, idealMin, idealMax, bodyFat, weeks };
+  return { w, bmi, bmiCat, bmr, tdee, goalKcal, protein, fat, carbs, water, idealMin, idealMax, bodyFat, weeks, health };
 }
 
 // Setin süresi (sn): tekrar başına ~3,5 sn + hazırlık; süreli hareketlerde girilen süre.
@@ -1647,6 +1655,7 @@ function measureSheet(last, after) {
 
 function recommendations(m, split) {
   const p = db.profile, g = p.goal, out = [];
+  for (const h of m.health.filter(x => x.train)) out.push({ i: 'shield', c: 'var(--warn)', bg: 'rgba(251,191,36,.14)', t: h.name, d: h.train });
   out.push({
     i: 'dumbbell', c: 'var(--violet)', bg: 'rgba(167,139,250,.14)', t: `${usingRoutines() ? 'Kendi programın' : split.name + ' programı'} · haftada ${p.days} gün`,
     d: g === 'gain' ? 'Ana hareketlerde 4×6–8, yardımcılarda 3×8–12 tekrar. Tüm setlerde üst sınıra ulaştığında uygulama ağırlık artırmanı önerir. Setler arası 2–3 dk dinlen.'
@@ -1689,13 +1698,16 @@ function renderNutrition() {
   const md = db.menu[today] || { picks: {}, eaten: {} };
   const prefs = foodPrefs();
   const menu = buildDayMenu(m.goalKcal, m.protein, md.picks, dayOfYear(), prefs);
-  const prefText = [DIETS.find(d => d[0] === prefs.diet)?.[1], prefs.avoid.length ? `${prefs.avoid.length} yiyecek çıkarıldı` : ''].filter(Boolean).join(' · ');
+  const prefText = [DIETS.find(d => d[0] === prefs.diet)?.[1], m.health.length ? m.health.map(h => h.name.split(' /')[0]).join(', ') : '', prefs.avoid.length ? `${prefs.avoid.length} yiyecek çıkarıldı` : ''].filter(Boolean).join(' · ');
+  const noMenu = m.health.find(h => h.noMenu);
+  const noLoss = db.profile.goal === 'lose' && m.health.some(h => h.noDeficit);
+  const lowCarb = m.health.some(h => h.lowCarb);
   const kcalT = m.goalKcal + st.kcal, waterT = (m.water + (setsOn(today).length ? 0.5 : 0)) * 1000;
   const kP = m.protein * 4, kF = m.fat * 9, kC = m.carbs * 4, tot = kP + kF + kC;
   const bar = (v, t, c) => `<div class="bar" style="margin-top:6px"><i style="width:${clamp((v / t) * 100, 0, 100)}%;background:${c}"></i></div>`;
   const mealIcon = { breakfast: 'bulb', lunch: 'fork', snack: 'bolt', dinner: 'moon' };
 
-  view.innerHTML = pageHead(fmtDay(today), 'Beslenme', `${GOALS[db.profile.goal]} hedefin için günde <b>${fmtInt(m.goalKcal)} kcal</b>`) + `
+  view.innerHTML = pageHead(fmtDay(today), 'Beslenme', noLoss ? `Hamilelikte kalori açığı uygulanmaz · günde <b>${fmtInt(m.goalKcal)} kcal</b>` : `${GOALS[db.profile.goal]} hedefin için günde <b>${fmtInt(m.goalKcal)} kcal</b>`) + `
     <div class="card">
       <div class="card-label">Bugün yediğin</div>
       <div class="kcal-big" style="margin-top:4px"><b>${fmtInt(f.kcal)}</b><span>/ ${fmtInt(kcalT)} kcal</span></div>
@@ -1708,30 +1720,32 @@ function renderNutrition() {
       <div class="quick"><button id="q-meal">${icon('plus')} Başka bir şey yedim</button><button id="q-water">${icon('drop')} +250 ml su</button></div>
     </div>
 
-    <div class="sec"><h2>Bugünün menüsü</h2><button id="menu-shuffle">Yenile</button></div>
+    ${m.health.length ? healthCard(m.health) : ''}
+    <div class="sec"><h2>Bugünün menüsü</h2>${noMenu ? '' : '<button id="menu-shuffle">Yenile</button>'}</div>
     <div class="list" style="margin-bottom:12px"><button class="link-row" id="menu-prefs" style="width:100%;text-align:left">
       <div class="ic" style="background:var(--accent-soft);color:var(--accent)">${icon('user')}</div>
-      <div class="grow"><div style="font-weight:600">Beslenme tercihlerin</div><div class="faint small">${esc(prefText)}</div></div>${icon('chev', 'chev')}</button></div>
-    ${menu.meals.map(ml => {
+      <div class="grow"><div style="font-weight:600">Beslenme tercihlerin ve sağlık durumun</div><div class="faint small">${esc(prefText)}</div></div>${icon('chev', 'chev')}</button></div>
+    ${noMenu ? `<div class="card health-warn"><b>${icon('shield')} Örnek menü gösterilmiyor</b><p>${esc(noMenu.name)} için beslenme planı hastalığın evresine göre kişiye özel hazırlanmalı. Günlük hedeflerin ve genel öneriler aşağıda; menünü doktorun veya diyetisyeninle planla.</p></div>` : ''}
+    ${(noMenu ? [] : menu.meals).map(ml => {
       const eaten = !!md.eaten[ml.id];
       const nBase = ml.base;
       const swapNote = ml.swaps.length ? `<div class="faint small" style="margin-top:4px">Tercihine göre uyarlandı: ${esc(ml.swaps.map(([a, b]) => (b ? `${a} yerine ${b}` : `${a} çıkarıldı`)).join(', '))}</div>` : '';
       return `<div class="meal ${eaten ? 'eaten' : ''}" data-id="${ml.id}">
         <div class="meal-head"><div class="ic">${icon(eaten ? 'check' : mealIcon[ml.id])}</div>
           <div class="grow"><div class="t">${ml.name} · ${ml.time}</div><h3>${esc(ml.optName)}</h3>${swapNote}</div>
-          <div class="k"><b>${fmtInt(ml.kcal)}</b><span>kcal · ${fmtInt(ml.p)} g prot.</span></div></div>
+          <div class="k"><b>${fmtInt(ml.kcal)}</b><span>kcal · ${fmtInt(ml.p)} g prot.${lowCarb ? `<br>${fmtInt(ml.c)} g karb.` : ''}</span></div></div>
         <ul>${ml.rows.map((r, i) => `<li class="${i >= nBase ? 'boost' : ''}">${esc(r.text)}${i >= nBase ? ' <span class="faint small">(protein hedefi için)</span>' : ''}</li>`).join('')}</ul>
         <div class="meal-actions"><button data-swap="${ml.id}" ${ml.n < 2 ? 'disabled' : ''}>${icon('trend')} Değiştir</button>
           <button class="eat" data-eat="${ml.id}">${icon('check')} ${eaten ? 'Yedim' : 'Bunu yedim'}</button></div>
       </div>`;
     }).join('')}
-    <div class="menu-total"><span>Menü toplamı</span><span><b class="num">${fmtInt(menu.total.kcal)} kcal</b> · ${fmtInt(menu.total.p)} g protein</span></div>
+    ${noMenu ? '' : `<div class="menu-total"><span>Menü toplamı</span><span><b class="num">${fmtInt(menu.total.kcal)} kcal</b> · ${fmtInt(menu.total.p)} g protein${lowCarb ? ` · ${fmtInt(menu.total.c)} g karb.` : ''}</span></div>`}
 
     <div class="sec"><h2>Günlük hedeflerin</h2></div>
     <div class="metric-grid">
       <div class="metric"><div class="lbl">Günlük harcama ${helpBtn('tdee')}</div><b class="num">${fmtInt(m.tdee)}<small>kcal</small></b><div class="note">Kilonu korumak için</div></div>
       <div class="metric" style="border-color:rgba(212,245,60,.28)"><div class="lbl">Alman gereken</div><b class="num" style="color:var(--accent)">${fmtInt(m.goalKcal)}<small>kcal</small></b>
-        <div class="note">${db.profile.goal === 'lose' ? '~0,5 kg/hafta yağ kaybı' : db.profile.goal === 'gain' ? '~0,25 kg/hafta kontrollü artış' : 'Kilonu korursun'}</div></div>
+        <div class="note">${noLoss ? 'Kilonu korursun' : db.profile.goal === 'lose' ? '~0,5 kg/hafta yağ kaybı' : db.profile.goal === 'gain' ? '~0,25 kg/hafta kontrollü artış' : 'Kilonu korursun'}</div></div>
       <div class="metric wide"><div class="lbl">Protein / yağ / karbonhidrat</div>
         <div class="macro-bar" style="margin-top:12px"><i style="width:${(kP / tot) * 100}%;background:var(--accent)"></i><i style="width:${(kF / tot) * 100}%;background:var(--fire)"></i><i style="width:${(kC / tot) * 100}%;background:var(--blue)"></i></div>
         <div class="legend">
@@ -1744,7 +1758,7 @@ function renderNutrition() {
     <div class="sec"><h2>İpuçları</h2></div>
     <div class="card">${nutritionTips(m).map(r => `<div class="reco"><div class="ic" style="background:${r.bg};color:${r.c}">${icon(r.i)}</div>
       <div class="grow"><b>${esc(r.t)}</b><p>${esc(r.d)}</p></div></div>`).join('')}</div>
-    <div class="disclaimer">Menü, hedeflerine göre otomatik oluşturulan bir örnektir; değerler yaklaşıktır ve diyetisyen planı yerine geçmez. Alerjin, sağlık sorunun veya özel diyetin varsa bir uzmana danış.</div>`;
+    <div class="disclaimer">Menü, hedeflerine göre otomatik oluşturulan bir örnektir; değerler yaklaşıktır ve diyetisyen planı yerine geçmez. ${m.health.length ? 'Sağlık durumuna göre yapılan uyarlamalar genel önerilerdir; doktorunun ve diyetisyeninin önerileri her zaman önceliklidir.' : 'Alerjin, sağlık sorunun veya özel diyetin varsa bir uzmana danış.'}</div>`;
 
   const rerender = () => { const y = scrollY; renderNutrition(); scrollTo(0, y); };
   const store = () => { db.menu[today] = md; save(); };
@@ -1762,7 +1776,7 @@ function renderNutrition() {
     md.picks[ml.id] = (ml.optIndex + 1) % ml.n;
     store(); rerender();
   }));
-  $('#menu-shuffle').addEventListener('click', () => {
+  $('#menu-shuffle')?.addEventListener('click', () => {
     for (const ml of menu.meals) {
       if (md.eaten[ml.id]) continue;
       const n = ml.n;
@@ -1777,15 +1791,18 @@ function renderNutrition() {
   bindHelp();
 }
 
-const foodPrefs = () => ({ diet: db.profile.diet || 'omni', avoid: db.profile.avoid || [] });
+const foodPrefs = () => ({ diet: db.profile.diet || 'omni', avoid: db.profile.avoid || [], health: db.profile.health || [] });
 function prefsSheet(after) {
   const cur = foodPrefs();
   let diet = cur.diet;
-  const avoid = new Set(cur.avoid);
+  const avoid = new Set(cur.avoid), health = new Set(cur.health);
   const names = Object.entries(FOODS).filter(([k]) => k !== 'oil').sort((a, b) => a[1].n.localeCompare(b[1].n, 'tr'));
   const { el, close } = openSheet(`
     <div class="sheet-title">Beslenme tercihlerin</div>
-    <div class="card-label" style="margin:0 4px 8px">Beslenme şekli</div>
+    <div class="card-label" style="margin:0 4px 4px">Sağlık durumun</div>
+    <div class="faint small" style="margin:0 4px 10px">Varsa seç; menü, kalori ve protein hedefi buna göre uyarlanır.</div>
+    <div id="pf-health" style="display:flex;flex-wrap:wrap;gap:8px">${HEALTH.map(h => `<button class="chip ${health.has(h.id) ? 'on' : ''}" data-k="${h.id}">${esc(h.name)}</button>`).join('')}</div>
+    <div class="card-label" style="margin:18px 4px 8px">Beslenme şekli</div>
     <div class="opt-grid" id="pf-diet" style="grid-template-columns:1fr">${DIETS.map(([k, n]) => `<button class="opt ${k === diet ? 'on' : ''}" data-k="${k}">${n}</button>`).join('')}</div>
     <div class="card-label" style="margin:18px 4px 4px">Yemediğin yiyecekler</div>
     <div class="faint small" style="margin:0 4px 10px">Seçtiklerin menüden çıkarılır, yerine benzer bir yiyecek konur.</div>
@@ -1795,15 +1812,26 @@ function prefsSheet(after) {
     diet = b.dataset.k;
     $$('#pf-diet .opt', el).forEach(x => x.classList.toggle('on', x === b));
   }));
+  $$('#pf-health .chip', el).forEach(b => b.addEventListener('click', () => {
+    health.has(b.dataset.k) ? health.delete(b.dataset.k) : health.add(b.dataset.k);
+    b.classList.toggle('on', health.has(b.dataset.k));
+  }));
   $$('#pf-avoid .chip', el).forEach(b => b.addEventListener('click', () => {
     avoid.has(b.dataset.k) ? avoid.delete(b.dataset.k) : avoid.add(b.dataset.k);
     b.classList.toggle('on', avoid.has(b.dataset.k));
   }));
   $('#pf-cancel', el).addEventListener('click', close);
   $('#pf-save', el).addEventListener('click', () => {
-    db.profile.diet = diet; db.profile.avoid = [...avoid];
+    db.profile.diet = diet; db.profile.avoid = [...avoid]; db.profile.health = [...health];
     save(); close(); toast('Menü tercihine göre güncellendi', 'check'); after();
   });
+}
+
+function healthCard(list) {
+  return `<div class="sec"><h2>Sağlık durumuna göre</h2></div>
+    <div class="card health">${list.map(h => `<details ${list.length === 1 ? 'open' : ''}><summary>${icon(h.warn ? 'shield' : 'heart')}<b>${esc(h.name)}</b>${icon('down', 'chev')}</summary>
+      <ul>${h.tips.map(t => `<li>${esc(t)}</li>`).join('')}</ul>
+      ${h.train ? `<div class="health-train">${icon('dumbbell')}<span><b>Antrenmanda:</b> ${esc(h.train)}</span></div>` : ''}</details>`).join('')}</div>`;
 }
 
 function nutritionTips(m) {
@@ -1877,7 +1905,7 @@ const PROGRAM_INFO = {
 function renderWelcome(step = '0') {
   step = clamp(+step || 0, 0, 3);
   const p = db.profile;
-  ob ||= { goal: p.goal || 'maintain', days: p.days || 3, sex: p.sex, age: p.age, height: p.height, weight: currentWeight() };
+  ob ||= { goal: p.goal || 'maintain', days: p.days || 3, sex: p.sex, age: p.age, height: p.height, weight: currentWeight(), health: [...(p.health || [])] };
   document.body.classList.add('bare');
   const go = s => (location.hash = '#/welcome/' + s);
   const finish = () => { db.settings.onboarded = true; save(); ob = null; location.hash = '#/today'; };
@@ -1904,6 +1932,8 @@ function renderWelcome(step = '0') {
         <div class="in-box"><label>Boy · cm</label><input id="ob-h" inputmode="numeric" placeholder="—" value="${ob.height ?? ''}"></div></div>
       <div class="in-row"><div class="in-box"><label>Kilo · kg</label><input id="ob-w" inputmode="decimal" placeholder="—" value="${ob.weight ? fmtN(ob.weight) : ''}"></div>
         <div class="in-box" style="opacity:.0"></div></div>
+      <div class="card-label" style="margin:18px 2px 8px">Sağlık durumun (varsa)</div>
+      <div id="ob-health" style="display:flex;flex-wrap:wrap;gap:8px">${HEALTH.map(h => `<button class="chip ${(ob.health || []).includes(h.id) ? 'on' : ''}" data-k="${h.id}">${esc(h.name)}</button>`).join('')}</div>
       <div class="faint small" style="margin-top:12px">Bilgilerin sadece bu telefonda saklanır.</div>`;
     foot = `<button class="btn" id="ob-next">Programımı hazırla</button>`;
   } else {
@@ -1924,13 +1954,18 @@ function renderWelcome(step = '0') {
   $$('[data-goal]', view).forEach(b => b.addEventListener('click', () => { ob.goal = b.dataset.goal; $$('[data-goal]', view).forEach(x => x.classList.toggle('on', x === b)); }));
   $$('[data-days]', view).forEach(b => b.addEventListener('click', () => { ob.days = +b.dataset.days; renderWelcome(1); }));
   $$('#ob-sex button').forEach(b => b.addEventListener('click', () => { ob.sex = b.dataset.v; $$('#ob-sex button').forEach(x => x.classList.toggle('on', x === b)); }));
+  $$('#ob-health .chip').forEach(b => b.addEventListener('click', () => {
+    const set = new Set(ob.health || []);
+    set.has(b.dataset.k) ? set.delete(b.dataset.k) : set.add(b.dataset.k);
+    ob.health = [...set]; b.classList.toggle('on', set.has(b.dataset.k));
+  }));
   $('#ob-next')?.addEventListener('click', () => {
     if (step === 2) {
       ob.age = Math.round(num($('#ob-age').value)); ob.height = Math.round(num($('#ob-h').value)); ob.weight = num($('#ob-w').value);
       if (!ob.sex || !ob.age || !ob.height || !ob.weight) return toast('Tüm alanları doldur', 'info');
       Object.assign(db.profile, {
         goal: ob.goal, days: ob.days, sex: ob.sex, age: clamp(ob.age, 12, 100), height: clamp(ob.height, 120, 230),
-        activity: ob.days <= 2 ? 1.375 : ob.days <= 4 ? 1.55 : 1.725,
+        activity: ob.days <= 2 ? 1.375 : ob.days <= 4 ? 1.55 : 1.725, health: ob.health || [],
       });
       setWeight(ob.weight);
       save();

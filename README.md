@@ -30,6 +30,7 @@ iPhone ve Android'de uygulama gibi çalışan, **internet olmadan da kullanılab
 - Boy, kilo ve yaşa göre günlük kalori ihtiyacı, protein hedefi, vücut kitle indeksi, tahmini yağ oranı
 - Hedefe göre (yağ yakma, formu koruma, kas kazanma) **günlük örnek menü**; porsiyonlar kalori ve protein hedefine göre ayarlanır
 - Vejetaryen veya "et yok, balık var" seçeneği, yemediğin yiyecekleri çıkarma
+- **Sağlık durumuna göre uyarlama:** diyabet, yüksek tansiyon, yüksek kolesterol, çölyak, laktoz intoleransı, gut, reflü, hamilelik ve böbrek hastalığı için menü, kalori/protein hedefi, beslenme ve antrenman önerileri
 - Kalori, protein ve su takibi; kardiyo kaydı; kilo ve vücut ölçüsü takibi
 
 **Geçmiş**
@@ -58,7 +59,7 @@ Uygulama ve fotoğraflar ilk açılışta telefona kaydedilir. Videolar yer kapl
 - Tüm kayıtlar **sadece kendi telefonunda** saklanır; hiçbir sunucuya gönderilmez, hesap gerekmez.
 - Uygulamayı ana ekrandan silersen verilerin de silinir. **Ayarlar → Yedek al** ile ara sıra yedek alıp iCloud Drive'a veya Google Drive'a kaydet; **Yedeği geri yükle** ile geri yükleyebilirsin.
 
-> Kalori ve beslenme değerleri yaklaşık hesaplardır; menü örnek niteliğindedir ve bir diyetisyen planı yerine geçmez.
+> Kalori ve beslenme değerleri yaklaşık hesaplardır; menü örnek niteliğindedir ve bir diyetisyen planı yerine geçmez. Sağlık durumuna göre yapılan uyarlamalar genel önerilerdir; doktor ve diyetisyen önerileri her zaman önceliklidir.
 
 ## Teknik
 
