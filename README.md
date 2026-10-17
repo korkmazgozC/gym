@@ -16,9 +16,10 @@ iPhone ve Android'de uygulama gibi çalışan, **internet olmadan da kullanılab
 - Antrenman özeti: süre, yakılan kalori, toplam kaldırılan ağırlık, rekorlar
 
 **Hareketler**
-- 6 bölgede **122 hareket**; 41 harekette gerçek **video** (72 açı), diğerlerinde başlangıç ve bitiş fotoğrafları
+- 6 bölgede ve 21 alt grupta (biceps, triceps, ön kol, üst göğüs…) **138 hareket**; 41 harekette gerçek **video** (72 açı), diğerlerinde başlangıç ve bitiş fotoğrafları
+- Ekipmana göre filtre (halter, dambıl, makine, kablo, vücut ağırlığı)
 - Adım adım anlatım, ipuçları, çalışan ana ve yardımcı kaslar
-- **Dokunulabilir vücut haritası:** kaslar son 7 günde yaptığın set sayısına göre renklenir
+- **Dokunulabilir vücut haritası:** bir kasa dokununca o kasın hareketleri açılır; kaslar son 7 günde yaptığın set sayısına göre renklenir
 - Hareket başına grafikler: en ağır set, tahmini maksimum, toplam kaldırılan
 
 **Vücut ve beslenme**
@@ -63,13 +64,13 @@ Framework ve derleme adımı olmadan düz HTML, CSS ve JavaScript (ES modülleri
 |---|---|
 | `index.html`, `styles.css` | Uygulama iskeleti ve tasarım |
 | `app.js` | Ekranlar, antrenman, program, hesaplamalar |
-| `exercises.js` | 122 hareketin bilgileri, görselleri ve videoları |
+| `exercises.js` | 138 hareketin bilgileri, alt grupları, ekipmanı, görselleri ve videoları |
 | `nutrition.js` | Yiyecek değerleri ve menü oluşturucu |
 | `bodymap.js` | Ön ve arka vücut haritası (SVG) |
 | `sw.js` | Service worker: çevrimdışı önbellek, video indirme |
 | `img/`, `vid/` | Hareket fotoğrafları ve videoları |
 
-**Güncelleme yayınlamak:** Dosyaları değiştirip `sw.js` içindeki `VERSION` değerini artır (örn. `gymtakip-v11`) ve `main` dalına gönder. GitHub Pages yeni sürümü birkaç dakika içinde yayınlar. Telefonda uygulamayı kapatıp açınca güncelleme gelir.
+**Güncelleme yayınlamak:** Dosyaları değiştirip (yeni görsel eklediysen `python tools/update_sw.py` çalıştırıp) `sw.js` içindeki `VERSION` değerini artır (örn. `gymtakip-v11`) ve `main` dalına gönder. GitHub Pages yeni sürümü birkaç dakika içinde yayınlar. Telefonda uygulamayı kapatıp açınca güncelleme gelir.
 
 **Bilgisayarda çalıştırmak:** Klasörde bir yerel sunucu başlatıp tarayıcıda aç:
 

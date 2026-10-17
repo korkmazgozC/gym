@@ -52,7 +52,9 @@ export const EXERCISES = [
     "src": "vid/bench-2.mp4",
     "poster": "vid/bench-2.jpg"
    }
-  ]
+  ],
+  "sub": "orta",
+  "equip": "barbell"
  },
  {
   "id": "incline-bench",
@@ -86,7 +88,9 @@ export const EXERCISES = [
     "src": "vid/incline-bench-0.mp4",
     "poster": "vid/incline-bench-0.jpg"
    }
-  ]
+  ],
+  "sub": "ust",
+  "equip": "barbell"
  },
  {
   "id": "incline-db",
@@ -120,7 +124,9 @@ export const EXERCISES = [
     "src": "vid/incline-db-0.mp4",
     "poster": "vid/incline-db-0.jpg"
    }
-  ]
+  ],
+  "sub": "ust",
+  "equip": "dumbbell"
  },
  {
   "id": "db-bench",
@@ -161,7 +167,9 @@ export const EXERCISES = [
     "src": "vid/db-bench-2.mp4",
     "poster": "vid/db-bench-2.jpg"
    }
-  ]
+  ],
+  "sub": "orta",
+  "equip": "dumbbell"
  },
  {
   "id": "dips",
@@ -203,7 +211,9 @@ export const EXERCISES = [
     "src": "vid/dips-2.mp4",
     "poster": "vid/dips-2.jpg"
    }
-  ]
+  ],
+  "sub": "alt",
+  "equip": "body"
  },
  {
   "id": "db-fly",
@@ -227,7 +237,9 @@ export const EXERCISES = [
   "tips": [
    "Ağırlığı hafif tut, omzu zorlayan derinliğe inme."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "orta",
+  "equip": "dumbbell"
  },
  {
   "id": "pushup",
@@ -255,7 +267,9 @@ export const EXERCISES = [
    "Kalçanın düşmesine izin verme.",
    "Zorlanırsan dizler yerde yap."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "orta",
+  "equip": "body"
  },
  {
   "id": "cable-crossover",
@@ -282,7 +296,9 @@ export const EXERCISES = [
   "tips": [
    "Hareketi kollarla değil göğüsle yaptığını hisset."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "orta",
+  "equip": "cable"
  },
  {
   "id": "pec-deck",
@@ -307,7 +323,9 @@ export const EXERCISES = [
   "tips": [
    "Omuzlarını kulaklarına doğru kaldırma."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "orta",
+  "equip": "machine"
  },
  {
   "id": "chest-press",
@@ -335,7 +353,9 @@ export const EXERCISES = [
   "tips": [
    "Yeni başlayanlar için bench press'e güvenli bir alternatif."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "orta",
+  "equip": "machine"
  },
  {
   "id": "pullover",
@@ -363,7 +383,9 @@ export const EXERCISES = [
   "tips": [
    "Belini aşırı kavislendirme."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "orta",
+  "equip": "dumbbell"
  },
  {
   "id": "decline-bench",
@@ -390,7 +412,9 @@ export const EXERCISES = [
   "tips": [
    "Alt göğsü hedefler; bar yolunu dik tut."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "alt",
+  "equip": "barbell"
  },
  {
   "id": "incline-fly",
@@ -416,7 +440,9 @@ export const EXERCISES = [
   "tips": [
    "Hafif ağırlıkla, kontrollü çalış."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "ust",
+  "equip": "dumbbell"
  },
  {
   "id": "machine-bench",
@@ -443,7 +469,9 @@ export const EXERCISES = [
   "tips": [
    "Serbest ağırlığa geçmeden önce güvenli bir seçenek."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "orta",
+  "equip": "machine"
  },
  {
   "id": "low-cable-crossover",
@@ -469,7 +497,9 @@ export const EXERCISES = [
   "tips": [
    "Üst göğüs ve iç göğüs için etkilidir."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "ust",
+  "equip": "cable"
  },
  {
   "id": "incline-pushup",
@@ -496,7 +526,9 @@ export const EXERCISES = [
   "tips": [
    "Normal şınava hazırlık için idealdir."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "alt",
+  "equip": "body"
  },
  {
   "id": "decline-pushup",
@@ -523,7 +555,9 @@ export const EXERCISES = [
   "tips": [
    "Üst göğüs ve omuzları daha çok çalıştırır."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "ust",
+  "equip": "body"
  },
  {
   "id": "wide-pushup",
@@ -551,7 +585,68 @@ export const EXERCISES = [
   "tips": [
    "Omuz ağrısı olursa eli biraz daralt."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "orta",
+  "equip": "body"
+ },
+ {
+  "id": "decline-db-press",
+  "region": "gogus",
+  "name": "Decline Dumbbell Press",
+  "type": "weight",
+  "img": [
+   "img/decline-db-press-0.jpg",
+   "img/decline-db-press-1.jpg"
+  ],
+  "primary": [
+   "Göğüs"
+  ],
+  "secondary": [
+   "Triceps",
+   "Omuz"
+  ],
+  "level": "intermediate",
+  "steps": [
+   "Aşağı eğimli sehpaya uzan, ayaklarını pedlere sabitle; dambıllar göğüs hizasında.",
+   "Dambılları göğsünün alt kısmının üstüne doğru yukarı it.",
+   "Kontrollü şekilde göğüs hizasına indir."
+  ],
+  "tips": [
+   "Alt göğsü hedefler.",
+   "Dambılları birine verip almak için yardım iste ya da dizlerinle başlat."
+  ],
+  "met": 6.0,
+  "sub": "alt",
+  "equip": "dumbbell"
+ },
+ {
+  "id": "decline-fly",
+  "region": "gogus",
+  "name": "Decline Dumbbell Fly",
+  "type": "weight",
+  "img": [
+   "img/decline-fly-0.jpg",
+   "img/decline-fly-1.jpg"
+  ],
+  "primary": [
+   "Göğüs"
+  ],
+  "secondary": [
+   "Omuz"
+  ],
+  "level": "intermediate",
+  "steps": [
+   "Aşağı eğimli sehpaya uzan, dambılları göğsünün üstünde birleştir.",
+   "Dirsekler hafif bükük, kollarını yanlara doğru göğsün gerildiğini hissedene kadar aç.",
+   "Göğsünü sıkarak dambılları tekrar birleştir."
+  ],
+  "tips": [
+   "Ağırlığı abartma; omuzu korumak için hareket açıklığını kontrol et.",
+   "Hareket boyunca dirsek açısı aynı kalsın."
+  ],
+  "met": 5.0,
+  "sub": "alt",
+  "equip": "dumbbell"
  },
  {
   "id": "pullup",
@@ -586,7 +681,9 @@ export const EXERCISES = [
     "src": "vid/pullup-0.mp4",
     "poster": "vid/pullup-0.jpg"
    }
-  ]
+  ],
+  "sub": "kanat",
+  "equip": "body"
  },
  {
   "id": "seated-row",
@@ -620,7 +717,9 @@ export const EXERCISES = [
     "src": "vid/seated-row-0.mp4",
     "poster": "vid/seated-row-0.jpg"
    }
-  ]
+  ],
+  "sub": "orta",
+  "equip": "cable"
  },
  {
   "id": "shrug",
@@ -650,7 +749,9 @@ export const EXERCISES = [
     "src": "vid/shrug-0.mp4",
     "poster": "vid/shrug-0.jpg"
    }
-  ]
+  ],
+  "sub": "trapez",
+  "equip": "dumbbell"
  },
  {
   "id": "barbell-shrug",
@@ -680,7 +781,9 @@ export const EXERCISES = [
     "src": "vid/barbell-shrug-0.mp4",
     "poster": "vid/barbell-shrug-0.jpg"
    }
-  ]
+  ],
+  "sub": "trapez",
+  "equip": "barbell"
  },
  {
   "id": "one-arm-cable-row",
@@ -713,7 +816,9 @@ export const EXERCISES = [
     "src": "vid/one-arm-cable-row-0.mp4",
     "poster": "vid/one-arm-cable-row-0.jpg"
    }
-  ]
+  ],
+  "sub": "kanat",
+  "equip": "cable"
  },
  {
   "id": "assisted-pullup",
@@ -746,7 +851,9 @@ export const EXERCISES = [
     "src": "vid/assisted-pullup-0.mp4",
     "poster": "vid/assisted-pullup-0.jpg"
    }
-  ]
+  ],
+  "sub": "kanat",
+  "equip": "machine"
  },
  {
   "id": "chinup",
@@ -774,7 +881,9 @@ export const EXERCISES = [
   "tips": [
    "Barfikse göre biceps daha çok çalışır, genelde daha kolaydır."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "kanat",
+  "equip": "body"
  },
  {
   "id": "lat-pulldown",
@@ -803,7 +912,9 @@ export const EXERCISES = [
   "tips": [
    "Barı ensenin arkasına çekme."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "kanat",
+  "equip": "cable"
  },
  {
   "id": "bb-row",
@@ -832,7 +943,9 @@ export const EXERCISES = [
   "tips": [
    "Belini yuvarlama; gövde açısını sabit tut."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "orta",
+  "equip": "barbell"
  },
  {
   "id": "db-row",
@@ -861,7 +974,9 @@ export const EXERCISES = [
   "tips": [
    "Gövdeyi döndürerek çekme."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "orta",
+  "equip": "dumbbell"
  },
  {
   "id": "straight-arm-pd",
@@ -886,7 +1001,9 @@ export const EXERCISES = [
   "tips": [
    "Dirsek açısını hareket boyunca sabit tut."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "kanat",
+  "equip": "cable"
  },
  {
   "id": "deadlift",
@@ -921,7 +1038,9 @@ export const EXERCISES = [
    "Belini asla yuvarlama.",
    "Bar vücuda yakın kalmalı."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "bel",
+  "equip": "barbell"
  },
  {
   "id": "close-grip-pulldown",
@@ -949,7 +1068,9 @@ export const EXERCISES = [
   "tips": [
    "Dirsekleri aşağı ve geriye sür."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "kanat",
+  "equip": "cable"
  },
  {
   "id": "vbar-pulldown",
@@ -977,7 +1098,9 @@ export const EXERCISES = [
   "tips": [
    "Gövdeyle sallanma."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "kanat",
+  "equip": "cable"
  },
  {
   "id": "tbar-row",
@@ -1004,7 +1127,9 @@ export const EXERCISES = [
   "tips": [
    "Sırtını düz tut."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "orta",
+  "equip": "barbell"
  },
  {
   "id": "inverted-row",
@@ -1030,7 +1155,9 @@ export const EXERCISES = [
   "tips": [
    "Ayakları yükseltirsen zorlaşır."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "orta",
+  "equip": "body"
  },
  {
   "id": "db-bent-row",
@@ -1058,7 +1185,9 @@ export const EXERCISES = [
   "tips": [
    "Belini yuvarlama."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "orta",
+  "equip": "dumbbell"
  },
  {
   "id": "good-morning",
@@ -1086,7 +1215,9 @@ export const EXERCISES = [
   "tips": [
    "Hafif ağırlıkla başla, sırt düz kalsın."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "bel",
+  "equip": "barbell"
  },
  {
   "id": "rack-pull",
@@ -1115,7 +1246,9 @@ export const EXERCISES = [
   "tips": [
    "Deadlift'in üst kısmını güçlendirir."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "bel",
+  "equip": "barbell"
  },
  {
   "id": "hyperextension",
@@ -1142,7 +1275,65 @@ export const EXERCISES = [
   "tips": [
    "Tepede belini aşırı bükme."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "bel",
+  "equip": "body"
+ },
+ {
+  "id": "cable-shrug",
+  "region": "sirt",
+  "name": "Kablo Shrug",
+  "type": "weight",
+  "img": [
+   "img/cable-shrug-0.jpg",
+   "img/cable-shrug-1.jpg"
+  ],
+  "primary": [
+   "Trapez"
+  ],
+  "secondary": [
+   "Ön kol"
+  ],
+  "level": "beginner",
+  "steps": [
+   "Alt makaraya düz bar tak, barı avuçlar aşağı bakacak şekilde omuz genişliğinde tut.",
+   "Kollar düz, omuzlarını kulaklarına doğru dik yukarı kaldır.",
+   "Tepede 1 sn sık, yavaşça indir."
+  ],
+  "tips": [
+   "Omuzları döndürme; sadece yukarı-aşağı.",
+   "Kablo, hareket boyunca sabit gerilim sağlar."
+  ],
+  "met": 3.5,
+  "sub": "trapez",
+  "equip": "cable"
+ },
+ {
+  "id": "machine-shrug",
+  "region": "sirt",
+  "name": "Makine Shrug",
+  "type": "weight",
+  "img": [
+   "img/machine-shrug-0.jpg",
+   "img/machine-shrug-1.jpg"
+  ],
+  "primary": [
+   "Trapez"
+  ],
+  "secondary": [],
+  "level": "beginner",
+  "steps": [
+   "Omuzlarını makinenin pedlerinin altına yerleştir, kollar yanlarda serbest.",
+   "Omuzlarını olabildiğince yukarı kaldır.",
+   "Tepede kısa bekle, kontrollü şekilde indir."
+  ],
+  "tips": [
+   "Boynu öne uzatma, baş dik kalsın.",
+   "Ağır yüklemeye uygun, sırtı yormadan trapezi çalıştırır."
+  ],
+  "met": 3.5,
+  "sub": "trapez",
+  "equip": "machine"
  },
  {
   "id": "front-squat",
@@ -1184,7 +1375,9 @@ export const EXERCISES = [
     "src": "vid/front-squat-2.mp4",
     "poster": "vid/front-squat-2.jpg"
    }
-  ]
+  ],
+  "sub": "on",
+  "equip": "barbell"
  },
  {
   "id": "lunge",
@@ -1226,7 +1419,9 @@ export const EXERCISES = [
     "src": "vid/lunge-2.mp4",
     "poster": "vid/lunge-2.jpg"
    }
-  ]
+  ],
+  "sub": "on",
+  "equip": "dumbbell"
  },
  {
   "id": "rdl",
@@ -1268,7 +1463,9 @@ export const EXERCISES = [
     "src": "vid/rdl-2.mp4",
     "poster": "vid/rdl-2.jpg"
    }
-  ]
+  ],
+  "sub": "arka",
+  "equip": "barbell"
  },
  {
   "id": "leg-press",
@@ -1310,7 +1507,9 @@ export const EXERCISES = [
     "src": "vid/leg-press-2.mp4",
     "poster": "vid/leg-press-2.jpg"
    }
-  ]
+  ],
+  "sub": "on",
+  "equip": "machine"
  },
  {
   "id": "leg-curl",
@@ -1344,7 +1543,9 @@ export const EXERCISES = [
     "src": "vid/leg-curl-1.mp4",
     "poster": "vid/leg-curl-1.jpg"
    }
-  ]
+  ],
+  "sub": "arka",
+  "equip": "machine"
  },
  {
   "id": "hip-thrust",
@@ -1383,7 +1584,9 @@ export const EXERCISES = [
     "src": "vid/hip-thrust-1.mp4",
     "poster": "vid/hip-thrust-1.jpg"
    }
-  ]
+  ],
+  "sub": "kalca",
+  "equip": "barbell"
  },
  {
   "id": "calf-raise",
@@ -1417,7 +1620,9 @@ export const EXERCISES = [
     "src": "vid/calf-raise-1.mp4",
     "poster": "vid/calf-raise-1.jpg"
    }
-  ]
+  ],
+  "sub": "baldir",
+  "equip": "dumbbell"
  },
  {
   "id": "hack-squat",
@@ -1455,7 +1660,9 @@ export const EXERCISES = [
     "src": "vid/hack-squat-1.mp4",
     "poster": "vid/hack-squat-1.jpg"
    }
-  ]
+  ],
+  "sub": "on",
+  "equip": "machine"
  },
  {
   "id": "walking-lunge",
@@ -1493,7 +1700,9 @@ export const EXERCISES = [
     "src": "vid/walking-lunge-1.mp4",
     "poster": "vid/walking-lunge-1.jpg"
    }
-  ]
+  ],
+  "sub": "on",
+  "equip": "dumbbell"
  },
  {
   "id": "seated-leg-curl",
@@ -1523,7 +1732,9 @@ export const EXERCISES = [
     "src": "vid/seated-leg-curl-0.mp4",
     "poster": "vid/seated-leg-curl-0.jpg"
    }
-  ]
+  ],
+  "sub": "arka",
+  "equip": "machine"
  },
  {
   "id": "seated-calf",
@@ -1553,7 +1764,9 @@ export const EXERCISES = [
     "src": "vid/seated-calf-0.mp4",
     "poster": "vid/seated-calf-0.jpg"
    }
-  ]
+  ],
+  "sub": "baldir",
+  "equip": "machine"
  },
  {
   "id": "hip-adduction",
@@ -1585,7 +1798,9 @@ export const EXERCISES = [
     "src": "vid/hip-adduction-0.mp4",
     "poster": "vid/hip-adduction-0.jpg"
    }
-  ]
+  ],
+  "sub": "kalca",
+  "equip": "machine"
  },
  {
   "id": "smith-squat",
@@ -1618,7 +1833,9 @@ export const EXERCISES = [
     "src": "vid/smith-squat-0.mp4",
     "poster": "vid/smith-squat-0.jpg"
    }
-  ]
+  ],
+  "sub": "on",
+  "equip": "machine"
  },
  {
   "id": "standing-leg-curl",
@@ -1654,7 +1871,9 @@ export const EXERCISES = [
     "src": "vid/standing-leg-curl-1.mp4",
     "poster": "vid/standing-leg-curl-1.jpg"
    }
-  ]
+  ],
+  "sub": "arka",
+  "equip": "machine"
  },
  {
   "id": "squat",
@@ -1685,7 +1904,9 @@ export const EXERCISES = [
    "Topuklar yerden kalkmasın.",
    "Dizlerin içe kapanmasına izin verme."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "on",
+  "equip": "barbell"
  },
  {
   "id": "goblet-squat",
@@ -1714,7 +1935,9 @@ export const EXERCISES = [
   "tips": [
    "Squat tekniğini öğrenmek için ideal."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "on",
+  "equip": "dumbbell"
  },
  {
   "id": "bulgarian",
@@ -1742,7 +1965,9 @@ export const EXERCISES = [
   "tips": [
    "Ön ayağı sehpadan yeterince uzağa koy."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "on",
+  "equip": "dumbbell"
  },
  {
   "id": "sumo-dl",
@@ -1775,7 +2000,9 @@ export const EXERCISES = [
   "tips": [
    "Dizler ayak parmaklarıyla aynı yöne baksın."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "arka",
+  "equip": "barbell"
  },
  {
   "id": "leg-ext",
@@ -1799,7 +2026,9 @@ export const EXERCISES = [
   "tips": [
    "Ağırlığı sallayarak kaldırma."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "on",
+  "equip": "machine"
  },
  {
   "id": "glute-bridge",
@@ -1825,7 +2054,9 @@ export const EXERCISES = [
   "tips": [
    "Belinle değil kalçanla kaldır."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "kalca",
+  "equip": "body"
  },
  {
   "id": "box-squat",
@@ -1855,7 +2086,9 @@ export const EXERCISES = [
   "tips": [
    "Kutuya çökme, kontrollü otur."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "on",
+  "equip": "barbell"
  },
  {
   "id": "bodyweight-squat",
@@ -1882,7 +2115,9 @@ export const EXERCISES = [
   "tips": [
    "Isınma için de idealdir."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "on",
+  "equip": "body"
  },
  {
   "id": "rear-lunge",
@@ -1910,7 +2145,9 @@ export const EXERCISES = [
   "tips": [
    "Dizler için öne lunge'dan daha rahattır."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "on",
+  "equip": "dumbbell"
  },
  {
   "id": "step-up",
@@ -1938,7 +2175,9 @@ export const EXERCISES = [
   "tips": [
    "Arka ayakla zıplamadan it."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "on",
+  "equip": "dumbbell"
  },
  {
   "id": "sldl-db",
@@ -1965,7 +2204,9 @@ export const EXERCISES = [
   "tips": [
    "Sırt düz kalmalı."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "arka",
+  "equip": "dumbbell"
  },
  {
   "id": "glute-kickback",
@@ -1991,7 +2232,9 @@ export const EXERCISES = [
   "tips": [
    "Belini çukurlaştırma."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "kalca",
+  "equip": "body"
  },
  {
   "id": "kb-swing",
@@ -2020,7 +2263,9 @@ export const EXERCISES = [
   "tips": [
    "Güç kollardan değil kalçadan gelir."
   ],
-  "met": 8.0
+  "met": 8.0,
+  "sub": "arka",
+  "equip": "other"
  },
  {
   "id": "single-leg-bridge",
@@ -2046,7 +2291,144 @@ export const EXERCISES = [
   "tips": [
    "Kalçanın yana düşmesine izin verme."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "kalca",
+  "equip": "body"
+ },
+ {
+  "id": "leg-press-calf",
+  "region": "bacak",
+  "name": "Leg Press’te Baldır",
+  "type": "weight",
+  "img": [
+   "img/leg-press-calf-0.jpg",
+   "img/leg-press-calf-1.jpg"
+  ],
+  "primary": [
+   "Baldır"
+  ],
+  "secondary": [],
+  "level": "beginner",
+  "steps": [
+   "Leg press makinesine otur, ayak parmak uçlarını platformun alt kenarına koy.",
+   "Dizler düz ama kilitli değilken platformu parmak uçlarınla it.",
+   "Topukları yavaşça geri getirip baldırını esnet, tekrarla."
+  ],
+  "tips": [
+   "Güvenlik kilitlerini açık bırakma; ayağın kaymasın.",
+   "Altta tam esnemeye izin ver."
+  ],
+  "met": 4.0,
+  "sub": "baldir",
+  "equip": "machine"
+ },
+ {
+  "id": "smith-calf",
+  "region": "bacak",
+  "name": "Smith Machine Baldır",
+  "type": "weight",
+  "img": [
+   "img/smith-calf-0.jpg",
+   "img/smith-calf-1.jpg"
+  ],
+  "primary": [
+   "Baldır"
+  ],
+  "secondary": [],
+  "level": "beginner",
+  "steps": [
+   "Smith barını omuzlarına al, parmak uçlarınla bir basamağın kenarına bas.",
+   "Topuklarını olabildiğince yükseğe kaldır.",
+   "Tepede 1 sn bekle, topukları basamağın altına doğru yavaşça indir."
+  ],
+  "tips": [
+   "Dizlerini kilitleme, hafif bükük tut.",
+   "Hareketi zıplatmadan yap."
+  ],
+  "met": 4.0,
+  "sub": "baldir",
+  "equip": "machine"
+ },
+ {
+  "id": "barbell-calf",
+  "region": "bacak",
+  "name": "Barbell Baldır Kaldırma",
+  "type": "weight",
+  "img": [
+   "img/barbell-calf-0.jpg",
+   "img/barbell-calf-1.jpg"
+  ],
+  "primary": [
+   "Baldır"
+  ],
+  "secondary": [],
+  "level": "beginner",
+  "steps": [
+   "Barı omuzlarının arkasına al, parmak uçların bir plakanın veya basamağın üstünde olsun.",
+   "Parmak uçlarında yükselebildiğin kadar yüksel.",
+   "Kontrollü şekilde topuklarını indir."
+  ],
+  "tips": [
+   "Dengeyi korumak için gövdeni dik tut.",
+   "Ağır kullanacaksan Smith veya makine daha güvenli."
+  ],
+  "met": 4.0,
+  "sub": "baldir",
+  "equip": "barbell"
+ },
+ {
+  "id": "machine-calf",
+  "region": "bacak",
+  "name": "Makine Ayakta Baldır",
+  "type": "weight",
+  "img": [
+   "img/machine-calf-0.jpg",
+   "img/machine-calf-1.jpg"
+  ],
+  "primary": [
+   "Baldır"
+  ],
+  "secondary": [],
+  "level": "beginner",
+  "steps": [
+   "Omuzlarını makinenin pedlerinin altına yerleştir, parmak uçların basamakta.",
+   "Topuklarını olabildiğince yukarı kaldır.",
+   "Tepede kısa bekle, topukları basamağın altına kadar indir."
+  ],
+  "tips": [
+   "Tam hareket açıklığı en önemli kuralı: altta esnet, üstte sık.",
+   "Ayak uçlarının açısını değiştirerek farklı bölgeleri çalıştırabilirsin."
+  ],
+  "met": 4.0,
+  "sub": "baldir",
+  "equip": "machine"
+ },
+ {
+  "id": "hip-abduction",
+  "region": "bacak",
+  "name": "Makine Abduksiyon (Dış Kalça)",
+  "type": "weight",
+  "img": [
+   "img/hip-abduction-0.jpg",
+   "img/hip-abduction-1.jpg"
+  ],
+  "primary": [
+   "Kalça"
+  ],
+  "secondary": [],
+  "level": "beginner",
+  "steps": [
+   "Makineye otur, pedler dizlerinin dış tarafında olsun.",
+   "Bacaklarını dışa doğru olabildiğince aç.",
+   "Kontrollü şekilde kapat; ağırlıklar birbirine çarpmasın."
+  ],
+  "tips": [
+   "Kalçanın yan kaslarını (gluteus medius) çalıştırır; diz sağlığı için faydalı.",
+   "Gövdeyi öne eğmek kalçayı daha çok devreye sokar."
+  ],
+  "met": 4.0,
+  "sub": "kalca",
+  "equip": "machine"
  },
  {
   "id": "db-shoulder-press",
@@ -2078,7 +2460,9 @@ export const EXERCISES = [
     "src": "vid/db-shoulder-press-0.mp4",
     "poster": "vid/db-shoulder-press-0.jpg"
    }
-  ]
+  ],
+  "sub": "on",
+  "equip": "dumbbell"
  },
  {
   "id": "lateral-raise",
@@ -2108,7 +2492,9 @@ export const EXERCISES = [
     "src": "vid/lateral-raise-0.mp4",
     "poster": "vid/lateral-raise-0.jpg"
    }
-  ]
+  ],
+  "sub": "yan",
+  "equip": "dumbbell"
  },
  {
   "id": "reverse-fly",
@@ -2146,7 +2532,9 @@ export const EXERCISES = [
     "src": "vid/reverse-fly-2.mp4",
     "poster": "vid/reverse-fly-2.jpg"
    }
-  ]
+  ],
+  "sub": "arka",
+  "equip": "dumbbell"
  },
  {
   "id": "face-pull",
@@ -2182,7 +2570,9 @@ export const EXERCISES = [
     "src": "vid/face-pull-1.mp4",
     "poster": "vid/face-pull-1.jpg"
    }
-  ]
+  ],
+  "sub": "arka",
+  "equip": "cable"
  },
  {
   "id": "machine-shoulder-press",
@@ -2214,7 +2604,9 @@ export const EXERCISES = [
     "src": "vid/machine-shoulder-press-0.mp4",
     "poster": "vid/machine-shoulder-press-0.jpg"
    }
-  ]
+  ],
+  "sub": "on",
+  "equip": "machine"
  },
  {
   "id": "ohp",
@@ -2241,7 +2633,9 @@ export const EXERCISES = [
   "tips": [
    "Belini geriye bükme."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "on",
+  "equip": "barbell"
  },
  {
   "id": "arnold-press",
@@ -2267,7 +2661,9 @@ export const EXERCISES = [
   "tips": [
    "Hareketi akıcı ve kontrollü yap."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "on",
+  "equip": "dumbbell"
  },
  {
   "id": "front-raise",
@@ -2291,7 +2687,9 @@ export const EXERCISES = [
   "tips": [
    "Dönüşümlü de yapılabilir."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "on",
+  "equip": "dumbbell"
  },
  {
   "id": "upright-row",
@@ -2318,7 +2716,9 @@ export const EXERCISES = [
    "Dirsekleri omuz hizasından yukarı çıkarma.",
    "Dar tutuş omzu zorlar."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "yan",
+  "equip": "barbell"
  },
  {
   "id": "seated-bb-press",
@@ -2344,7 +2744,9 @@ export const EXERCISES = [
   "tips": [
    "Belini pedden ayırma."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "on",
+  "equip": "barbell"
  },
  {
   "id": "cable-lateral",
@@ -2371,7 +2773,9 @@ export const EXERCISES = [
   "tips": [
    "Kablo, hareketin başında da gerilim sağlar."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "yan",
+  "equip": "cable"
  },
  {
   "id": "rear-delt-machine",
@@ -2395,7 +2799,9 @@ export const EXERCISES = [
   "tips": [
    "Arka omuz için en kolay izolasyon."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "arka",
+  "equip": "machine"
  },
  {
   "id": "plate-raise",
@@ -2419,7 +2825,9 @@ export const EXERCISES = [
   "tips": [
    "Gövdeyle sallanma."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "on",
+  "equip": "other"
  },
  {
   "id": "db-upright-row",
@@ -2446,7 +2854,9 @@ export const EXERCISES = [
   "tips": [
    "Dirsekler omuz hizasını geçmesin."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "yan",
+  "equip": "dumbbell"
  },
  {
   "id": "push-press",
@@ -2473,7 +2883,67 @@ export const EXERCISES = [
   "tips": [
    "Bacak gücüyle daha ağır kaldırabilirsin."
   ],
-  "met": 8.0
+  "met": 8.0,
+  "sub": "on",
+  "equip": "barbell"
+ },
+ {
+  "id": "seated-rear-delt",
+  "region": "omuz",
+  "name": "Oturarak Arka Omuz Açış",
+  "type": "weight",
+  "img": [
+   "img/seated-rear-delt-0.jpg",
+   "img/seated-rear-delt-1.jpg"
+  ],
+  "primary": [
+   "Omuz"
+  ],
+  "secondary": [
+   "Orta sırt"
+  ],
+  "level": "beginner",
+  "steps": [
+   "Sehpanın ucuna otur, gövdeni öne eğ; dambıllar baldırlarının arkasında.",
+   "Dirsekler hafif bükük, kollarını yanlara doğru omuz hizasına kadar aç.",
+   "Yavaşça indir."
+  ],
+  "tips": [
+   "Hafif ağırlık yeterli; hareketi arka omuzdan hisset.",
+   "Kürek kemiklerini çok fazla sıkıştırma."
+  ],
+  "met": 3.5,
+  "sub": "arka",
+  "equip": "dumbbell"
+ },
+ {
+  "id": "cable-rear-delt",
+  "region": "omuz",
+  "name": "Kablo Arka Omuz Fly",
+  "type": "weight",
+  "img": [
+   "img/cable-rear-delt-0.jpg",
+   "img/cable-rear-delt-1.jpg"
+  ],
+  "primary": [
+   "Omuz"
+  ],
+  "secondary": [
+   "Orta sırt"
+  ],
+  "level": "beginner",
+  "steps": [
+   "İki makarayı omuz hizasına ayarla, kabloları çaprazlama tut (sağ el sol kablo).",
+   "Kollar neredeyse düz, kabloları yanlara ve geriye doğru aç.",
+   "Kontrollü şekilde başlangıca dön."
+  ],
+  "tips": [
+   "Dirsek açısı hareket boyunca sabit kalsın.",
+   "Arka omuz, omuz sağlığı ve duruş için önemlidir."
+  ],
+  "met": 3.5,
+  "sub": "arka",
+  "equip": "cable"
  },
  {
   "id": "biceps-curl",
@@ -2505,7 +2975,9 @@ export const EXERCISES = [
     "src": "vid/biceps-curl-0.mp4",
     "poster": "vid/biceps-curl-0.jpg"
    }
-  ]
+  ],
+  "sub": "biceps",
+  "equip": "dumbbell"
  },
  {
   "id": "hammer-curl",
@@ -2535,7 +3007,9 @@ export const EXERCISES = [
     "src": "vid/hammer-curl-0.mp4",
     "poster": "vid/hammer-curl-0.jpg"
    }
-  ]
+  ],
+  "sub": "biceps",
+  "equip": "dumbbell"
  },
  {
   "id": "barbell-curl",
@@ -2567,7 +3041,9 @@ export const EXERCISES = [
     "src": "vid/barbell-curl-0.mp4",
     "poster": "vid/barbell-curl-0.jpg"
    }
-  ]
+  ],
+  "sub": "biceps",
+  "equip": "barbell"
  },
  {
   "id": "preacher-curl",
@@ -2605,7 +3081,9 @@ export const EXERCISES = [
     "src": "vid/preacher-curl-2.mp4",
     "poster": "vid/preacher-curl-2.jpg"
    }
-  ]
+  ],
+  "sub": "biceps",
+  "equip": "barbell"
  },
  {
   "id": "triceps-pushdown",
@@ -2643,7 +3121,9 @@ export const EXERCISES = [
     "src": "vid/triceps-pushdown-2.mp4",
     "poster": "vid/triceps-pushdown-2.jpg"
    }
-  ]
+  ],
+  "sub": "triceps",
+  "equip": "cable"
  },
  {
   "id": "skull-crusher",
@@ -2683,7 +3163,9 @@ export const EXERCISES = [
     "src": "vid/skull-crusher-2.mp4",
     "poster": "vid/skull-crusher-2.jpg"
    }
-  ]
+  ],
+  "sub": "triceps",
+  "equip": "barbell"
  },
  {
   "id": "triceps-oh",
@@ -2713,7 +3195,9 @@ export const EXERCISES = [
     "src": "vid/triceps-oh-0.mp4",
     "poster": "vid/triceps-oh-0.jpg"
    }
-  ]
+  ],
+  "sub": "triceps",
+  "equip": "dumbbell"
  },
  {
   "id": "kickback",
@@ -2751,7 +3235,9 @@ export const EXERCISES = [
     "src": "vid/kickback-2.mp4",
     "poster": "vid/kickback-2.jpg"
    }
-  ]
+  ],
+  "sub": "triceps",
+  "equip": "dumbbell"
  },
  {
   "id": "cable-curl",
@@ -2781,7 +3267,9 @@ export const EXERCISES = [
     "src": "vid/cable-curl-0.mp4",
     "poster": "vid/cable-curl-0.jpg"
    }
-  ]
+  ],
+  "sub": "biceps",
+  "equip": "cable"
  },
  {
   "id": "lying-db-ext",
@@ -2814,7 +3302,9 @@ export const EXERCISES = [
     "src": "vid/lying-db-ext-0.mp4",
     "poster": "vid/lying-db-ext-0.jpg"
    }
-  ]
+  ],
+  "sub": "triceps",
+  "equip": "dumbbell"
  },
  {
   "id": "cable-hammer",
@@ -2846,7 +3336,9 @@ export const EXERCISES = [
     "src": "vid/cable-hammer-0.mp4",
     "poster": "vid/cable-hammer-0.jpg"
    }
-  ]
+  ],
+  "sub": "biceps",
+  "equip": "cable"
  },
  {
   "id": "concentration-curl",
@@ -2872,7 +3364,9 @@ export const EXERCISES = [
   "tips": [
    "Üst kol hareket etmemeli."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "biceps",
+  "equip": "dumbbell"
  },
  {
   "id": "bench-dips",
@@ -2899,7 +3393,9 @@ export const EXERCISES = [
   "tips": [
    "Dizleri bükersen hareket kolaylaşır."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "triceps",
+  "equip": "body"
  },
  {
   "id": "close-grip-bench",
@@ -2926,7 +3422,9 @@ export const EXERCISES = [
   "tips": [
    "Çok dar tutuş bileği zorlar."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "triceps",
+  "equip": "barbell"
  },
  {
   "id": "incline-curl",
@@ -2950,7 +3448,9 @@ export const EXERCISES = [
   "tips": [
    "Biceps'in uzun başını gerer."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "biceps",
+  "equip": "dumbbell"
  },
  {
   "id": "ez-curl",
@@ -2974,7 +3474,9 @@ export const EXERCISES = [
   "tips": [
    "Bileklere düz bardan daha rahat gelir."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "biceps",
+  "equip": "barbell"
  },
  {
   "id": "alt-curl",
@@ -3000,7 +3502,9 @@ export const EXERCISES = [
   "tips": [
    "Her kolun tekrarını ayrı say."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "biceps",
+  "equip": "dumbbell"
  },
  {
   "id": "reverse-curl",
@@ -3012,10 +3516,10 @@ export const EXERCISES = [
    "img/reverse-curl-1.jpg"
   ],
   "primary": [
-   "Biceps"
+   "Ön kol"
   ],
   "secondary": [
-   "Ön kol"
+   "Biceps"
   ],
   "level": "beginner",
   "steps": [
@@ -3026,7 +3530,9 @@ export const EXERCISES = [
   "tips": [
    "Ön kol ve brachialis'i çalıştırır."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "onkol",
+  "equip": "barbell"
  },
  {
   "id": "rope-pushdown",
@@ -3050,7 +3556,9 @@ export const EXERCISES = [
   "tips": [
    "Altta triceps'i sık."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "triceps",
+  "equip": "cable"
  },
  {
   "id": "dips-triceps",
@@ -3077,7 +3585,9 @@ export const EXERCISES = [
   "tips": [
    "Gövde dik kalırsa triceps daha çok çalışır."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "triceps",
+  "equip": "body"
  },
  {
   "id": "cable-oh-ext",
@@ -3101,7 +3611,9 @@ export const EXERCISES = [
   "tips": [
    "Triceps'in uzun başını gerer."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "triceps",
+  "equip": "cable"
  },
  {
   "id": "wrist-curl",
@@ -3125,7 +3637,9 @@ export const EXERCISES = [
   "tips": [
    "Ön kol ve kavrama gücü için."
   ],
-  "met": 4.0
+  "met": 4.0,
+  "sub": "onkol",
+  "equip": "barbell"
  },
  {
   "id": "close-pushup",
@@ -3152,7 +3666,150 @@ export const EXERCISES = [
   "tips": [
    "Triceps'i hedefler."
   ],
-  "met": 6.0
+  "met": 6.0,
+  "sub": "triceps",
+  "equip": "body"
+ },
+ {
+  "id": "reverse-wrist-curl",
+  "region": "kol",
+  "name": "Ters Bilek Curl",
+  "type": "weight",
+  "img": [
+   "img/reverse-wrist-curl-0.jpg",
+   "img/reverse-wrist-curl-1.jpg"
+  ],
+  "primary": [
+   "Ön kol"
+  ],
+  "secondary": [],
+  "level": "beginner",
+  "steps": [
+   "Sehpanın önüne diz çök, ön kollarını sehpaya koy; bilekler kenardan taşsın, avuçlar aşağı baksın.",
+   "Barı yalnızca bileklerini yukarı bükerek kaldır.",
+   "Tepede kısa bir an bekle, kontrollü şekilde indir."
+  ],
+  "tips": [
+   "Ön kolun üst kısmını çalıştırır; hafif ağırlıkla başla.",
+   "Ön kollar sehpadan kalkmasın."
+  ],
+  "met": 3.5,
+  "sub": "onkol",
+  "equip": "barbell"
+ },
+ {
+  "id": "db-wrist-curl",
+  "region": "kol",
+  "name": "Dumbbell Bilek Curl",
+  "type": "weight",
+  "img": [
+   "img/db-wrist-curl-0.jpg",
+   "img/db-wrist-curl-1.jpg"
+  ],
+  "primary": [
+   "Ön kol"
+  ],
+  "secondary": [],
+  "level": "beginner",
+  "steps": [
+   "Sehpaya otur, ön kollarını uyluklarına koy; avuçlar yukarı, bilekler dizlerinden taşsın.",
+   "Dambılları parmak uçlarına doğru indir.",
+   "Bileklerini bükerek dambılları olabildiğince yukarı kaldır, yavaşça indir."
+  ],
+  "tips": [
+   "Hareket sadece bilekten gelsin, dirsekler sabit.",
+   "Yüksek tekrar (15–20) ön kol için iyi çalışır."
+  ],
+  "met": 3.5,
+  "sub": "onkol",
+  "equip": "dumbbell"
+ },
+ {
+  "id": "farmers-walk",
+  "region": "kol",
+  "name": "Farmer's Walk (Ağırlıkla Yürüme)",
+  "type": "time",
+  "img": [
+   "img/farmers-walk-0.jpg",
+   "img/farmers-walk-1.jpg"
+  ],
+  "primary": [
+   "Ön kol"
+  ],
+  "secondary": [
+   "Trapez",
+   "Karın",
+   "Bacak"
+  ],
+  "level": "beginner",
+  "steps": [
+   "Ağır dambılları (veya farmer bar) iki yanında tut, dik dur.",
+   "Omuzlar geride, karın sıkı; kısa ve hızlı adımlarla yürü.",
+   "Belirlediğin süre veya mesafe bitince ağırlıkları dizlerini bükerek yere bırak."
+  ],
+  "tips": [
+   "Kavrama, trapez ve core için en etkili hareketlerden biri.",
+   "Sırtını yuvarlama, ağırlığı bacaklarla yerden al."
+  ],
+  "met": 6.0,
+  "sub": "onkol",
+  "equip": "dumbbell"
+ },
+ {
+  "id": "wrist-roller",
+  "region": "kol",
+  "name": "Bilek Silindiri (Wrist Roller)",
+  "type": "weight",
+  "img": [
+   "img/wrist-roller-0.jpg",
+   "img/wrist-roller-1.jpg"
+  ],
+  "primary": [
+   "Ön kol"
+  ],
+  "secondary": [
+   "Omuz"
+  ],
+  "level": "beginner",
+  "steps": [
+   "Silindiri iki elinle tut, kollarını omuz hizasında öne uzat.",
+   "Bileklerini sırayla çevirerek ipi sar, ağırlık yukarı çıksın.",
+   "Ağırlık tepeye gelince ters yöne çevirerek yavaşça indir."
+  ],
+  "tips": [
+   "İnişi de kontrollü yap; ön kolu iki yönde çalıştırır.",
+   "Kollar yorulursa dirsekleri hafif bükebilirsin."
+  ],
+  "met": 3.5,
+  "sub": "onkol",
+  "equip": "other"
+ },
+ {
+  "id": "plate-pinch",
+  "region": "kol",
+  "name": "Plaka Sıkıştırma (Plate Pinch)",
+  "type": "time",
+  "img": [
+   "img/plate-pinch-0.jpg",
+   "img/plate-pinch-1.jpg"
+  ],
+  "primary": [
+   "Ön kol"
+  ],
+  "secondary": [],
+  "level": "intermediate",
+  "steps": [
+   "İki plakayı düz yüzleri dışa bakacak şekilde yan yana koy.",
+   "Parmak uçlarınla ve başparmağınla plakaları sıkıştırarak kaldır.",
+   "Belirlediğin süre boyunca tut, kontrollü şekilde bırak."
+  ],
+  "tips": [
+   "Parmak ve kavrama gücünü geliştirir.",
+   "Hafif plakalarla başla, süreyi kademeli artır."
+  ],
+  "met": 3.0,
+  "sub": "onkol",
+  "equip": "other"
  },
  {
   "id": "crunch",
@@ -3176,7 +3833,9 @@ export const EXERCISES = [
   "tips": [
    "Boynundan çekme."
   ],
-  "met": 3.8
+  "met": 3.8,
+  "sub": "ust",
+  "equip": "body"
  },
  {
   "id": "sit-up",
@@ -3200,7 +3859,9 @@ export const EXERCISES = [
   "tips": [
    "Ayakların kalkıyorsa bir yere sabitle."
   ],
-  "met": 3.8
+  "met": 3.8,
+  "sub": "ust",
+  "equip": "body"
  },
  {
   "id": "plank",
@@ -3224,7 +3885,9 @@ export const EXERCISES = [
   "tips": [
    "Kalça düşmesin, çok da kalkmasın."
   ],
-  "met": 3.8
+  "met": 3.8,
+  "sub": "core",
+  "equip": "body"
  },
  {
   "id": "side-plank",
@@ -3250,7 +3913,9 @@ export const EXERCISES = [
   "tips": [
    "Kalçanın öne veya arkaya kaçmasına izin verme."
   ],
-  "met": 3.8
+  "met": 3.8,
+  "sub": "yan",
+  "equip": "body"
  },
  {
   "id": "leg-raise",
@@ -3274,7 +3939,9 @@ export const EXERCISES = [
   "tips": [
    "Bel boşluğu açılıyorsa dizleri hafif bük."
   ],
-  "met": 3.8
+  "met": 3.8,
+  "sub": "alt",
+  "equip": "body"
  },
  {
   "id": "hanging-leg-raise",
@@ -3298,7 +3965,9 @@ export const EXERCISES = [
   "tips": [
    "Zor gelirse dizleri bükerek yap."
   ],
-  "met": 3.8
+  "met": 3.8,
+  "sub": "alt",
+  "equip": "body"
  },
  {
   "id": "russian-twist",
@@ -3324,7 +3993,9 @@ export const EXERCISES = [
   "tips": [
    "Kollarla değil gövdeyle döndür."
   ],
-  "met": 3.8
+  "met": 3.8,
+  "sub": "yan",
+  "equip": "other"
  },
  {
   "id": "bicycle-crunch",
@@ -3348,7 +4019,9 @@ export const EXERCISES = [
   "tips": [
    "Hızdan çok dönüşe odaklan."
   ],
-  "met": 3.8
+  "met": 3.8,
+  "sub": "yan",
+  "equip": "body"
  },
  {
   "id": "mountain-climber",
@@ -3376,7 +4049,9 @@ export const EXERCISES = [
   "tips": [
    "Omuzlar ellerin üstünde kalsın."
   ],
-  "met": 8.0
+  "met": 8.0,
+  "sub": "core",
+  "equip": "body"
  },
  {
   "id": "cable-crunch",
@@ -3400,7 +4075,9 @@ export const EXERCISES = [
   "tips": [
    "Kalçadan eğilme; hareket omurgadan."
   ],
-  "met": 3.8
+  "met": 3.8,
+  "sub": "ust",
+  "equip": "cable"
  },
  {
   "id": "reverse-crunch",
@@ -3424,7 +4101,9 @@ export const EXERCISES = [
   "tips": [
    "Hareketi sallanmadan yap."
   ],
-  "met": 3.8
+  "met": 3.8,
+  "sub": "alt",
+  "equip": "body"
  },
  {
   "id": "oblique-crunch",
@@ -3448,7 +4127,9 @@ export const EXERCISES = [
   "tips": [
    "Yan karın kaslarını hedefler."
   ],
-  "met": 3.8
+  "met": 3.8,
+  "sub": "yan",
+  "equip": "body"
  },
  {
   "id": "ab-roller",
@@ -3474,7 +4155,9 @@ export const EXERCISES = [
   "tips": [
    "Belin çökmesine izin verme."
   ],
-  "met": 3.8
+  "met": 3.8,
+  "sub": "core",
+  "equip": "other"
  },
  {
   "id": "decline-crunch",
@@ -3498,7 +4181,9 @@ export const EXERCISES = [
   "tips": [
    "Eğim arttıkça zorlaşır."
   ],
-  "met": 3.8
+  "met": 3.8,
+  "sub": "ust",
+  "equip": "body"
  },
  {
   "id": "side-bend",
@@ -3522,7 +4207,9 @@ export const EXERCISES = [
   "tips": [
    "Öne-arkaya eğilme."
   ],
-  "met": 3.8
+  "met": 3.8,
+  "sub": "yan",
+  "equip": "dumbbell"
  },
  {
   "id": "knee-raise",
@@ -3546,7 +4233,9 @@ export const EXERCISES = [
   "tips": [
    "Sallanma."
   ],
-  "met": 3.8
+  "met": 3.8,
+  "sub": "alt",
+  "equip": "body"
  },
  {
   "id": "dead-bug",
@@ -3570,7 +4259,9 @@ export const EXERCISES = [
   "tips": [
    "Belin yerden kalkmasın."
   ],
-  "met": 3.8
+  "met": 3.8,
+  "sub": "core",
+  "equip": "body"
  },
  {
   "id": "ab-machine",
@@ -3594,9 +4285,15 @@ export const EXERCISES = [
   "tips": [
    "Kollarla çekme."
   ],
-  "met": 3.8
+  "met": 3.8,
+  "sub": "ust",
+  "equip": "machine"
  }
 ];
+
+// Bölgelerin alt grupları ve ekipman türleri
+export const SUBS = {"gogus": [["ust", "Üst göğüs"], ["orta", "Orta göğüs"], ["alt", "Alt göğüs"]], "sirt": [["kanat", "Kanat"], ["orta", "Orta sırt"], ["trapez", "Trapez"], ["bel", "Bel"]], "bacak": [["on", "Ön bacak"], ["arka", "Arka bacak"], ["kalca", "Kalça"], ["baldir", "Baldır"]], "omuz": [["on", "Ön omuz"], ["yan", "Yan omuz"], ["arka", "Arka omuz"]], "kol": [["biceps", "Biceps"], ["triceps", "Triceps"], ["onkol", "Ön kol"]], "karin": [["ust", "Üst karın"], ["alt", "Alt karın"], ["yan", "Yan karın"], ["core", "Core"]]};
+export const EQUIPMENT = [["barbell", "Halter"], ["dumbbell", "Dambıl"], ["machine", "Makine"], ["cable", "Kablo"], ["body", "Vücut ağırlığı"], ["other", "Diğer"]];
 
 export const ALIAS = {"superman": "hyperextension"};
 export const VIDEO_MB = 62;

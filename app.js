@@ -1,4 +1,4 @@
-import { REGIONS, EXERCISES, EX_BY_ID, REGION_BY_ID, VIDEO_MB } from './exercises.js';
+import { REGIONS, EXERCISES, EX_BY_ID, REGION_BY_ID, VIDEO_MB, SUBS, EQUIPMENT } from './exercises.js';
 import { FOODS, DIETS, buildDayMenu } from './nutrition.js';
 import { bodyMap } from './bodymap.js';
 
@@ -799,11 +799,19 @@ let libRegion = 'all', libQuery = '', picking = null;
 function pickExercise(title, onPick) { picking = { title, onPick }; location.hash = '#/pick'; }
 function renderPick() {
   if (!picking) { location.replace('#/lib'); return; }
-  return renderLib(null, true);
+  setHeader('Hareket seç', { back: true, always: true });
+  view.innerHTML = `<div class="pick-banner">${icon('plus')} ${esc(picking.title)}</div>
+    <label class="search">${icon('search')}<input id="lib-q" type="search" placeholder="Hareket veya kas ara" value="${esc(libQuery)}" autocomplete="off"></label>
+    <div class="chips" id="lib-chips"></div>
+    <div id="lib-body"></div>`;
+  $('#lib-q').addEventListener('input', e => { libQuery = e.target.value; renderLibBody(true); });
+  renderLibBody(true);
+  return () => { picking = null; };
 }
 // Bölgelerin kapak fotoğrafı: [hareket, görsel sırası]
 const REGION_COVER = { gogus: ['bench', 1], sirt: ['pullup', 0], bacak: ['front-squat', 1], omuz: ['db-shoulder-press', 1], kol: ['biceps-curl', 1], karin: ['hanging-leg-raise', 0] };
 const regionGoal = id => (id === 'karin' ? [6, 15] : [10, 20]);
+const subName = (region, sub) => SUBS[region]?.find(x => x[0] === sub)?.[1] || '';
 // Son 7 günde bölge başına çalışma seti
 function weeklyRegionSets() {
   const since = dayKey(new Date(Date.now() - 6 * 864e5));
@@ -813,32 +821,44 @@ function weeklyRegionSets() {
 }
 const setLevel = (id, n) => (!n ? 0 : n < regionGoal(id)[0] / 2 ? 1 : n < regionGoal(id)[0] ? 2 : 3);
 
-function renderLib(region, pickMode = false) {
-  if (pickMode) {
-    setHeader('Hareket seç', { back: true, always: true });
-    view.innerHTML = `<div class="pick-banner">${icon('plus')} ${esc(picking.title)}</div>
-      <label class="search">${icon('search')}<input id="lib-q" type="search" placeholder="Hareket veya kas ara" value="${esc(libQuery)}" autocomplete="off"></label>
-      <div class="chips" id="lib-chips"></div>
-      <div id="lib-body"></div>`;
-    $('#lib-q').addEventListener('input', e => { libQuery = e.target.value; renderLibBody(true); });
-    renderLibBody(true);
-    return () => { picking = null; };
-  }
+// Bir bölgenin hareketleri: alt grup ve ekipman filtresi
+function renderRegion(reg, sub) {
+  if (sub && !SUBS[reg.id]?.some(x => x[0] === sub)) sub = '';
+  const all = allExercises().filter(e => e.region === reg.id);
+  const wk = weeklyRegionSets()[reg.id];
+  let equip = db.settings.equip || 'all';
+  setHeader(sub ? subName(reg.id, sub) : reg.name, { back: true, always: true, action: `<a class="top-btn" href="#/new" aria-label="Özel hareket ekle">${icon('plus')}</a>` });
+  view.innerHTML = pageHead(`${reg.name} · ${all.length} hareket${wk ? ` · bu hafta ${wk} set` : ''}`, sub ? subName(reg.id, sub) : reg.name) + `
+    <label class="search">${icon('search')}<input id="lib-q" type="search" placeholder="${esc(reg.name)} hareketlerinde ara" autocomplete="off"></label>
+    <div class="subtabs">${[['', 'Tümü'], ...SUBS[reg.id]].map(([k, n]) => `<button class="${k === sub ? 'on' : ''}" data-s="${k}">${n}<span>${k ? all.filter(e => e.sub === k).length : all.length}</span></button>`).join('')}</div>
+    <div class="chips eq-chips">${[['all', 'Tüm ekipman'], ...EQUIPMENT].map(([k, n]) => `<button class="chip ${k === equip ? 'on' : ''}" data-e="${k}">${n}</button>`).join('')}</div>
+    <div id="lib-body"></div>`;
+  let q = '';
+  const draw = () => {
+    const nq = norm(q.trim());
+    const list = all.filter(e => (!sub || e.sub === sub) && (equip === 'all' || e.equip === equip) &&
+      (!nq || norm(`${e.name} ${(e.primary || []).join(' ')} ${(e.secondary || []).join(' ')}`).includes(nq)));
+    const groups = sub ? [[sub, list]] : [...SUBS[reg.id].map(([k]) => [k, list.filter(e => e.sub === k)]), ['', list.filter(e => !e.sub)]];
+    const html = groups.filter(([, l]) => l.length).map(([k, l]) =>
+      `${sub ? '<div style="height:12px"></div>' : `<div class="group-title">${k ? subName(reg.id, k) : 'Kendi hareketlerin'} · ${l.length}</div>`}<div class="list">${l.map(e => libItem(e)).join('')}</div>`).join('');
+    $('#lib-body').innerHTML = html || `<div style="margin-top:14px">${emptyBox('search', 'Sonuç yok', equip !== 'all' ? 'Bu ekipmanla hareket yok; başka bir ekipman seç.' : 'Farklı bir arama dene.')}</div>`;
+  };
+  $$('.subtabs button', view).forEach(b => b.addEventListener('click', () => location.replace(`#/lib/${reg.id}${b.dataset.s ? '/' + b.dataset.s : ''}`)));
+  $$('.eq-chips .chip', view).forEach(b => b.addEventListener('click', () => {
+    equip = db.settings.equip = b.dataset.e; save();
+    $$('.eq-chips .chip', view).forEach(x => x.classList.toggle('on', x === b));
+    draw();
+  }));
+  $('#lib-q').addEventListener('input', e => { q = e.target.value; draw(); });
+  $('.subtabs .on', view)?.scrollIntoView({ inline: 'center', block: 'nearest' });
+  draw();
+}
+
+function renderLib(region, sub) {
   const reg = REGION_BY_ID[region];
-  const addBtn = { action: `<a class="top-btn" href="#/new" aria-label="Özel hareket ekle">${icon('plus')}</a>` };
-  if (reg) {
-    // Bir bölgenin hareketleri
-    const n = allExercises().filter(e => e.region === reg.id).length, wk = weeklyRegionSets()[reg.id];
-    setHeader(reg.name, { ...addBtn, back: true, always: true });
-    view.innerHTML = pageHead(`${n} hareket${wk ? ` · bu hafta ${wk} set` : ''}`, reg.name) + `
-      <label class="search">${icon('search')}<input id="lib-q" type="search" placeholder="${esc(reg.name)} hareketlerinde ara" autocomplete="off"></label>
-      <div id="lib-body"></div>`;
-    $('#lib-q').addEventListener('input', e => renderLibBody(false, reg.id, e.target.value));
-    renderLibBody(false, reg.id, '');
-    return;
-  }
+  if (reg) return renderRegion(reg, sub);
   // Ana sayfa: bölge kareleri veya vücut haritası
-  setHeader('Hareketler', addBtn);
+  setHeader('Hareketler', { action: `<a class="top-btn" href="#/new" aria-label="Özel hareket ekle">${icon('plus')}</a>` });
   const mode = db.settings.libView === 'map' ? 'map' : 'tiles';
   const wk = weeklyRegionSets();
   const levels = Object.fromEntries(REGIONS.map(r => [r.id, setLevel(r.id, wk[r.id])]));
@@ -850,7 +870,7 @@ function renderLib(region, pickMode = false) {
       <div class="rt-text"><b>${r.name}</b><span>${count(r.id)} hareket</span></div></a>`;
   }).join('')}</div>`;
   const map = `<div class="card bm-card">${bodyMap(levels)}
-      <div class="bm-hint">Bir kas grubuna dokun, hareketleri açılsın.</div>
+      <div class="bm-hint">Bir kasa dokun, o kasın hareketleri açılsın.</div>
       <div class="bm-legend"><span><i class="l0"></i>Hiç</span><span><i class="l1"></i>Az</span><span><i class="l2"></i>Orta</span><span><i class="l3"></i>Hedefte</span></div>
       <div class="faint small" style="text-align:center;margin-top:8px">Renkler son 7 gündeki set sayına göre</div>
     </div>
@@ -866,7 +886,7 @@ function renderLib(region, pickMode = false) {
   $$('#lib-home .seg button').forEach(b => b.addEventListener('click', () => {
     db.settings.libView = b.dataset.v; save(); renderLib();
   }));
-  $$('.bodymap .mm', view).forEach(m => m.addEventListener('click', () => { location.hash = `#/lib/${m.dataset.r}`; }));
+  $$('.bodymap .mm', view).forEach(m => m.addEventListener('click', () => { location.hash = `#/lib/${m.dataset.r.replace(':', '/')}`; }));
   const sync = () => {
     const q = libQuery.trim();
     $('#lib-home').hidden = !!q;
@@ -877,7 +897,8 @@ function renderLib(region, pickMode = false) {
 }
 function libItem(ex, pickMode) {
   const ss = setsOf(ex.id);
-  let meta = (animOf(ex)?.primary || []).join(', ') || REGION_BY_ID[ex.region]?.name || '';
+  const eqName = EQUIPMENT.find(x => x[0] === ex.equip)?.[1];
+  let meta = [eqName, (animOf(ex)?.primary || []).join(', ') || REGION_BY_ID[ex.region]?.name].filter(Boolean).join(' · ');
   if (ss.length) {
     const last = ss.reduce((a, b) => (a.ts > b.ts ? a : b));
     meta = `${fmtSet(ex, last)} · ${daysAgo(last.date)}`;
@@ -894,7 +915,7 @@ function renderLibBody(pickMode, scope = libRegion, query = libQuery) {
   }
   const q = norm(query.trim());
   const exs = allExercises().filter(e => (scope === 'all' || e.region === scope) &&
-    (!q || norm(`${e.name} ${(e.primary || []).join(' ')} ${(e.secondary || []).join(' ')}`).includes(q)));
+    (!q || norm(`${e.name} ${(e.primary || []).join(' ')} ${(e.secondary || []).join(' ')} ${subName(e.region, e.sub)}`).includes(q)));
   const regions = scope === 'all' ? REGIONS : REGIONS.filter(r => r.id === scope);
   const html = regions.map(r => {
     const list = exs.filter(e => e.region === r.id);
