@@ -67,19 +67,22 @@ function draw(p, j) {
   s += torso(j, c('core', 'near'), face);
   if (hl.has('glutes')) s += `<circle class="near hl" cx="${f1(j.hip[0])}" cy="${f1(j.hip[1])}" r="8"/>`;
   if (hl.has('back')) s += limb(at(j.hip, p.t, 6), at(j.hip, p.t, L.torso - 6), 7, 7, 'near hl back');
+  // ab: kollar bacağın arkasında çizilir (ör. Hundred'da el kalça hizasına denk gelince)
+  const nearArm = () => limb(j.sh, j.el, 9.5, 7.5, c(hl.has('shoulders') ? 'shoulders' : 'arms', 'near')) + limb(j.el, j.ha, 7.5, 5.5, c('arms', 'near'))
+    + (p.ab ? '' : `<circle class="near" cx="${f1(j.ha[0])}" cy="${f1(j.ha[1])}" r="3.4"/>`);
+  if (p.ab) s += nearArm();
   s += `<circle class="near head" cx="${f1(j.hd[0])}" cy="${f1(j.hd[1])}" r="${L.head}"/>`;
   // yakın taraf
   s += limb(j.hip, j.kn, 14.5, 10.5, c('legs', 'near')) + limb(j.kn, j.an, 10.5, 6.5, c('legs', 'near')) + limb(j.an, j.to, 6, 4, 'near');
   if (j.rc) s += limb(j.rs, j.rn, 3, 3, 'racket') + `<ellipse class="racket-h" cx="${f1(j.rc[0])}" cy="${f1(j.rc[1])}" rx="12" ry="8.5" transform="rotate(${f1(p.rk)} ${f1(j.rc[0])} ${f1(j.rc[1])})"/>`;
-  s += limb(j.sh, j.el, 9.5, 7.5, c(hl.has('shoulders') ? 'shoulders' : 'arms', 'near')) + limb(j.el, j.ha, 7.5, 5.5, c('arms', 'near'));
-  s += `<circle class="near" cx="${f1(j.ha[0])}" cy="${f1(j.ha[1])}" r="3.4"/>`;
+  if (!p.ab) s += nearArm();
   return s;
 }
 const lerpAng = (a, b, t) => a + (((b - a + 540) % 360) - 180) * t;
 function mix(a, b, t) {
-  const o = { hl: a.hl || b.hl, face: a.face ?? b.face };
+  const o = { hl: a.hl || b.hl, face: a.face ?? b.face, ab: a.ab || b.ab };
   for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) {
-    if (k === 'hl' || k === 'face') continue;
+    if (k === 'hl' || k === 'face' || k === 'ab') continue;
     const va = a[k] ?? b[k], vb = b[k] ?? a[k];
     o[k] = k === 'x' ? va + (vb - va) * t : lerpAng(va, vb, t);
   }
