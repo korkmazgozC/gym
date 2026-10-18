@@ -9,7 +9,7 @@ iPhone ve Android'de uygulama gibi çalışan, **internet olmadan da kullanılab
 
 ## Özellikler
 
-İlk açılışta sporunu seçersin (**Gym**, **Tenis** veya **Pilates**); uygulama seçtiğin spora göre şekillenir. Spor istediğin zaman Ayarlar'dan değiştirilebilir.
+İlk açılışta sporunu seçersin (**Gym**, **Tenis** veya **Pilates**); uygulama seçtiğin spora göre şekillenir. Sporu istediğin zaman sol üstteki spor düğmesinden tek dokunuşla değiştirebilirsin.
 
 **Tenis**
 - Maç ve antrenman kaydı: tür (tekli, çiftli, antrenman, top atma), süre, yoğunluk, skor, sonuç, kort zemini; galibiyet oranı, saat ve zemin istatistikleri
@@ -37,6 +37,7 @@ iPhone ve Android'de uygulama gibi çalışan, **internet olmadan da kullanılab
 **Hareketler**
 - 6 bölgede ve 21 alt grupta (biceps, triceps, ön kol, üst göğüs…) **138 hareket**; 41 harekette gerçek **video** (72 açı), diğerlerinde başlangıç ve bitiş fotoğrafları
 - Ekipmana göre filtre (halter, dambıl, makine, kablo, vücut ağırlığı)
+- Akıllı arama: Türkçe/İngilizce ikinci isimler ve takma adlar ("barfiks" = "pull up", "lat çekiş"), Türkçe karakter ve yazım hatası toleransı
 - Adım adım anlatım, ipuçları, çalışan ana ve yardımcı kaslar
 - **Dokunulabilir vücut haritası:** bir kasa dokununca o kasın hareketleri açılır; kaslar son 7 günde yaptığın set sayısına göre renklenir
 - Hareket başına grafikler: en ağır set, tahmini maksimum, toplam kaldırılan

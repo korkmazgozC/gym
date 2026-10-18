@@ -19,6 +19,41 @@ const parseDay = k => new Date(k + 'T12:00:00');
 const fmtDay = (k, opts = { weekday: 'long', day: 'numeric', month: 'long' }) => parseDay(k).toLocaleDateString('tr-TR', opts);
 const e1rm = (w, r) => (r <= 1 ? w : w * (1 + r / 30));
 const norm = s => s.toLocaleLowerCase('tr-TR').replace(/ı/g, 'i').normalize('NFD').replace(/[̀-ͯ]/g, '');
+// En fazla 1 yazım hatası: ekleme, silme, değiştirme veya yan yana iki harfin yer değiştirmesi
+function near1(a, b) {
+  if (Math.abs(a.length - b.length) > 1) return false;
+  if (a.length === b.length) {
+    const diff = [];
+    for (let i = 0; i < a.length; i++) if (a[i] !== b[i]) diff.push(i);
+    return diff.length <= 1 || (diff.length === 2 && diff[1] === diff[0] + 1 && a[diff[0]] === b[diff[1]] && a[diff[1]] === b[diff[0]]);
+  }
+  const [s, l] = a.length < b.length ? [a, b] : [b, a];
+  for (let i = 0; i < l.length; i++) if (l.slice(0, i) + l.slice(i + 1) === s) return true;
+  return false;
+}
+// Arama sıralaması: ad ve takma adlar, kas/ekipman eşleşmelerinden önce gelir; ifadenin tamamı geçiyorsa ek puan.
+// Tüm kelimeler eşleşmeli; 4+ harfli kelimelerde 1 yazım hatası tolere edilir.
+function rankSearch(items, query, primaryOf, secondaryOf, nameOf) {
+  const full = norm(query).trim().replace(/\s+/g, ' ');
+  const qs = full.split(' ').filter(Boolean);
+  if (!qs.length) return items;
+  const toks = t => t.split(/[^a-z0-9]+/).filter(Boolean);
+  const out = [];
+  items.forEach((it, idx) => {
+    const name = norm(nameOf(it)), pri = norm(primaryOf(it)), sec = norm(secondaryOf(it));
+    const pw = toks(pri), sw = toks(sec);
+    let score = pri.includes(full) && qs.length > 1 ? 4 : 0;
+    for (const q of qs) {
+      const typo = w => q.length >= 4 && (near1(q, w) || near1(q, w.slice(0, q.length)));
+      const sc = name.startsWith(q) ? 5 : pw.some(w => w.startsWith(q)) ? 3 : pri.includes(q) ? 2
+        : sw.some(w => w.startsWith(q)) ? 1.5 : sec.includes(q) ? 1 : pw.some(typo) ? 0.8 : sw.some(typo) ? 0.4 : 0;
+      if (!sc) return;
+      score += sc;
+    }
+    out.push([score, idx, it]);
+  });
+  return out.sort((a, b) => b[0] - a[0] || a[1] - b[1]).map(x => x[2]);
+}
 function fmtDur(ms) {
   const s = Math.max(0, Math.floor(ms / 1000)), h = Math.floor(s / 3600), m = Math.floor((s % 3600) / 60);
   return h ? `${h}:${pad2(m)}:${pad2(s % 60)}` : `${m}:${pad2(s % 60)}`;
@@ -81,7 +116,7 @@ const icon = (n, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24">${P[n]}
 
 // ═════════════════════════ Veri
 const KEY = 'gymtakip.v1';
-const DEFAULT_SETTINGS = { rest: 90, step: 2.5, useRoutines: true, lastBackup: 0, backupSnooze: 0, onboarded: false };
+const DEFAULT_SETTINGS = { rest: 90, step: 2.5, useRoutines: true, lastBackup: 0, backupSnooze: 0, onboarded: false, awake: true };
 const DEFAULT_PROFILE = { sex: null, age: null, height: null, activity: 1.55, goal: 'maintain', days: 3, target: null };
 let db = load();
 
@@ -104,6 +139,10 @@ function save() {
 navigator.storage?.persist?.().catch(() => {});
 
 const allExercises = () => [...EXERCISES, ...db.custom.map(c => ({ ...c, custom: true }))];
+const exPrimary = e => [e.name, e.alt, ...(e.aka || [])].filter(Boolean).join(' ');
+const exSecondary = e => [...(e.primary || []), ...(e.secondary || []), REGION_BY_ID[e.region]?.name,
+  SUBS[e.region]?.find(x => x[0] === e.sub)?.[1], EQUIPMENT.find(x => x[0] === e.equip)?.[1]].filter(Boolean).join(' ');
+const searchEx = (list, q) => rankSearch(list, q, exPrimary, exSecondary, e => e.name);
 function getEx(id) {
   if (EX_BY_ID[id]) return EX_BY_ID[id];
   const c = db.custom.find(x => x.id === id);
@@ -309,8 +348,10 @@ function toast(msg, ic = 'check') {
   clearTimeout(toastTimer);
   toastTimer = setTimeout(() => (t.hidden = true), 2400);
 }
-function setHeader(title, { back = false, action = '', always = false } = {}) {
+function setHeader(title, { back = false, action = '', always = false, chip = false } = {}) {
   $('#top-title').textContent = title;
+  $('#top-left').innerHTML = chip && !back ? sportChipHTML() : '';
+  if (chip && !back) bindSportChip();
   $('#back').hidden = !back;
   $('#top-action').innerHTML = action;
   top.classList.toggle('always', always);
@@ -348,9 +389,9 @@ const routes = {
   today: renderToday, lib: renderLib, pick: renderPick, ex: renderEx, hist: renderHist, profile: renderProfile, new: renderNew,
   workout: renderWorkout, summary: renderSummary, programs: renderPrograms, routine: renderRoutine,
   nutrition: renderNutrition, settings: renderSettings, welcome: renderWelcome,
-  tennis: renderTennis, stroke: renderStroke, pilates: renderPilates, pmove: renderPMove, player: renderPlayer,
+  credits: renderCredits, tennis: renderTennis, stroke: renderStroke, pilates: renderPilates, pmove: renderPMove, player: renderPlayer,
 };
-const TAB_OF = { workout: 'today', summary: 'today', programs: 'profile', routine: 'profile', settings: 'profile', welcome: 'today', player: 'today', stroke: 'tennis', pmove: 'pilates' };
+const TAB_OF = { credits: 'profile', workout: 'today', summary: 'today', programs: 'profile', routine: 'profile', settings: 'profile', welcome: 'today', player: 'today', stroke: 'tennis', pmove: 'pilates' };
 function route() {
   const [name = 'today', ...args] = location.hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
   const fn = routes[name] || renderToday;
@@ -369,6 +410,7 @@ function route() {
   updateSessionBar();
 }
 let currentRoute = 'today';
+document.addEventListener('visibilitychange', () => { if (!document.hidden && currentRoute === 'workout' && db.settings.awake) keepAwake(true); });
 addEventListener('hashchange', route);
 
 // Devam eden antrenman çubuğu
@@ -497,6 +539,8 @@ function renderWorkout() {
     if (!confirm('Antrenman iptal edilsin mi? Kaydettiğin setler silinmez, sadece oturum kapanır.')) return;
     db.session = null; save(); location.hash = '#/today';
   });
+  if (db.settings.awake) keepAwake(true);
+  return () => keepAwake(false);
 }
 function rerenderWorkout(scrollToOpen) {
   const y = scrollY;
@@ -656,11 +700,11 @@ function renderToday() {
   if (sport() === 'tennis') return renderTodayTennis();
   if (sport() === 'pilates') return renderTodayPilates();
   const today = dayKey();
+  setHeader('Bugün', { chip: true });
   const st = dayStats(today);
   const m = metrics();
   const hour = new Date().getHours();
   const hello = hour < 6 ? 'İyi geceler' : hour < 12 ? 'Günaydın' : hour < 18 ? 'İyi günler' : 'İyi akşamlar';
-  setHeader('Bugün');
   const ws = weekStart();
   const weekDays = [...Array(7)].map((_, i) => { const d = new Date(ws); d.setDate(ws.getDate() + i); return dayKey(d); });
   const weekKcal = weekDays.map(d => dayStats(d).kcal);
@@ -825,13 +869,14 @@ function cardioSheet(after) {
 // Yedek hatırlatması: 2 haftada bir, yeterince veri varsa
 function backupReminder() {
   const s = db.settings, now = Date.now();
-  if (db.sets.length < 10 || now < s.backupSnooze || now - s.lastBackup < 14 * 864e5) return '';
+  const items = db.sets.length + db.activities.length * 3 + Object.keys(db.food).length;
+  if (items < 10 || now < s.backupSnooze || now - s.lastBackup < 7 * 864e5) return '';
   return `<div class="slim" id="bk-card"><div class="ic" style="background:var(--accent-soft);color:var(--accent)">${icon('shield')}</div>
-    <button class="grow" id="bk-now" style="text-align:left"><b>Kayıtlarını yedekle</b><span>${s.lastBackup ? `Son yedek ${daysAgo(dayKey(new Date(s.lastBackup)))}` : 'Henüz yedek yok'} · dokun</span></button>
+    <button class="grow" id="bk-now" style="text-align:left"><b>Kayıtlarını yedekle</b><span>${s.lastBackup ? `Son yedek ${daysAgo(dayKey(new Date(s.lastBackup)))}` : 'Henüz yedek yok'} · dokun, "Dosyalar'a Kaydet"i seç</span></button>
     <button class="ibtn" id="bk-later" aria-label="Sonra hatırlat">${icon('x')}</button></div>`;
 }
 function bindBackupReminder() {
-  $('#bk-later')?.addEventListener('click', () => { db.settings.backupSnooze = Date.now() + 7 * 864e5; save(); $('#bk-card').remove(); });
+  $('#bk-later')?.addEventListener('click', () => { db.settings.backupSnooze = Date.now() + 3 * 864e5; save(); $('#bk-card').remove(); });
   $('#bk-now')?.addEventListener('click', async () => { if (await exportData()) $('#bk-card')?.remove(); });
 }
 
@@ -876,12 +921,10 @@ function renderRegion(reg, sub) {
     <div id="lib-body"></div>`;
   let q = '';
   const draw = () => {
-    const nq = norm(q.trim());
-    const list = all.filter(e => (!sub || e.sub === sub) && (equip === 'all' || e.equip === equip) &&
-      (!nq || norm(`${e.name} ${(e.primary || []).join(' ')} ${(e.secondary || []).join(' ')}`).includes(nq)));
-    const groups = sub ? [[sub, list]] : [...SUBS[reg.id].map(([k]) => [k, list.filter(e => e.sub === k)]), ['', list.filter(e => !e.sub)]];
+    const list = searchEx(all.filter(e => (!sub || e.sub === sub) && (equip === 'all' || e.equip === equip)), q);
+    const groups = sub || q.trim() ? [[sub || 'q', list]] : [...SUBS[reg.id].map(([k]) => [k, list.filter(e => e.sub === k)]), ['', list.filter(e => !e.sub)]];
     const html = groups.filter(([, l]) => l.length).map(([k, l]) =>
-      `${sub ? '<div style="height:12px"></div>' : `<div class="group-title">${k ? subName(reg.id, k) : 'Kendi hareketlerin'} · ${l.length}</div>`}<div class="list">${l.map(e => libItem(e)).join('')}</div>`).join('');
+      `${sub || q.trim() ? '<div style="height:12px"></div>' : `<div class="group-title">${k ? subName(reg.id, k) : 'Kendi hareketlerin'} · ${l.length}</div>`}<div class="list">${l.map(e => libItem(e)).join('')}</div>`).join('');
     $('#lib-body').innerHTML = html || `<div style="margin-top:14px">${emptyBox('search', 'Sonuç yok', equip !== 'all' ? 'Bu ekipmanla hareket yok; başka bir ekipman seç.' : 'Farklı bir arama dene.')}</div>`;
   };
   $$('.subtabs button', view).forEach(b => b.addEventListener('click', () => location.replace(`#/lib/${reg.id}${b.dataset.s ? '/' + b.dataset.s : ''}`)));
@@ -899,7 +942,7 @@ function renderLib(region, sub) {
   const reg = REGION_BY_ID[region];
   if (reg) return renderRegion(reg, sub);
   // Ana sayfa: bölge kareleri veya vücut haritası
-  setHeader('Hareketler', { action: `<a class="top-btn" href="#/new" aria-label="Özel hareket ekle">${icon('plus')}</a>` });
+  setHeader('Hareketler', { chip: true, action: `<a class="top-btn" href="#/new" aria-label="Özel hareket ekle">${icon('plus')}</a>` });
   const mode = db.settings.libView === 'map' ? 'map' : 'tiles';
   const wk = weeklyRegionSets();
   const levels = Object.fromEntries(REGIONS.map(r => [r.id, setLevel(r.id, wk[r.id])]));
@@ -939,7 +982,7 @@ function renderLib(region, sub) {
 function libItem(ex, pickMode) {
   const ss = setsOf(ex.id);
   const eqName = EQUIPMENT.find(x => x[0] === ex.equip)?.[1];
-  let meta = [eqName, (animOf(ex)?.primary || []).join(', ') || REGION_BY_ID[ex.region]?.name].filter(Boolean).join(' · ');
+  let meta = [ex.alt, eqName].filter(Boolean).join(' · ') || (animOf(ex)?.primary || []).join(', ') || REGION_BY_ID[ex.region]?.name || '';
   if (ss.length) {
     const last = ss.reduce((a, b) => (a.ts > b.ts ? a : b));
     meta = `${fmtSet(ex, last)} · ${daysAgo(last.date)}`;
@@ -954,11 +997,9 @@ function renderLibBody(pickMode, scope = libRegion, query = libQuery) {
       REGIONS.map(r => `<button class="chip ${libRegion === r.id ? 'on' : ''}" data-r="${r.id}">${r.name}</button>`).join('');
     $$('#lib-chips .chip').forEach(c => c.addEventListener('click', () => { libRegion = c.dataset.r; renderLibBody(true); }));
   }
-  const q = norm(query.trim());
-  const exs = allExercises().filter(e => (scope === 'all' || e.region === scope) &&
-    (!q || norm(`${e.name} ${(e.primary || []).join(' ')} ${(e.secondary || []).join(' ')} ${subName(e.region, e.sub)}`).includes(q)));
+  const exs = searchEx(allExercises().filter(e => scope === 'all' || e.region === scope), query);
   const regions = scope === 'all' ? REGIONS : REGIONS.filter(r => r.id === scope);
-  const html = regions.map(r => {
+  const html = query.trim() ? (exs.length ? `<div class="group-title">Sonuçlar · ${exs.length}</div><div class="list">${exs.map(e => libItem(e, pickMode)).join('')}</div>` : '') : regions.map(r => {
     const list = exs.filter(e => e.region === r.id);
     if (!list.length) return '';
     return `${regions.length > 1 ? `<div class="group-title">${r.name} · ${list.length}</div>` : '<div style="height:12px"></div>'}<div class="list">${list.map(e => libItem(e, pickMode)).join('')}</div>`;
@@ -1322,6 +1363,32 @@ function renderTabs() {
   const tabs = [['today', 'Bugün', 'home'], SPORT_TAB[sport()], ['nutrition', 'Beslenme', 'fork'], ['hist', 'Geçmiş', 'calendar'], ['profile', 'Profil', 'user']];
   $('#tabs').innerHTML = tabs.map(([id, t, ic]) => `<a href="#/${id}" data-tab="${id}">${icon(ic)}<span>${t}</span></a>`).join('');
 }
+// Üst çubuktaki spor çipi: tek dokunuşla spor değiştirme
+function sportChipHTML() {
+  const sp = SPORTS[sport()];
+  const tip = !db.settings.tipSport && db.settings.onboarded ? `<div class="chip-tip" id="chip-tip">Sporu buradan değiştirebilirsin<button aria-label="Kapat">${icon('x')}</button></div>` : '';
+  return `<button class="sport-chip" id="sport-chip" aria-label="Spor değiştir">${icon(sp.icon)}<b>${sp.name}</b>${icon('down')}</button>${tip}`;
+}
+function bindSportChip() {
+  const dismiss = () => { if (!db.settings.tipSport) { db.settings.tipSport = true; save(); } $('#chip-tip')?.remove(); };
+  $('#chip-tip')?.addEventListener('click', e => { e.stopPropagation(); dismiss(); });
+  $('#sport-chip').addEventListener('click', () => { dismiss(); sportSheet(); });
+}
+function sportSheet() {
+  const { el, close } = openSheet(`
+    <div class="sheet-title">Spor seç</div>
+    ${Object.entries(SPORTS).map(([k, sp]) => `<button class="choice ${sport() === k ? 'on' : ''}" data-sport="${k}"><div class="ic">${icon(sp.icon)}</div><div><b>${sp.name}</b><span>${sp.desc}</span></div></button>`).join('')}
+    <div class="faint small" style="text-align:center;margin-top:12px">Kayıtların silinmez; istediğin zaman geri dönebilirsin.</div>`);
+  $$('[data-sport]', el).forEach(b => b.addEventListener('click', () => {
+    const k = b.dataset.sport;
+    close();
+    if (k === sport()) return;
+    db.settings.sport = k; save(); renderTabs();
+    toast(`${SPORTS[k].name} moduna geçildi`, SPORTS[k].icon);
+    const second = SPORT_TAB[k][0];
+    if (location.hash === '#/today' || location.hash === '#/' || !location.hash) route(); else location.hash = currentRoute === 'today' ? '#/today' : `#/${second}`;
+  }));
+}
 const LEVEL_NAMES = { tennis: ['Yeni başlıyorum', 'Bir süredir oynuyorum', 'İleri / turnuva'], pilates: ['Başlangıç', 'Orta', 'İleri'] };
 const levelOf = () => clamp(db.profile.level || 1, 1, 3);
 
@@ -1463,7 +1530,7 @@ const programDay = p => ({ key: p.key, name: `Tenis kondisyonu · ${p.name}`, it
 // ═════════════════════════ Tenis: Bugün
 function renderTodayTennis() {
   const today = dayKey(), st = dayStats(today), m = metrics();
-  setHeader('Bugün');
+  setHeader('Bugün', { chip: true });
   const ws = dayKey(weekStart());
   const tennis = db.activities.filter(a => a.sport === 'tennis' && a.kind !== 'routine');
   const week = tennis.filter(a => a.date >= ws);
@@ -1500,7 +1567,7 @@ function renderTodayTennis() {
 // ═════════════════════════ Tenis sekmesi
 function renderTennis(seg = 'teknik') {
   if (!['teknik', 'kondisyon', 'rutinler'].includes(seg)) seg = 'teknik';
-  setHeader('Tenis', { action: `<button class="top-btn" id="t-log2" aria-label="Kayıt ekle">${icon('plus')}</button>` });
+  setHeader('Tenis', { chip: true, action: `<button class="top-btn" id="t-log2" aria-label="Kayıt ekle">${icon('plus')}</button>` });
   let body = '';
   if (seg === 'teknik') {
     body = `<div class="list">${STROKES.map(s => `<a class="item" href="#/stroke/${s.id}"><div class="fig-thumb">${figureThumb(s.fig, s.fig.poses[1] || s.fig.poses[0])}</div>
@@ -1591,7 +1658,7 @@ function recommendedSession() {
 }
 function renderTodayPilates() {
   const today = dayKey(), st = dayStats(today), m = metrics();
-  setHeader('Bugün');
+  setHeader('Bugün', { chip: true });
   const ses = recommendedSession();
   const moves = ses.items.map(i => PILATES_BY_ID[i.p]);
   const ws = dayKey(weekStart());
@@ -1623,7 +1690,7 @@ function renderTodayPilates() {
 // ═════════════════════════ Pilates sekmesi
 function renderPilates(seg = 'seanslar') {
   if (!['seanslar', 'mat', 'reformer'].includes(seg)) seg = 'seanslar';
-  setHeader('Pilates', { action: `<button class="top-btn" id="p-log2" aria-label="Seans kaydet">${icon('plus')}</button>` });
+  setHeader('Pilates', { chip: true, action: `<button class="top-btn" id="p-log2" aria-label="Seans kaydet">${icon('plus')}</button>` });
   const lvl = levelOf(), rec = recommendedSession();
   let body = '';
   if (seg === 'seanslar') {
@@ -1688,7 +1755,7 @@ function renderPMove(id) {
 let wakeLock = null;
 async function keepAwake(on) {
   try {
-    if (on && 'wakeLock' in navigator) wakeLock = await navigator.wakeLock.request('screen');
+    if (on && 'wakeLock' in navigator) { if (wakeLock && !wakeLock.released) return; wakeLock = await navigator.wakeLock.request('screen'); }
     else if (!on && wakeLock) { await wakeLock.release(); wakeLock = null; }
   } catch { /* desteklenmiyor */ }
 }
@@ -1847,8 +1914,8 @@ function renderEx(id) {
   view.innerHTML = `
     <div id="media">${anim ? '' : `<div class="card empty" style="margin-top:6px"><div class="ic">${icon('dumbbell')}</div>Bu hareket için görsel seçilmedi.</div>`}</div>
     <div class="ex-head">
-      <h1>${esc(ex.name)}</h1>
-      <div class="ex-tags">
+      <h1>${esc(ex.name)}</h1>${ex.alt ? `<div class="muted" style="margin-top:2px">${esc(ex.alt)}</div>` : ''}
+      <div class="ex-tags" style="margin-top:10px">
         ${anim?.primary?.includes(regionName) ? '' : `<span class="pill">${esc(regionName)}</span>`}
         ${anim?.primary?.length ? `<span class="pill accent">${icon('target')}${esc(anim.primary.join(', '))}</span>` : ''}
         ${anim?.videos ? `<span class="pill blue">${icon('video')}Video</span>` : ''}
@@ -2396,6 +2463,22 @@ function nutritionTips(m) {
   return out;
 }
 
+// ═════════════════════════ Kaynaklar ve lisanslar
+function renderCredits() {
+  setHeader('Kaynaklar', { back: true, always: true });
+  const L = (href, t) => `<a class="lnk" href="${href}" target="_blank" rel="noopener">${t}</a>`;
+  const row = (t, d) => `<div class="credit-row"><b>${t}</b><p>${d}</p></div>`;
+  view.innerHTML = pageHead('Lisanslar ve teşekkür', 'Kaynaklar') + `
+    <div class="card">
+      ${row('Egzersiz videoları', `${videoCount()} video, ${EXERCISES.filter(e => e.videos).length} hareket. Yazar: Goulart, ${L('https://wger.de', 'wger.de')}. Lisans: ${L('https://creativecommons.org/licenses/by-sa/4.0/deed.tr', 'CC BY-SA 4.0')}. Değişiklikler: 12 saniyeye kısaltıldı, 540p H.264'e dönüştürüldü, kapak görseli eklendi. Değiştirilmiş videolar da aynı lisansla paylaşılır.`)}
+      ${row('Egzersiz ve esneme fotoğrafları', `${L('https://github.com/yuhonas/free-exercise-db', 'free-exercise-db')} (yuhonas). Lisans: ${L('https://unlicense.org', 'Unlicense')} (kamu malı). 720 piksele küçültüldü.`)}
+      ${row('Hareket çizimleri ve vücut haritası', 'Bu uygulama için çizildi (tenis vuruşları, pilates hareketleri, reformer, ön/arka vücut haritası).')}
+      ${row('Beslenme değerleri', 'Yaygın besin kaynaklarındaki tipik ortalama değerlerden derlenmiş yaklaşık değerlerdir. Diyetisyen planı yerine geçmez.')}
+      ${row('Hesaplamalar', 'Bazal metabolizma: Mifflin-St Jeor. Yakılan kalori: MET değerleri (Compendium of Physical Activities). Tahmini maksimum: Epley formülü. Yağ oranı: Deurenberg tahmini.')}
+    </div>
+    <div class="faint small" style="text-align:center;margin-top:14px;line-height:1.5">Bu uygulama ücretsizdir ve kişisel kullanım içindir.<br>Tüm verilerin yalnızca senin telefonunda saklanır.</div>`;
+}
+
 // ═════════════════════════ Ayarlar
 function renderSettings() {
   setHeader('Ayarlar', { back: true, always: true });
@@ -2408,6 +2491,7 @@ function renderSettings() {
     <div class="sec"><h2>Antrenman</h2></div>
     <div class="form">
       <div class="setting"><span>Setler arası dinlenme</span><select id="s-rest">${opt([0, 45, 60, 90, 120, 150, 180, 240], db.settings.rest, v => (v ? `${Math.floor(v / 60)}:${pad2(v % 60)}` : 'Kapalı'))}</select></div>
+      <div class="setting"><span>Antrenmanda ekran açık kalsın</span>${switchHTML('s-awake', db.settings.awake)}</div>
       <div class="setting"><span>Ağırlık artırma adımı</span><select id="s-step">${opt([0.5, 1, 1.25, 2, 2.5, 5], db.settings.step, v => fmtN(v, 2) + ' kg')}</select></div>
     </div>
     <div class="sec"><h2>İnternetsiz kullanım</h2></div>
@@ -2415,7 +2499,8 @@ function renderSettings() {
     <div class="sec"><h2>Yedekleme</h2></div>
     <div class="card">
       <div class="muted small" style="margin-bottom:12px">Veriler yalnızca bu telefonda saklanır. Yedeği "Dosyalar'a Kaydet" → iCloud Drive ile sakla. ${db.settings.lastBackup ? `Son yedek: <b>${daysAgo(dayKey(new Date(db.settings.lastBackup)))}</b>.` : 'Henüz yedek alınmadı.'}</div>
-      <button class="btn ghost" id="b-export">${icon('download')} Yedek al</button>
+      <div class="faint small" id="persist-note" style="margin:-4px 0 12px"></div>
+      <button class="btn ghost" id="b-export">${icon('download')} Yedek al (Dosyalar'a kaydet)</button>
       <button class="btn ghost" id="b-import">Yedeği geri yükle</button>
       <input type="file" id="f-import" accept="application/json,.json" hidden>
     </div>
@@ -2426,8 +2511,8 @@ function renderSettings() {
     </div>
     <div class="sec"><h2>Kaynaklar</h2></div>
     <div class="card small muted" style="line-height:1.6">
-      Videolar: Goulart, <a class="lnk" href="https://wger.de" target="_blank" rel="noopener">wger.de</a> — CC BY-SA 4.0 (kısaltıldı, yeniden kodlandı).<br>
-      Fotoğraflar: <a class="lnk" href="https://github.com/yuhonas/free-exercise-db" target="_blank" rel="noopener">free-exercise-db</a> — kamu malı.
+      Videolar wger (CC BY-SA 4.0), fotoğraflar free-exercise-db (kamu malı).
+      <a class="link-row" href="#/credits" style="padding:10px 0 0;min-height:0"><div class="grow" style="font-weight:600;color:var(--text)">Tüm kaynaklar ve lisanslar</div>${icon('chev', 'chev')}</a>
     </div>
     <div style="margin-top:22px"><button class="btn danger" id="b-reset">Tüm verileri sil</button></div>
     <div class="faint small" style="text-align:center;margin-top:14px">${db.sets.length} set · ${db.workouts.length} antrenman · ${db.custom.length} özel hareket</div>`;
@@ -2437,6 +2522,8 @@ function renderSettings() {
   }));
   $('#s-level')?.addEventListener('change', e => { db.profile.level = +e.target.value; save(); });
   $('#s-place')?.addEventListener('change', e => { db.profile.place = e.target.value; save(); });
+  $('#s-awake')?.addEventListener('click', e => { db.settings.awake = !db.settings.awake; save(); e.currentTarget.classList.toggle('on', db.settings.awake); e.currentTarget.setAttribute('aria-checked', db.settings.awake); });
+  navigator.storage?.persisted?.().then(p => { const el = $('#persist-note'); if (el) el.textContent = p ? 'Kalıcı depolama açık: iPhone yer açmak için verilerini silmez.' : 'Kalıcı depolama izni verilmedi; düzenli yedek almanı öneririz.'; }).catch(() => {});
   $('#s-rest').addEventListener('change', e => { db.settings.rest = +e.target.value; save(); });
   $('#s-step').addEventListener('change', e => { db.settings.step = +e.target.value; save(); });
   $('#b-export').addEventListener('click', async () => { if (await exportData()) renderSettings(); });
@@ -2650,7 +2737,8 @@ function importData(file) {
       const d = JSON.parse(reader.result);
       if (!Array.isArray(d.sets)) throw new Error('format');
       const valid = d.sets.filter(s => s && s.exId && s.date && Number.isFinite(s.r));
-      if (!confirm(`${valid.length} set içeren yedek yüklensin mi?\nMevcut veriler bu yedekle değiştirilecek.`)) return;
+      const acts = Array.isArray(d.activities) ? d.activities.length : 0;
+      if (!confirm(`${valid.length} set${acts ? ` ve ${acts} tenis/pilates kaydı` : ''} içeren yedek yüklensin mi?\nMevcut veriler bu yedekle değiştirilecek.`)) return;
       db = normalize({ ...d, sets: valid });
       save(); toast('Yedek yüklendi'); route();
     } catch { toast('Geçersiz yedek dosyası', 'x'); }

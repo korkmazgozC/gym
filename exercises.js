@@ -54,7 +54,14 @@ export const EXERCISES = [
    }
   ],
   "sub": "orta",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Düz sehpada halter göğüs presi",
+  "aka": [
+   "göğüs pres",
+   "bench",
+   "düz bench",
+   "barbell bench press"
+  ]
  },
  {
   "id": "incline-bench",
@@ -90,7 +97,12 @@ export const EXERCISES = [
    }
   ],
   "sub": "ust",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Eğimli sehpada halter göğüs presi",
+  "aka": [
+   "incline",
+   "üst göğüs pres"
+  ]
  },
  {
   "id": "incline-db",
@@ -126,7 +138,12 @@ export const EXERCISES = [
    }
   ],
   "sub": "ust",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Eğimli sehpada dambıl göğüs presi",
+  "aka": [
+   "incline dumbbell",
+   "üst göğüs dambıl"
+  ]
  },
  {
   "id": "db-bench",
@@ -169,7 +186,12 @@ export const EXERCISES = [
    }
   ],
   "sub": "orta",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Düz sehpada dambıl göğüs presi",
+  "aka": [
+   "dumbbell press",
+   "dambıl pres"
+  ]
  },
  {
   "id": "dips",
@@ -213,7 +235,13 @@ export const EXERCISES = [
    }
   ],
   "sub": "alt",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Chest dips",
+  "aka": [
+   "paralel",
+   "dips",
+   "göğüs dips"
+  ]
  },
  {
   "id": "db-fly",
@@ -239,7 +267,13 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "orta",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Dambılla göğüs açma",
+  "aka": [
+   "fly",
+   "flye",
+   "açış"
+  ]
  },
  {
   "id": "pushup",
@@ -269,7 +303,13 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "orta",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Push-up",
+  "aka": [
+   "şınav",
+   "push up",
+   "pushup"
+  ]
  },
  {
   "id": "cable-crossover",
@@ -298,7 +338,12 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "orta",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "Kabloda göğüs çaprazı",
+  "aka": [
+   "crossover",
+   "kablo fly"
+  ]
  },
  {
   "id": "pec-deck",
@@ -325,7 +370,13 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "orta",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Butterfly",
+  "aka": [
+   "kelebek",
+   "butterfly",
+   "makine fly"
+  ]
  },
  {
   "id": "chest-press",
@@ -355,7 +406,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "orta",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Makinede göğüs presi",
+  "aka": [
+   "makine pres",
+   "chest press"
+  ]
  },
  {
   "id": "pullover",
@@ -385,7 +441,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "orta",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Dambıl pullover",
+  "aka": [
+   "pullover",
+   "baş üstü dambıl"
+  ]
  },
  {
   "id": "decline-bench",
@@ -414,7 +475,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "alt",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Aşağı eğimli halter presi",
+  "aka": [
+   "decline",
+   "alt göğüs pres"
+  ]
  },
  {
   "id": "incline-fly",
@@ -442,7 +508,11 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "ust",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Eğimli sehpada dambıl açma",
+  "aka": [
+   "incline fly"
+  ]
  },
  {
   "id": "machine-bench",
@@ -471,7 +541,11 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "orta",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Machine chest press",
+  "aka": [
+   "makine bench"
+  ]
  },
  {
   "id": "low-cable-crossover",
@@ -499,7 +573,12 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "ust",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "Low-to-high cable fly",
+  "aka": [
+   "alt makara",
+   "üst göğüs kablo"
+  ]
  },
  {
   "id": "incline-pushup",
@@ -528,7 +607,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "alt",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Incline push-up",
+  "aka": [
+   "kolay şınav",
+   "yüksek şınav"
+  ]
  },
  {
   "id": "decline-pushup",
@@ -557,7 +641,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "ust",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Decline push-up",
+  "aka": [
+   "ayak yüksek şınav",
+   "zor şınav"
+  ]
  },
  {
   "id": "wide-pushup",
@@ -587,7 +676,11 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "orta",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Wide push-up",
+  "aka": [
+   "geniş tutuş şınav"
+  ]
  },
  {
   "id": "decline-db-press",
@@ -617,7 +710,11 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "alt",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Aşağı eğimli dambıl presi",
+  "aka": [
+   "decline dumbbell"
+  ]
  },
  {
   "id": "decline-fly",
@@ -646,7 +743,11 @@ export const EXERCISES = [
   ],
   "met": 5.0,
   "sub": "alt",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Aşağı eğimli dambıl açma",
+  "aka": [
+   "decline fly"
+  ]
  },
  {
   "id": "pullup",
@@ -683,7 +784,14 @@ export const EXERCISES = [
    }
   ],
   "sub": "kanat",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Pull-up",
+  "aka": [
+   "barfiks",
+   "pull up",
+   "pullup",
+   "çekme"
+  ]
  },
  {
   "id": "seated-row",
@@ -719,7 +827,14 @@ export const EXERCISES = [
    }
   ],
   "sub": "orta",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "Oturarak kablo çekiş",
+  "aka": [
+   "kürek",
+   "row",
+   "cable row",
+   "oturarak çekiş"
+  ]
  },
  {
   "id": "shrug",
@@ -751,7 +866,13 @@ export const EXERCISES = [
    }
   ],
   "sub": "trapez",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Dambıl omuz silkme",
+  "aka": [
+   "shrug",
+   "trapez",
+   "omuz silkme"
+  ]
  },
  {
   "id": "barbell-shrug",
@@ -783,7 +904,12 @@ export const EXERCISES = [
    }
   ],
   "sub": "trapez",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Halter omuz silkme",
+  "aka": [
+   "shrug",
+   "trapez"
+  ]
  },
  {
   "id": "one-arm-cable-row",
@@ -818,7 +944,12 @@ export const EXERCISES = [
    }
   ],
   "sub": "kanat",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "Tek kol kablo kürek",
+  "aka": [
+   "one arm row",
+   "kablo row"
+  ]
  },
  {
   "id": "assisted-pullup",
@@ -853,7 +984,12 @@ export const EXERCISES = [
    }
   ],
   "sub": "kanat",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Assisted pull-up",
+  "aka": [
+   "destekli barfiks",
+   "makine barfiks"
+  ]
  },
  {
   "id": "chinup",
@@ -883,7 +1019,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "kanat",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Chin-up",
+  "aka": [
+   "ters tutuş barfiks",
+   "chin up"
+  ]
  },
  {
   "id": "lat-pulldown",
@@ -914,7 +1055,14 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "kanat",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "Makinede önden çekiş",
+  "aka": [
+   "lat çekiş",
+   "kanat çekiş",
+   "pulldown",
+   "lat"
+  ]
  },
  {
   "id": "bb-row",
@@ -945,7 +1093,13 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "orta",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Halterle eğilerek kürek",
+  "aka": [
+   "barbell row",
+   "bent over row",
+   "kürek"
+  ]
  },
  {
   "id": "db-row",
@@ -976,7 +1130,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "orta",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "One-arm dumbbell row",
+  "aka": [
+   "tek kol kürek",
+   "dambıl row"
+  ]
  },
  {
   "id": "straight-arm-pd",
@@ -1003,7 +1162,12 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "kanat",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "Düz kol kablo çekiş",
+  "aka": [
+   "straight arm pulldown",
+   "pullover kablo"
+  ]
  },
  {
   "id": "deadlift",
@@ -1040,7 +1204,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "bel",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Yerden kaldırma",
+  "aka": [
+   "deadlift",
+   "ölü kaldırış"
+  ]
  },
  {
   "id": "close-grip-pulldown",
@@ -1070,7 +1239,11 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "kanat",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "Close-grip lat pulldown",
+  "aka": [
+   "dar tutuş çekiş"
+  ]
  },
  {
   "id": "vbar-pulldown",
@@ -1100,7 +1273,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "kanat",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "V tutacakla önden çekiş",
+  "aka": [
+   "v bar",
+   "v-bar"
+  ]
  },
  {
   "id": "tbar-row",
@@ -1129,7 +1307,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "orta",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "T-bar kürek",
+  "aka": [
+   "t bar",
+   "landmine row"
+  ]
  },
  {
   "id": "inverted-row",
@@ -1157,7 +1340,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "orta",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Inverted row",
+  "aka": [
+   "ters kürek",
+   "australian pull-up"
+  ]
  },
  {
   "id": "db-bent-row",
@@ -1187,7 +1375,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "orta",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Dambılla eğilerek kürek",
+  "aka": [
+   "dumbbell row",
+   "bent over"
+  ]
  },
  {
   "id": "good-morning",
@@ -1217,7 +1410,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "bel",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Halterle öne eğilme",
+  "aka": [
+   "good morning",
+   "bel"
+  ]
  },
  {
   "id": "rack-pull",
@@ -1248,7 +1446,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "bel",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Kısmi deadlift",
+  "aka": [
+   "rack pull",
+   "yarım deadlift"
+  ]
  },
  {
   "id": "hyperextension",
@@ -1277,7 +1480,14 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "bel",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Back extension",
+  "aka": [
+   "hiperekstansiyon",
+   "bel",
+   "superman",
+   "back extension"
+  ]
  },
  {
   "id": "cable-shrug",
@@ -1306,7 +1516,11 @@ export const EXERCISES = [
   ],
   "met": 3.5,
   "sub": "trapez",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "Cable shrug",
+  "aka": [
+   "kablo omuz silkme"
+  ]
  },
  {
   "id": "machine-shrug",
@@ -1333,7 +1547,11 @@ export const EXERCISES = [
   ],
   "met": 3.5,
   "sub": "trapez",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Machine shrug",
+  "aka": [
+   "makine omuz silkme"
+  ]
  },
  {
   "id": "front-squat",
@@ -1377,7 +1595,12 @@ export const EXERCISES = [
    }
   ],
   "sub": "on",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Önde halterle çömelme",
+  "aka": [
+   "front squat",
+   "ön squat"
+  ]
  },
  {
   "id": "lunge",
@@ -1421,7 +1644,13 @@ export const EXERCISES = [
    }
   ],
   "sub": "on",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Lunge",
+  "aka": [
+   "hamle",
+   "öne adım",
+   "lunge"
+  ]
  },
  {
   "id": "rdl",
@@ -1465,7 +1694,13 @@ export const EXERCISES = [
    }
   ],
   "sub": "arka",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Romen deadlift",
+  "aka": [
+   "rdl",
+   "romanian",
+   "arka bacak deadlift"
+  ]
  },
  {
   "id": "leg-press",
@@ -1509,7 +1744,12 @@ export const EXERCISES = [
    }
   ],
   "sub": "on",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Bacak presi",
+  "aka": [
+   "leg press",
+   "bacak pres"
+  ]
  },
  {
   "id": "leg-curl",
@@ -1545,7 +1785,12 @@ export const EXERCISES = [
    }
   ],
   "sub": "arka",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Yatarak bacak bükme",
+  "aka": [
+   "leg curl",
+   "arka bacak makine"
+  ]
  },
  {
   "id": "hip-thrust",
@@ -1586,7 +1831,13 @@ export const EXERCISES = [
    }
   ],
   "sub": "kalca",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Kalça itme",
+  "aka": [
+   "hip thrust",
+   "kalça köprü",
+   "glute"
+  ]
  },
  {
   "id": "calf-raise",
@@ -1622,7 +1873,13 @@ export const EXERCISES = [
    }
   ],
   "sub": "baldir",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Calf raise",
+  "aka": [
+   "baldır",
+   "kalf",
+   "calf"
+  ]
  },
  {
   "id": "hack-squat",
@@ -1662,7 +1919,11 @@ export const EXERCISES = [
    }
   ],
   "sub": "on",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Hack makinede çömelme",
+  "aka": [
+   "hack squat"
+  ]
  },
  {
   "id": "walking-lunge",
@@ -1702,7 +1963,11 @@ export const EXERCISES = [
    }
   ],
   "sub": "on",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Walking lunge",
+  "aka": [
+   "yürüyerek hamle"
+  ]
  },
  {
   "id": "seated-leg-curl",
@@ -1734,7 +1999,11 @@ export const EXERCISES = [
    }
   ],
   "sub": "arka",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Seated leg curl",
+  "aka": [
+   "oturarak arka bacak"
+  ]
  },
  {
   "id": "seated-calf",
@@ -1766,7 +2035,11 @@ export const EXERCISES = [
    }
   ],
   "sub": "baldir",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Seated calf raise",
+  "aka": [
+   "oturarak baldır"
+  ]
  },
  {
   "id": "hip-adduction",
@@ -1800,7 +2073,13 @@ export const EXERCISES = [
    }
   ],
   "sub": "kalca",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Hip adduction machine",
+  "aka": [
+   "iç bacak",
+   "adductor",
+   "abduktor"
+  ]
  },
  {
   "id": "smith-squat",
@@ -1835,7 +2114,11 @@ export const EXERCISES = [
    }
   ],
   "sub": "on",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Smith makinede çömelme",
+  "aka": [
+   "smith squat"
+  ]
  },
  {
   "id": "standing-leg-curl",
@@ -1873,7 +2156,11 @@ export const EXERCISES = [
    }
   ],
   "sub": "arka",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Standing leg curl",
+  "aka": [
+   "ayakta arka bacak"
+  ]
  },
  {
   "id": "squat",
@@ -1906,7 +2193,14 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "on",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Halterle çömelme",
+  "aka": [
+   "squat",
+   "çömelme",
+   "back squat",
+   "skuat"
+  ]
  },
  {
   "id": "goblet-squat",
@@ -1937,7 +2231,11 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "on",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Dambılla göğüste çömelme",
+  "aka": [
+   "goblet"
+  ]
  },
  {
   "id": "bulgarian",
@@ -1967,7 +2265,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "on",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Bulgar çömelmesi",
+  "aka": [
+   "bulgarian split squat",
+   "tek bacak squat"
+  ]
  },
  {
   "id": "sumo-dl",
@@ -2002,7 +2305,11 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "arka",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Geniş duruşlu deadlift",
+  "aka": [
+   "sumo deadlift"
+  ]
  },
  {
   "id": "leg-ext",
@@ -2028,7 +2335,12 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "on",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Bacak açma (makine)",
+  "aka": [
+   "leg extension",
+   "ön bacak makine"
+  ]
  },
  {
   "id": "glute-bridge",
@@ -2056,7 +2368,12 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "kalca",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Kalça köprüsü",
+  "aka": [
+   "glute bridge",
+   "köprü"
+  ]
  },
  {
   "id": "box-squat",
@@ -2088,7 +2405,11 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "on",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Kutuya oturarak çömelme",
+  "aka": [
+   "box squat"
+  ]
  },
  {
   "id": "bodyweight-squat",
@@ -2117,7 +2438,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "on",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Air squat",
+  "aka": [
+   "ağırlıksız squat",
+   "çömelme"
+  ]
  },
  {
   "id": "rear-lunge",
@@ -2147,7 +2473,11 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "on",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Reverse lunge",
+  "aka": [
+   "geri hamle"
+  ]
  },
  {
   "id": "step-up",
@@ -2177,7 +2507,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "on",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Basamağa çıkma",
+  "aka": [
+   "step up",
+   "kutuya çıkma"
+  ]
  },
  {
   "id": "sldl-db",
@@ -2206,7 +2541,11 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "arka",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Düz bacak dambıl deadlift",
+  "aka": [
+   "stiff leg"
+  ]
  },
  {
   "id": "glute-kickback",
@@ -2234,7 +2573,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "kalca",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Glute kickback",
+  "aka": [
+   "kalça geri tekme",
+   "donkey kick"
+  ]
  },
  {
   "id": "kb-swing",
@@ -2265,7 +2609,12 @@ export const EXERCISES = [
   ],
   "met": 8.0,
   "sub": "arka",
-  "equip": "other"
+  "equip": "other",
+  "alt": "Kettlebell salınımı",
+  "aka": [
+   "kettlebell",
+   "swing"
+  ]
  },
  {
   "id": "single-leg-bridge",
@@ -2293,7 +2642,11 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "kalca",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Single-leg glute bridge",
+  "aka": [
+   "tek bacak köprü"
+  ]
  },
  {
   "id": "leg-press-calf",
@@ -2320,7 +2673,11 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "baldir",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Leg press calf raise",
+  "aka": [
+   "leg press baldır"
+  ]
  },
  {
   "id": "smith-calf",
@@ -2347,7 +2704,11 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "baldir",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Smith machine calf raise",
+  "aka": [
+   "smith baldır"
+  ]
  },
  {
   "id": "barbell-calf",
@@ -2374,7 +2735,11 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "baldir",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Barbell calf raise",
+  "aka": [
+   "halter baldır"
+  ]
  },
  {
   "id": "machine-calf",
@@ -2401,7 +2766,11 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "baldir",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Standing calf raise machine",
+  "aka": [
+   "makine baldır"
+  ]
  },
  {
   "id": "hip-abduction",
@@ -2428,7 +2797,12 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "kalca",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Hip abduction machine",
+  "aka": [
+   "dış kalça",
+   "abductor"
+  ]
  },
  {
   "id": "lateral-bound",
@@ -2458,7 +2832,12 @@ export const EXERCISES = [
   ],
   "met": 8.0,
   "sub": "patlayici",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Lateral bound",
+  "aka": [
+   "yana sıçrama",
+   "çeviklik"
+  ]
  },
  {
   "id": "box-jump",
@@ -2488,7 +2867,12 @@ export const EXERCISES = [
   ],
   "met": 8.0,
   "sub": "patlayici",
-  "equip": "other"
+  "equip": "other",
+  "alt": "Box jump",
+  "aka": [
+   "kutu atlama",
+   "sıçrama"
+  ]
  },
  {
   "id": "split-jump",
@@ -2518,7 +2902,12 @@ export const EXERCISES = [
   ],
   "met": 8.0,
   "sub": "patlayici",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Split jump",
+  "aka": [
+   "lunge sıçrama",
+   "jumping lunge"
+  ]
  },
  {
   "id": "jump-rope",
@@ -2548,7 +2937,12 @@ export const EXERCISES = [
   ],
   "met": 11.0,
   "sub": "patlayici",
-  "equip": "other"
+  "equip": "other",
+  "alt": "Jump rope",
+  "aka": [
+   "ip atlama",
+   "ip"
+  ]
  },
  {
   "id": "carioca",
@@ -2578,7 +2972,12 @@ export const EXERCISES = [
   ],
   "met": 7.0,
   "sub": "patlayici",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Carioca",
+  "aka": [
+   "karioka",
+   "çapraz adım"
+  ]
  },
  {
   "id": "box-shuffle",
@@ -2608,7 +3007,11 @@ export const EXERCISES = [
   ],
   "met": 8.0,
   "sub": "patlayici",
-  "equip": "other"
+  "equip": "other",
+  "alt": "Box shuffle",
+  "aka": [
+   "basamak yan geçiş"
+  ]
  },
  {
   "id": "lateral-hop",
@@ -2638,7 +3041,11 @@ export const EXERCISES = [
   ],
   "met": 8.0,
   "sub": "patlayici",
-  "equip": "other"
+  "equip": "other",
+  "alt": "Single-leg lateral hop",
+  "aka": [
+   "tek ayak sekme"
+  ]
  },
  {
   "id": "star-jump",
@@ -2668,7 +3075,12 @@ export const EXERCISES = [
   ],
   "met": 8.0,
   "sub": "patlayici",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Star jump",
+  "aka": [
+   "yıldız sıçrama",
+   "jumping jack"
+  ]
  },
  {
   "id": "mb-scoop-throw",
@@ -2699,7 +3111,12 @@ export const EXERCISES = [
   ],
   "met": 7.0,
   "sub": "patlayici",
-  "equip": "other"
+  "equip": "other",
+  "alt": "Medicine ball scoop throw",
+  "aka": [
+   "sağlık topu fırlatma",
+   "med ball"
+  ]
  },
  {
   "id": "db-shoulder-press",
@@ -2733,7 +3150,12 @@ export const EXERCISES = [
    }
   ],
   "sub": "on",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Dambılla omuz presi",
+  "aka": [
+   "shoulder press",
+   "omuz pres"
+  ]
  },
  {
   "id": "lateral-raise",
@@ -2765,7 +3187,13 @@ export const EXERCISES = [
    }
   ],
   "sub": "yan",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Yana açış",
+  "aka": [
+   "lateral raise",
+   "yan omuz",
+   "yana kaldırma"
+  ]
  },
  {
   "id": "reverse-fly",
@@ -2805,7 +3233,12 @@ export const EXERCISES = [
    }
   ],
   "sub": "arka",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Arka omuz açış",
+  "aka": [
+   "reverse fly",
+   "rear delt"
+  ]
  },
  {
   "id": "face-pull",
@@ -2843,7 +3276,12 @@ export const EXERCISES = [
    }
   ],
   "sub": "arka",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "Yüze çekiş",
+  "aka": [
+   "face pull",
+   "arka omuz kablo"
+  ]
  },
  {
   "id": "machine-shoulder-press",
@@ -2877,7 +3315,11 @@ export const EXERCISES = [
    }
   ],
   "sub": "on",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Machine shoulder press",
+  "aka": [
+   "makine omuz pres"
+  ]
  },
  {
   "id": "ohp",
@@ -2906,7 +3348,13 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "on",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Ayakta halterle omuz presi",
+  "aka": [
+   "overhead press",
+   "military press",
+   "ohp"
+  ]
  },
  {
   "id": "arnold-press",
@@ -2934,7 +3382,11 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "on",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Arnold pres",
+  "aka": [
+   "arnold"
+  ]
  },
  {
   "id": "front-raise",
@@ -2960,7 +3412,12 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "on",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Öne kaldırma",
+  "aka": [
+   "front raise",
+   "ön omuz"
+  ]
  },
  {
   "id": "upright-row",
@@ -2989,7 +3446,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "yan",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Halterle dik çekiş",
+  "aka": [
+   "upright row",
+   "çeneye çekiş"
+  ]
  },
  {
   "id": "seated-bb-press",
@@ -3017,7 +3479,11 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "on",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Seated barbell press",
+  "aka": [
+   "oturarak omuz pres"
+  ]
  },
  {
   "id": "cable-lateral",
@@ -3046,7 +3512,11 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "yan",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "Cable lateral raise",
+  "aka": [
+   "kablo yana açış"
+  ]
  },
  {
   "id": "rear-delt-machine",
@@ -3072,7 +3542,11 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "arka",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Reverse pec deck",
+  "aka": [
+   "arka omuz makine"
+  ]
  },
  {
   "id": "plate-raise",
@@ -3098,7 +3572,11 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "on",
-  "equip": "other"
+  "equip": "other",
+  "alt": "Plate front raise",
+  "aka": [
+   "plaka kaldırma"
+  ]
  },
  {
   "id": "db-upright-row",
@@ -3127,7 +3605,11 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "yan",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Dambılla dik çekiş",
+  "aka": [
+   "upright row"
+  ]
  },
  {
   "id": "push-press",
@@ -3156,7 +3638,11 @@ export const EXERCISES = [
   ],
   "met": 8.0,
   "sub": "on",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "İtişli omuz presi",
+  "aka": [
+   "push press"
+  ]
  },
  {
   "id": "seated-rear-delt",
@@ -3185,7 +3671,11 @@ export const EXERCISES = [
   ],
   "met": 3.5,
   "sub": "arka",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Seated rear delt raise",
+  "aka": [
+   "oturarak arka omuz"
+  ]
  },
  {
   "id": "cable-rear-delt",
@@ -3214,7 +3704,11 @@ export const EXERCISES = [
   ],
   "met": 3.5,
   "sub": "arka",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "Cable rear delt fly",
+  "aka": [
+   "kablo arka omuz"
+  ]
  },
  {
   "id": "ext-rot-band",
@@ -3241,7 +3735,13 @@ export const EXERCISES = [
   ],
   "met": 3.0,
   "sub": "rotator",
-  "equip": "other"
+  "equip": "other",
+  "alt": "Band external rotation",
+  "aka": [
+   "dış rotasyon",
+   "rotator",
+   "omuz koruma"
+  ]
  },
  {
   "id": "ext-rot-cable",
@@ -3268,7 +3768,12 @@ export const EXERCISES = [
   ],
   "met": 3.0,
   "sub": "rotator",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "Cable external rotation",
+  "aka": [
+   "dış rotasyon kablo",
+   "rotator"
+  ]
  },
  {
   "id": "int-rot-band",
@@ -3295,7 +3800,12 @@ export const EXERCISES = [
   ],
   "met": 3.0,
   "sub": "rotator",
-  "equip": "other"
+  "equip": "other",
+  "alt": "Band internal rotation",
+  "aka": [
+   "iç rotasyon",
+   "rotator"
+  ]
  },
  {
   "id": "band-pull-apart",
@@ -3324,7 +3834,12 @@ export const EXERCISES = [
   ],
   "met": 3.0,
   "sub": "arka",
-  "equip": "other"
+  "equip": "other",
+  "alt": "Bant açma",
+  "aka": [
+   "pull apart",
+   "lastik açma"
+  ]
  },
  {
   "id": "biceps-curl",
@@ -3358,7 +3873,14 @@ export const EXERCISES = [
    }
   ],
   "sub": "biceps",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Dambılla pazı bükme",
+  "aka": [
+   "biceps",
+   "pazı",
+   "curl",
+   "kol"
+  ]
  },
  {
   "id": "hammer-curl",
@@ -3390,7 +3912,12 @@ export const EXERCISES = [
    }
   ],
   "sub": "biceps",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Çekiç tutuş curl",
+  "aka": [
+   "hammer",
+   "çekiç"
+  ]
  },
  {
   "id": "barbell-curl",
@@ -3424,7 +3951,12 @@ export const EXERCISES = [
    }
   ],
   "sub": "biceps",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Halterle pazı bükme",
+  "aka": [
+   "barbell curl",
+   "biceps"
+  ]
  },
  {
   "id": "preacher-curl",
@@ -3464,7 +3996,12 @@ export const EXERCISES = [
    }
   ],
   "sub": "biceps",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Scott sehpasında curl",
+  "aka": [
+   "scott curl",
+   "preacher"
+  ]
  },
  {
   "id": "triceps-pushdown",
@@ -3504,7 +4041,13 @@ export const EXERCISES = [
    }
   ],
   "sub": "triceps",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "Kabloda arka kol itiş",
+  "aka": [
+   "pushdown",
+   "triceps",
+   "arka kol"
+  ]
  },
  {
   "id": "skull-crusher",
@@ -3546,7 +4089,13 @@ export const EXERCISES = [
    }
   ],
   "sub": "triceps",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Yatarak alına indirme",
+  "aka": [
+   "skull crusher",
+   "french press",
+   "lying triceps"
+  ]
  },
  {
   "id": "triceps-oh",
@@ -3578,7 +4127,12 @@ export const EXERCISES = [
    }
   ],
   "sub": "triceps",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Baş üstü arka kol açma",
+  "aka": [
+   "overhead triceps",
+   "french press"
+  ]
  },
  {
   "id": "kickback",
@@ -3618,7 +4172,12 @@ export const EXERCISES = [
    }
   ],
   "sub": "triceps",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Arka kol geri açış",
+  "aka": [
+   "kickback",
+   "triceps"
+  ]
  },
  {
   "id": "cable-curl",
@@ -3650,7 +4209,11 @@ export const EXERCISES = [
    }
   ],
   "sub": "biceps",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "Cable biceps curl",
+  "aka": [
+   "kablo pazı"
+  ]
  },
  {
   "id": "lying-db-ext",
@@ -3685,7 +4248,11 @@ export const EXERCISES = [
    }
   ],
   "sub": "triceps",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Lying dumbbell triceps extension",
+  "aka": [
+   "yatarak triceps"
+  ]
  },
  {
   "id": "cable-hammer",
@@ -3719,7 +4286,11 @@ export const EXERCISES = [
    }
   ],
   "sub": "biceps",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "Rope hammer curl",
+  "aka": [
+   "ip hammer"
+  ]
  },
  {
   "id": "concentration-curl",
@@ -3747,7 +4318,11 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "biceps",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Konsantrasyon curl",
+  "aka": [
+   "concentration"
+  ]
  },
  {
   "id": "bench-dips",
@@ -3776,7 +4351,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "triceps",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Sehpada arka kol dips",
+  "aka": [
+   "bench dips",
+   "sandalye dips"
+  ]
  },
  {
   "id": "close-grip-bench",
@@ -3805,7 +4385,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "triceps",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Dar tutuş göğüs presi",
+  "aka": [
+   "close grip",
+   "dar bench"
+  ]
  },
  {
   "id": "incline-curl",
@@ -3831,7 +4416,11 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "biceps",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Eğimli sehpada pazı",
+  "aka": [
+   "incline curl"
+  ]
  },
  {
   "id": "ez-curl",
@@ -3857,7 +4446,12 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "biceps",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "EZ barla pazı bükme",
+  "aka": [
+   "ez bar",
+   "zigzag bar"
+  ]
  },
  {
   "id": "alt-curl",
@@ -3885,7 +4479,11 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "biceps",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Alternating dumbbell curl",
+  "aka": [
+   "dönüşümlü curl"
+  ]
  },
  {
   "id": "reverse-curl",
@@ -3913,7 +4511,11 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "onkol",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Reverse barbell curl",
+  "aka": [
+   "ters curl"
+  ]
  },
  {
   "id": "rope-pushdown",
@@ -3939,7 +4541,11 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "triceps",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "Rope pushdown",
+  "aka": [
+   "ip pushdown"
+  ]
  },
  {
   "id": "dips-triceps",
@@ -3968,7 +4574,11 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "triceps",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Triceps dips",
+  "aka": [
+   "paralel arka kol"
+  ]
  },
  {
   "id": "cable-oh-ext",
@@ -3994,7 +4604,11 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "triceps",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "Cable overhead extension",
+  "aka": [
+   "kablo baş üstü"
+  ]
  },
  {
   "id": "wrist-curl",
@@ -4020,7 +4634,12 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "onkol",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Wrist curl",
+  "aka": [
+   "bilek",
+   "ön kol"
+  ]
  },
  {
   "id": "close-pushup",
@@ -4049,7 +4668,12 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "triceps",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Diamond push-up",
+  "aka": [
+   "dar şınav",
+   "elmas şınav"
+  ]
  },
  {
   "id": "reverse-wrist-curl",
@@ -4076,7 +4700,12 @@ export const EXERCISES = [
   ],
   "met": 3.5,
   "sub": "onkol",
-  "equip": "barbell"
+  "equip": "barbell",
+  "alt": "Reverse wrist curl",
+  "aka": [
+   "ters bilek",
+   "ön kol"
+  ]
  },
  {
   "id": "db-wrist-curl",
@@ -4103,7 +4732,12 @@ export const EXERCISES = [
   ],
   "met": 3.5,
   "sub": "onkol",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Dumbbell wrist curl",
+  "aka": [
+   "bilek",
+   "ön kol"
+  ]
  },
  {
   "id": "farmers-walk",
@@ -4134,7 +4768,13 @@ export const EXERCISES = [
   ],
   "met": 6.0,
   "sub": "onkol",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Farmer carry",
+  "aka": [
+   "çiftçi yürüyüşü",
+   "taşıma",
+   "kavrama"
+  ]
  },
  {
   "id": "wrist-roller",
@@ -4163,7 +4803,12 @@ export const EXERCISES = [
   ],
   "met": 3.5,
   "sub": "onkol",
-  "equip": "other"
+  "equip": "other",
+  "alt": "Wrist roller",
+  "aka": [
+   "bilek silindiri",
+   "ön kol"
+  ]
  },
  {
   "id": "plate-pinch",
@@ -4190,7 +4835,12 @@ export const EXERCISES = [
   ],
   "met": 3.0,
   "sub": "onkol",
-  "equip": "other"
+  "equip": "other",
+  "alt": "Plate pinch",
+  "aka": [
+   "plaka sıkma",
+   "kavrama"
+  ]
  },
  {
   "id": "crunch",
@@ -4216,7 +4866,13 @@ export const EXERCISES = [
   ],
   "met": 3.8,
   "sub": "ust",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Mekik (kısa)",
+  "aka": [
+   "mekik",
+   "crunch",
+   "karın"
+  ]
  },
  {
   "id": "sit-up",
@@ -4242,7 +4898,12 @@ export const EXERCISES = [
   ],
   "met": 3.8,
   "sub": "ust",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Tam mekik",
+  "aka": [
+   "mekik",
+   "sit up"
+  ]
  },
  {
   "id": "plank",
@@ -4268,7 +4929,13 @@ export const EXERCISES = [
   ],
   "met": 3.8,
   "sub": "core",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Plank",
+  "aka": [
+   "plank",
+   "köprü duruş",
+   "core"
+  ]
  },
  {
   "id": "side-plank",
@@ -4296,7 +4963,12 @@ export const EXERCISES = [
   ],
   "met": 3.8,
   "sub": "yan",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Side plank",
+  "aka": [
+   "yan plank",
+   "oblik"
+  ]
  },
  {
   "id": "leg-raise",
@@ -4322,7 +4994,12 @@ export const EXERCISES = [
   ],
   "met": 3.8,
   "sub": "alt",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Lying leg raise",
+  "aka": [
+   "bacak kaldırma",
+   "alt karın"
+  ]
  },
  {
   "id": "hanging-leg-raise",
@@ -4348,7 +5025,12 @@ export const EXERCISES = [
   ],
   "met": 3.8,
   "sub": "alt",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Hanging leg raise",
+  "aka": [
+   "barda bacak kaldırma",
+   "alt karın"
+  ]
  },
  {
   "id": "russian-twist",
@@ -4376,7 +5058,12 @@ export const EXERCISES = [
   ],
   "met": 3.8,
   "sub": "yan",
-  "equip": "other"
+  "equip": "other",
+  "alt": "Rus dönüşü",
+  "aka": [
+   "russian twist",
+   "yan karın"
+  ]
  },
  {
   "id": "bicycle-crunch",
@@ -4402,7 +5089,12 @@ export const EXERCISES = [
   ],
   "met": 3.8,
   "sub": "yan",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Bisiklet mekik",
+  "aka": [
+   "bisiklet",
+   "bicycle"
+  ]
  },
  {
   "id": "mountain-climber",
@@ -4432,7 +5124,12 @@ export const EXERCISES = [
   ],
   "met": 8.0,
   "sub": "core",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Dağcı",
+  "aka": [
+   "mountain climber",
+   "dağ tırmanışı"
+  ]
  },
  {
   "id": "cable-crunch",
@@ -4458,7 +5155,12 @@ export const EXERCISES = [
   ],
   "met": 3.8,
   "sub": "ust",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "Kabloda mekik",
+  "aka": [
+   "cable crunch",
+   "diz çökerek mekik"
+  ]
  },
  {
   "id": "reverse-crunch",
@@ -4484,7 +5186,12 @@ export const EXERCISES = [
   ],
   "met": 3.8,
   "sub": "alt",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Reverse crunch",
+  "aka": [
+   "ters mekik",
+   "alt karın"
+  ]
  },
  {
   "id": "oblique-crunch",
@@ -4510,7 +5217,12 @@ export const EXERCISES = [
   ],
   "met": 3.8,
   "sub": "yan",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Oblique crunch",
+  "aka": [
+   "yan mekik",
+   "oblik"
+  ]
  },
  {
   "id": "ab-roller",
@@ -4538,7 +5250,12 @@ export const EXERCISES = [
   ],
   "met": 3.8,
   "sub": "core",
-  "equip": "other"
+  "equip": "other",
+  "alt": "Karın tekerleği",
+  "aka": [
+   "ab wheel",
+   "tekerlek"
+  ]
  },
  {
   "id": "decline-crunch",
@@ -4564,7 +5281,11 @@ export const EXERCISES = [
   ],
   "met": 3.8,
   "sub": "ust",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Eğimli sehpada mekik",
+  "aka": [
+   "decline"
+  ]
  },
  {
   "id": "side-bend",
@@ -4590,7 +5311,12 @@ export const EXERCISES = [
   ],
   "met": 3.8,
   "sub": "yan",
-  "equip": "dumbbell"
+  "equip": "dumbbell",
+  "alt": "Dumbbell side bend",
+  "aka": [
+   "yana eğilme",
+   "oblik"
+  ]
  },
  {
   "id": "knee-raise",
@@ -4616,7 +5342,12 @@ export const EXERCISES = [
   ],
   "met": 3.8,
   "sub": "alt",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Captain's chair knee raise",
+  "aka": [
+   "diz çekme",
+   "alt karın"
+  ]
  },
  {
   "id": "dead-bug",
@@ -4642,7 +5373,12 @@ export const EXERCISES = [
   ],
   "met": 3.8,
   "sub": "core",
-  "equip": "body"
+  "equip": "body",
+  "alt": "Ölü böcek",
+  "aka": [
+   "dead bug",
+   "core"
+  ]
  },
  {
   "id": "ab-machine",
@@ -4668,7 +5404,11 @@ export const EXERCISES = [
   ],
   "met": 3.8,
   "sub": "ust",
-  "equip": "machine"
+  "equip": "machine",
+  "alt": "Ab crunch machine",
+  "aka": [
+   "karın makinesi"
+  ]
  },
  {
   "id": "mb-twist",
@@ -4698,7 +5438,12 @@ export const EXERCISES = [
   ],
   "met": 5.0,
   "sub": "yan",
-  "equip": "other"
+  "equip": "other",
+  "alt": "Medicine ball rotation pass",
+  "aka": [
+   "sağlık topu",
+   "rotasyon"
+  ]
  },
  {
   "id": "overhead-slam",
@@ -4728,7 +5473,12 @@ export const EXERCISES = [
   ],
   "met": 7.0,
   "sub": "core",
-  "equip": "other"
+  "equip": "other",
+  "alt": "Medicine ball slam",
+  "aka": [
+   "top vurma",
+   "slam"
+  ]
  },
  {
   "id": "pallof-press",
@@ -4757,7 +5507,12 @@ export const EXERCISES = [
   ],
   "met": 4.0,
   "sub": "core",
-  "equip": "cable"
+  "equip": "cable",
+  "alt": "Rotasyon önleyici pres",
+  "aka": [
+   "pallof",
+   "anti rotasyon"
+  ]
  }
 ];
 
