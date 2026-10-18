@@ -127,7 +127,7 @@ function normalize(d) {
   return {
     sets: d.sets || [], custom: d.custom || [], weights: d.weights || [],
     routines: d.routines || [], workouts: d.workouts || [], session: d.session || null,
-    measures: d.measures || [], cardio: d.cardio || [], food: d.food || {}, menu: d.menu || {}, notes: d.notes || {}, activities: d.activities || [],
+    measures: d.measures || [], cardio: d.cardio || [], food: d.food || {}, menu: d.menu || {}, notes: d.notes || {}, activities: d.activities || [], opponents: d.opponents || {},
     settings: { ...DEFAULT_SETTINGS, ...d.settings },
     profile: { ...DEFAULT_PROFILE, ...d.profile },
   };
@@ -1406,7 +1406,7 @@ function addActivity(a) {
 function activityRow(a, { del = false } = {}) {
   const ic = a.sport === 'tennis' ? 'tennis' : a.sport === 'pilates' ? 'pilates' : 'run';
   const res = a.result === 'win' ? '<span class="pill good">Galibiyet</span>' : a.result === 'loss' ? '<span class="pill fire">Mağlubiyet</span>' : '';
-  const meta = [a.min ? `${fmtInt(a.min)} dk` : '', a.score ? esc(a.score) : '', a.surface ? SURFACES.find(s => s[0] === a.surface)?.[1] : ''].filter(Boolean).join(' · ');
+  const meta = [a.min ? `${fmtInt(a.min)} dk` : '', a.score ? esc(a.score) : '', a.opp ? `vs ${esc(a.opp)}` : '', a.focus ? esc(a.focus.join(', ')) : '', a.surface ? SURFACES.find(s => s[0] === a.surface)?.[1] : ''].filter(Boolean).join(' · ');
   return `<div class="act-row" ${del ? `data-act="${a.id}"` : ''}><div class="plan-icon act-ic ${a.sport}">${icon(ic)}</div>
     <div class="grow"><div style="font-weight:600">${esc(typeName(a))}</div><div class="faint small num">${meta}${a.note ? ` · ${esc(a.note)}` : ''}</div></div>
     ${res}<span class="pill fire num">${icon('flame')}${fmtInt(a.kcal)}</span></div>`;
@@ -1418,50 +1418,204 @@ function bindActivityDelete(root, after) {
   }));
 }
 
-// Tenis maçı / antrenmanı kaydı
+// Tenis maçı / antrenmanı kaydı: set set skor, rakip ve seviyesi, isteğe bağlı istatistikler
+const OPP_REL = [['weak', 'Benden zayıf', -1.5], ['eq', 'Benzer', 0], ['strong', 'Benden güçlü', 1.5]];
+const FOCUS = ['Servis', 'Forehand', 'Backhand', 'Vole', 'Smaç', 'Return', 'Ayak çalışması', 'Maç oyunu'];
+const STAT_FIELDS = [['ace', 'Ace'], ['df', 'Çift hata'], ['win', 'Winner'], ['ue', 'Unforced error']];
+// Set dizisi → "6-4 7-6(5) [10-8]"
+function fmtScore(sets) {
+  return sets.map(([m, o, tm, to, st]) => st ? `[${m}-${o}]` : `${m}-${o}${tm != null && to != null && (m + o === 13) ? `(${Math.min(tm, to)})` : ''}`).join(' ');
+}
+const setWinner = ([m, o]) => (m > o ? 1 : o > m ? -1 : 0);
+function setsResult(sets) {
+  let w = 0, l = 0;
+  for (const s of sets) { const r = setWinner(s); if (r > 0) w++; else if (r < 0) l++; }
+  return { w, l, result: w > l ? 'win' : l > w ? 'loss' : '' };
+}
 function tennisLogSheet(after, preset = {}) {
-  let type = preset.kind || 'single', intensity = 'medium', result = '', surface = db.settings.surface || 'hard';
+  let type = preset.kind || 'single', intensity = 'medium', surface = db.settings.surface || 'hard', resultOverride = null;
+  let sets = [[0, 0]], superTb = false, rel = 'eq';
+  const focus = new Set(preset.focus || []);
+  const opps = [...new Set(db.activities.filter(a => a.opp).map(a => a.opp))];
   const isMatch = () => type === 'single' || type === 'double';
   const { el, close } = openSheet(`
     <div class="sheet-title">Tenis kaydı</div>
     <div class="opt-grid" id="tl-type">${TENNIS_TYPES.map(([k, n]) => `<button class="opt ${k === type ? 'on' : ''}" data-k="${k}">${n}</button>`).join('')}</div>
     <div class="in-row" style="margin-top:10px">
-      <div class="in-box"><label>Süre · dk</label><input id="tl-min" inputmode="numeric" value="${preset.min || 60}"></div>
+      <div class="in-box"><label>Süre · dk</label><input id="tl-min" inputmode="numeric" value="${preset.min || (isMatch() ? 90 : 60)}"></div>
       <div class="in-box"><label>Yoğunluk</label><div class="mini-seg" id="tl-int">${INTENSITY.map(([k, n]) => `<button data-v="${k}" class="${k === intensity ? 'on' : ''}">${n}</button>`).join('')}</div></div>
     </div>
     <div id="tl-match">
-      <div class="card-label" style="margin:14px 4px 8px">Sonuç</div>
-      <div class="mini-seg" id="tl-res"><button data-v="win">Kazandım</button><button data-v="loss">Kaybettim</button><button data-v="" class="on">Belirtme</button></div>
-      <div class="in-row" style="margin-top:10px">
-        <div class="in-box"><label>Skor</label><input id="tl-score" placeholder="6-4 3-6 10-7" autocomplete="off"></div>
-        <div class="in-box"><label>Rakip (isteğe bağlı)</label><input id="tl-opp" placeholder="—" autocomplete="off"></div>
+      <div class="card-label" style="margin:16px 4px 8px">Rakip</div>
+      <div class="in-row"><div class="in-box" style="flex:1"><label>İsim (isteğe bağlı)</label><input id="tl-opp" list="tl-opps" placeholder="—" autocomplete="off"></div></div>
+      <datalist id="tl-opps">${opps.map(o => `<option value="${esc(o)}">`).join('')}</datalist>
+      <div class="mini-seg" id="tl-rel" style="margin-top:8px">${OPP_REL.map(([k, n]) => `<button data-v="${k}" class="${k === rel ? 'on' : ''}">${n}</button>`).join('')}</div>
+      <div class="in-row" id="tl-partner-row" style="margin-top:8px"><div class="in-box" style="flex:1"><label>Partnerin (çiftler)</label><input id="tl-partner" placeholder="—" autocomplete="off"></div></div>
+      <div class="card-label" style="margin:16px 4px 8px">Skor <span class="faint" style="text-transform:none;letter-spacing:0;font-weight:600">· ben – rakip</span></div>
+      <div id="tl-sets"></div>
+      <div class="row" style="gap:8px;margin-top:8px;flex-wrap:wrap">
+        <button class="chip" id="tl-add-set">${icon('plus')} Set ekle</button>
+        <button class="chip" id="tl-del-set">Son seti sil</button>
+        <button class="chip" id="tl-stb">Süper tie-break</button>
       </div>
+      <div class="tl-result" id="tl-result"></div>
+      <div class="mini-seg" id="tl-res" style="margin-top:8px"><button data-v="auto" class="on">Otomatik</button><button data-v="win">Kazandım</button><button data-v="loss">Kaybettim</button><button data-v="">Yarım kaldı</button></div>
+      <details class="tl-more"><summary>Detaylı istatistik (isteğe bağlı)</summary>
+        <div class="stat-grid">${STAT_FIELDS.map(([k, n]) => `<div class="in-box"><label>${n}</label><input data-stat="${k}" inputmode="numeric" placeholder="—"></div>`).join('')}
+          <div class="in-box"><label>1. servis %</label><input data-stat="fs" inputmode="numeric" placeholder="—"></div></div>
+      </details>
     </div>
-    <div class="card-label" style="margin:14px 4px 8px">Kort</div>
+    <div id="tl-practice">
+      <div class="card-label" style="margin:16px 4px 8px">Neye çalıştın?</div>
+      <div class="chip-wrap" id="tl-focus">${FOCUS.map(f => `<button class="chip ${focus.has(f) ? 'on' : ''}" data-f="${f}">${f}</button>`).join('')}</div>
+    </div>
+    <div class="card-label" style="margin:16px 4px 8px">Kort</div>
     <div class="mini-seg" id="tl-surf">${SURFACES.map(([k, n]) => `<button data-v="${k}" class="${k === surface ? 'on' : ''}">${n}</button>`).join('')}</div>
-    <textarea class="note-in" id="tl-note" style="min-height:64px;margin-top:12px" maxlength="200" placeholder="Not: ör. servis iyiydi, backhand hatası çoktu">${esc(preset.note || '')}</textarea>
-    <div class="sheet-actions"><button class="btn ghost" id="tl-cancel">Vazgeç</button><button class="btn" id="tl-save">Kaydet</button></div>`);
-  const sync = () => { $('#tl-match', el).hidden = !isMatch(); };
+    <textarea class="note-in" id="tl-note" style="min-height:60px;margin-top:12px" maxlength="200" placeholder="Not: ör. servis iyiydi, backhand hatası çoktu">${esc(preset.note || '')}</textarea>
+    <div class="sheet-actions sticky"><button class="btn ghost" id="tl-cancel">Vazgeç</button><button class="btn" id="tl-save">Kaydet</button></div>`);
+  const drawSets = () => {
+    $('#tl-sets', el).innerHTML = sets.map((s, i) => {
+      const stb = superTb && i === sets.length - 1, tb = !stb && s[0] + s[1] === 13;
+      const step = (k, v) => `<div class="sc"><button data-i="${i}" data-k="${k}" data-d="-1">${icon('minus')}</button><b class="num">${v}</b><button data-i="${i}" data-k="${k}" data-d="1">${icon('plus')}</button></div>`;
+      return `<div class="set-row ${setWinner(s) > 0 ? 'won' : setWinner(s) < 0 ? 'lost' : ''}"><span>${stb ? 'Süper TB' : `${i + 1}. set`}</span>${step(0, s[0])}<i>–</i>${step(1, s[1])}</div>
+        ${tb ? `<div class="tb-row"><span>Tie-break</span><input data-tb="${i}" data-k="2" inputmode="numeric" placeholder="ben" value="${s[2] ?? ''}"><i>–</i><input data-tb="${i}" data-k="3" inputmode="numeric" placeholder="rakip" value="${s[3] ?? ''}"></div>` : ''}`;
+    }).join('');
+    $$('#tl-sets [data-d]', el).forEach(b => b.addEventListener('click', () => {
+      const s = sets[+b.dataset.i], k = +b.dataset.k, max = superTb && +b.dataset.i === sets.length - 1 ? 30 : 13;
+      s[k] = clamp(s[k] + +b.dataset.d, 0, max); drawSets();
+    }));
+    $$('#tl-sets [data-tb]', el).forEach(inp => inp.addEventListener('input', () => { sets[+inp.dataset.tb][+inp.dataset.k] = inp.value === '' ? undefined : Math.round(num(inp.value)); }));
+    $('#tl-stb', el).classList.toggle('on', superTb);
+    const r = setsResult(sets), any = sets.some(s => s[0] || s[1]);
+    $('#tl-result', el).innerHTML = any ? `${r.result === 'win' ? '<b class="good">Kazandın</b>' : r.result === 'loss' ? '<b class="bad">Kaybettin</b>' : '<b>Berabere / yarım</b>'} <span class="num">${r.w}–${r.l}</span> · ${esc(fmtScore(sets.map((s, i) => [s[0], s[1], s[2], s[3], superTb && i === sets.length - 1])))}` : '<span class="faint">Oyun sayılarını gir</span>';
+  };
+  const sync = () => {
+    $('#tl-match', el).hidden = !isMatch();
+    $('#tl-practice', el).hidden = isMatch();
+    $('#tl-partner-row', el).hidden = type !== 'double';
+  };
   const seg = (sel, set) => $$(`${sel} button`, el).forEach(b => b.addEventListener('click', () => { set(b.dataset.v); $$(`${sel} button`, el).forEach(x => x.classList.toggle('on', x === b)); }));
   $$('#tl-type .opt', el).forEach(b => b.addEventListener('click', () => {
     type = b.dataset.k; $$('#tl-type .opt', el).forEach(x => x.classList.toggle('on', x === b));
     if (isMatch() && num($('#tl-min', el).value) === 60) $('#tl-min', el).value = 90;
     sync();
   }));
-  seg('#tl-int', v => (intensity = v)); seg('#tl-res', v => (result = v)); seg('#tl-surf', v => (surface = v));
-  sync();
+  seg('#tl-int', v => (intensity = v)); seg('#tl-surf', v => (surface = v)); seg('#tl-rel', v => (rel = v));
+  seg('#tl-res', v => (resultOverride = v === 'auto' ? null : v));
+  $('#tl-opp', el).addEventListener('change', e => {
+    const r = db.opponents[e.target.value.trim()]?.rel;
+    if (r) { rel = r; $$('#tl-rel button', el).forEach(x => x.classList.toggle('on', x.dataset.v === r)); }
+  });
+  $('#tl-add-set', el).addEventListener('click', () => { if (sets.length < 5) { sets.push([0, 0]); drawSets(); } });
+  $('#tl-del-set', el).addEventListener('click', () => { if (sets.length > 1) { sets.pop(); drawSets(); } });
+  $('#tl-stb', el).addEventListener('click', () => { superTb = !superTb; drawSets(); });
+  $$('#tl-focus .chip', el).forEach(b => b.addEventListener('click', () => { focus.has(b.dataset.f) ? focus.delete(b.dataset.f) : focus.add(b.dataset.f); b.classList.toggle('on', focus.has(b.dataset.f)); }));
+  sync(); drawSets();
   $('#tl-cancel', el).addEventListener('click', close);
   $('#tl-save', el).addEventListener('click', () => {
     const min = clamp(Math.round(num($('#tl-min', el).value)), 1, 600);
     const met = TENNIS_TYPES.find(t => t[0] === type)[2], f = INTENSITY.find(i => i[0] === intensity)[2];
     const a = { sport: 'tennis', kind: type, min, intensity, surface, kcal: actKcal(met, min, f), note: $('#tl-note', el).value.trim() || undefined };
-    if (isMatch()) { a.result = result || undefined; a.score = $('#tl-score', el).value.trim() || undefined; a.opp = $('#tl-opp', el).value.trim() || undefined; }
+    if (isMatch()) {
+      const played = sets.filter(s => s[0] || s[1]).map((s, i, arr) => {
+        const o = [s[0], s[1]];
+        if (superTb && i === arr.length - 1) o.push(null, null, 1);
+        else if (s[0] + s[1] === 13 && s[2] != null && s[3] != null) o.push(s[2], s[3]);
+        return o;
+      });
+      const r = setsResult(played);
+      if (played.length) { a.sets = played; a.score = fmtScore(played); }
+      a.result = (resultOverride ?? r.result) || undefined;
+      const opp = $('#tl-opp', el).value.trim();
+      if (opp) { a.opp = opp; db.opponents[opp] = { rel }; }
+      a.oppRel = rel;
+      if (type === 'double') a.partner = $('#tl-partner', el).value.trim() || undefined;
+      const st = {};
+      $$('[data-stat]', el).forEach(inp => { if (inp.value !== '') st[inp.dataset.stat] = Math.max(0, Math.round(num(inp.value))); });
+      if (Object.keys(st).length) a.stats = st;
+    } else if (focus.size) a.focus = [...focus];
     db.settings.surface = surface;
     addActivity(a); close();
     toast(a.result === 'win' ? 'Tebrikler! Galibiyet kaydedildi' : 'Kaydedildi', a.result === 'win' ? 'trophy' : 'check');
     after();
   });
 }
+
+// Kişisel seviye tahmini (1–10): her maçta rakip seviyesi + oyun kazanma oranından bir performans puanı; son maçların ağırlıklı ortalaması
+function tennisLevel() {
+  const start = { 1: 3, 2: 5, 3: 7 }[levelOf()];
+  const matches = db.activities.filter(a => a.sport === 'tennis' && a.sets?.length).sort((a, b) => a.ts - b.ts);
+  let cur = start;
+  const perfs = [], pts = [];
+  for (const m of matches) {
+    let my = 0, op = 0;
+    for (const s of m.sets) { if (s[4]) { my += s[0] > s[1] ? 1 : 0; op += s[1] > s[0] ? 1 : 0; } else { my += s[0]; op += s[1]; } }
+    if (my + op === 0) continue;
+    const oppLvl = cur + (OPP_REL.find(r => r[0] === (m.oppRel || 'eq'))?.[2] || 0);
+    const perf = clamp(oppLvl + (my / (my + op) - 0.5) * 6, 1, 10);
+    perfs.push(perf);
+    const recent = perfs.slice(-20);
+    const wsum = recent.reduce((t, _, i) => t + i + 1, 0) + 3;
+    cur = (recent.reduce((t, p, i) => t + p * (i + 1), 0) + start * 3) / wsum;
+    pts.push({ d: m.date, v: cur });
+  }
+  const prev5 = perfs.length > 5 ? perfs.slice(-10, -5) : [];
+  const last5 = perfs.slice(-5);
+  const avg = l => l.reduce((a, b) => a + b, 0) / (l.length || 1);
+  return { level: cur, n: perfs.length, trend: prev5.length ? avg(last5) - avg(prev5) : 0, perfs, pts };
+}
+
+// Tenis istatistikleri
+function tennisStatsHTML() {
+  const all = db.activities.filter(a => a.sport === 'tennis' && a.kind !== 'routine');
+  if (!all.length) return emptyBox('tennis', 'Henüz kayıt yok', 'Maç veya antrenman kaydettiğinde istatistiklerin burada oluşur.');
+  const matches = all.filter(a => a.kind === 'single' || a.kind === 'double');
+  const dec = matches.filter(a => a.result), wins = dec.filter(a => a.result === 'win').length;
+  let gw = 0, gl = 0, tbw = 0, tbl = 0, d3w = 0, d3l = 0;
+  for (const m of matches) {
+    for (const s of m.sets || []) {
+      if (s[4] || s[0] + s[1] === 13) { if (s[0] > s[1]) tbw++; else tbl++; }
+      if (!s[4]) { gw += s[0]; gl += s[1]; }
+    }
+    if (m.sets?.length === 3 && m.result) { if (m.result === 'win') d3w++; else d3l++; }
+  }
+  const lv = tennisLevel();
+  const form = dec.slice(-5).map(a => `<i class="${a.result === 'win' ? 'w' : 'l'}">${a.result === 'win' ? 'G' : 'M'}</i>`).join('');
+  const byOpp = new Map();
+  for (const m of dec.filter(a => a.opp)) { const o = byOpp.get(m.opp) || { w: 0, l: 0, last: '' }; m.result === 'win' ? o.w++ : o.l++; o.last = m.date; byOpp.set(m.opp, o); }
+  const bySurf = SURFACES.map(([k, n]) => [n, dec.filter(a => a.surface === k)]).filter(([, l]) => l.length);
+  const withStats = matches.filter(m => m.stats);
+  const avgStat = k => { const l = withStats.filter(m => m.stats[k] != null); return l.length ? l.reduce((t, m) => t + m.stats[k], 0) / l.length : null; };
+  const focusMin = new Map();
+  for (const a of all.filter(x => x.focus)) for (const f of a.focus) focusMin.set(f, (focusMin.get(f) || 0) + a.min / a.focus.length);
+  const hours = all.reduce((s, a) => s + a.min, 0) / 60;
+  const stat = (lbl, val, sub = '') => `<div class="metric"><div class="lbl">${lbl}</div><b class="num">${val}</b>${sub ? `<div class="note">${sub}</div>` : ''}</div>`;
+  return `
+    <div class="card level-card">
+      <div class="row"><div class="grow"><div class="card-label">Kişisel seviye tahmini ${helpBtn('tlevel')}</div>
+        <div class="lv-big"><b class="num">${fmtN(lv.level, 1)}</b><span>/ 10</span>${lv.n >= 6 && Math.abs(lv.trend) >= 0.1 ? `<em class="${lv.trend > 0 ? 'up' : 'down'}">${lv.trend > 0 ? '▲' : '▼'} ${fmtN(Math.abs(lv.trend), 1)}</em>` : ''}</div>
+        <div class="faint small">${lv.n ? `${lv.n} maçtan hesaplandı` : 'Set skoru girdiğin maçlarla hesaplanır'}</div></div>
+        ${form ? `<div class="form-chips">${form}</div>` : ''}</div>
+      ${lv.perfs.length > 1 ? `<canvas class="chart" id="lv-chart" style="height:110px;margin-top:10px"></canvas>` : ''}
+    </div>
+    <div class="metric-grid" style="margin-top:10px">
+      ${stat('Maç', `${wins}G ${dec.length - wins}M`, dec.length ? `%${fmtInt((wins / dec.length) * 100)} galibiyet` : '')}
+      ${stat('Oyun kazanma', gw + gl ? `%${fmtInt((gw / (gw + gl)) * 100)}` : '—', gw + gl ? `${gw}–${gl} oyun` : '')}
+      ${stat('Tie-break', tbw + tbl ? `${tbw}–${tbl}` : '—')}
+      ${stat('3 setlik maçlar', d3w + d3l ? `${d3w}–${d3l}` : '—')}
+      ${stat('Toplam süre', fmtN(hours, hours < 10 ? 1 : 0), 'saat')}
+      ${stat('Antrenman', all.filter(a => !matches.includes(a)).length, 'seans')}
+    </div>
+    ${withStats.length ? `<div class="sec"><h2>Maç başına ortalama</h2><span class="faint small">${withStats.length} maç</span></div>
+      <div class="metric-grid">${[['ace', 'Ace'], ['df', 'Çift hata'], ['win', 'Winner'], ['ue', 'Unforced error'], ['fs', '1. servis %']].map(([k, n]) => { const v = avgStat(k); return v == null ? '' : stat(n, k === 'fs' ? `%${fmtInt(v)}` : fmtN(v, 1)); }).join('')}</div>` : ''}
+    ${byOpp.size ? `<div class="sec"><h2>Rakiplere karşı</h2></div><div class="list">${[...byOpp].sort((a, b) => (b[1].w + b[1].l) - (a[1].w + a[1].l)).map(([n, o]) => `<div class="item"><div class="badge">${esc(n[0].toLocaleUpperCase('tr-TR'))}</div>
+      <div class="grow"><div class="name">${esc(n)}</div><div class="meta">Son maç ${daysAgo(o.last)}</div></div><b class="num ${o.w >= o.l ? 'good' : 'bad'}">${o.w}–${o.l}</b></div>`).join('')}</div>` : ''}
+    ${bySurf.length ? `<div class="sec"><h2>Zemine göre</h2></div><div class="card">${bySurf.map(([n, l]) => { const w = l.filter(a => a.result === 'win').length; return `<div class="track-row"><div class="top"><b>${n}</b><span>${w}G · ${l.length - w}M</span></div>
+      <div class="bar"><i style="width:${(w / l.length) * 100}%;background:var(--good)"></i></div></div>`; }).join('')}</div>` : ''}
+    ${focusMin.size ? `<div class="sec"><h2>Antrenman odakları</h2></div><div class="card">${[...focusMin].sort((a, b) => b[1] - a[1]).map(([f, mn]) => `<div class="track-row"><div class="top"><b>${f}</b><span>${fmtInt(mn)} dk</span></div>
+      <div class="bar"><i style="width:${(mn / Math.max(...focusMin.values())) * 100}%;background:var(--accent)"></i></div></div>`).join('')}</div>` : ''}`;
+}
+
 // Pilates stüdyo / ev seansı kaydı (rehberli akış dışında)
 function pilatesLogSheet(after) {
   const kinds = [['reformer', 'Reformer (stüdyo)', 3.5], ['mat-studio', 'Mat (stüdyo / ders)', 3.0], ['home', 'Evde', 3.0]];
@@ -1544,7 +1698,8 @@ function renderTodayTennis() {
   let html = pageHead(fmtDay(today), helloText());
   html += `<div class="next tennis-hero"><div class="eyebrow">Tenis · bu hafta</div>
     <h2>${week.length ? `${fmtN(hours, 1)} saat · ${week.length} seans` : 'Korta çıkmaya hazır mısın?'}</h2>
-    <div class="meta">${recent.length ? `<span class="pill accent">${icon('trophy')}Galibiyet %${fmtInt((wins / recent.length) * 100)}</span>` : ''}<span class="pill">${matches.length} maç</span><span class="pill">${esc(LEVEL_NAMES.tennis[levelOf() - 1])}</span></div>
+    <div class="meta">${recent.length ? `<span class="pill accent">${icon('trophy')}Galibiyet %${fmtInt((wins / recent.length) * 100)}</span>` : ''}<span class="pill">${matches.length} maç</span>
+      <a class="pill" href="#/tennis/istatistik">Seviye ${fmtN(tennisLevel().level, 1)}</a></div>
     <button class="btn" id="t-log">${icon('plus')} Maç / antrenman kaydet</button>
     <div class="row" style="justify-content:center;gap:22px;margin-top:12px">
       <a class="alt" href="#/player/routine/tennis-warmup" style="width:auto;margin:0">Maç öncesi ısınma</a>
@@ -1569,7 +1724,7 @@ function renderTodayTennis() {
 
 // ═════════════════════════ Tenis sekmesi
 function renderTennis(seg = 'teknik') {
-  if (!['teknik', 'kondisyon', 'rutinler'].includes(seg)) seg = 'teknik';
+  if (!['teknik', 'kondisyon', 'rutinler', 'istatistik'].includes(seg)) seg = 'teknik';
   setHeader('Tenis', { chip: true, action: `<button class="top-btn" id="t-log2" aria-label="Kayıt ekle">${icon('plus')}</button>` });
   let body = '';
   if (seg === 'teknik') {
@@ -1582,13 +1737,20 @@ function renderTennis(seg = 'teknik') {
         <div class="row"><div class="grow"><div class="card-title">${esc(p.name)}</div><div class="faint small">${esc(p.desc)} · ${p.items.length} hareket</div></div>${p === next ? '<span class="pill accent">Sıradaki</span>' : ''}</div>
         <div class="ex-strip" style="margin-top:12px">${p.items.slice(0, 6).map(i => thumb(getEx(i.exId))).join('')}</div>
         <div class="row" style="gap:8px;margin-top:12px"><button class="btn ghost" data-see="${p.key}" style="margin:0">Hareketler</button><button class="btn" data-go="${p.key}" style="margin:0">${icon('play')} Başla</button></div></div>`).join('')}`;
+  } else if (seg === 'istatistik') {
+    body = tennisStatsHTML();
   } else {
     body = ROUTINES.filter(r => r.sport !== 'pilates').map(routineCard).join('');
   }
   view.innerHTML = pageHead('Teknik, kondisyon ve rutinler', 'Tenis') + `
-    <div class="seg">${[['teknik', 'Teknik'], ['kondisyon', 'Kondisyon'], ['rutinler', 'Rutinler']].map(([k, n]) => `<button data-s="${k}" class="${k === seg ? 'on' : ''}">${n}</button>`).join('')}</div>${body}`;
+    <div class="seg">${[['teknik', 'Teknik'], ['kondisyon', 'Kondisyon'], ['rutinler', 'Rutinler'], ['istatistik', 'İstatistik']].map(([k, n]) => `<button data-s="${k}" class="${k === seg ? 'on' : ''}">${n}</button>`).join('')}</div>${body}`;
   $$('.seg button', view).forEach(b => b.addEventListener('click', () => location.replace(`#/tennis/${b.dataset.s}`)));
-  $('#t-log2').addEventListener('click', () => tennisLogSheet(() => toast('Geçmiş\'te görebilirsin', 'calendar')));
+  if (seg === 'istatistik') {
+    bindHelp();
+    const cv = $('#lv-chart');
+    if (cv) drawChart(cv, tennisLevel().pts, '');
+  }
+  $('#t-log2').addEventListener('click', () => tennisLogSheet(() => (seg === 'istatistik' ? renderTennis(seg) : toast('Geçmiş\'te görebilirsin', 'calendar'))));
   $$('[data-go]', view).forEach(b => b.addEventListener('click', () => startSession(programDay(TENNIS_PROGRAMS.find(p => p.key === b.dataset.go)))));
   $$('[data-see]', view).forEach(b => b.addEventListener('click', () => {
     const p = TENNIS_PROGRAMS.find(x => x.key === b.dataset.see);
@@ -2392,22 +2554,20 @@ function renderHist() {
 function tennisStats() {
   const all = db.activities.filter(a => a.sport === 'tennis' && a.kind !== 'routine');
   if (!all.length) return '';
-  const matches = all.filter(a => a.kind === 'single' || a.kind === 'double'), decided = matches.filter(a => a.result);
-  const wins = decided.filter(a => a.result === 'win').length;
+  const dec = all.filter(a => a.result), wins = dec.filter(a => a.result === 'win').length;
   const hours = all.reduce((s, a) => s + a.min, 0) / 60;
-  const bySurf = SURFACES.map(([k, n]) => [n, decided.filter(a => a.surface === k)]).filter(([, l]) => l.length);
-  return `<div class="sec"><h2>Tenis</h2><span class="faint small">tüm zamanlar</span></div>
+  return `<div class="sec"><h2>Tenis</h2><a href="#/tennis/istatistik">Tüm istatistikler</a></div>
     <div class="stats3">
-      <div class="card"><b class="num">${matches.length}</b><span>Maç</span></div>
-      <div class="card"><b class="num">${decided.length ? '%' + fmtInt((wins / decided.length) * 100) : '—'}</b><span>Galibiyet</span></div>
-      <div class="card"><b class="num">${fmtN(hours, hours < 10 ? 1 : 0)}</b><span>Saat</span></div>
+      <div class="card"><b class="num">${dec.length}</b><span>Maç</span></div>
+      <div class="card"><b class="num">${dec.length ? '%' + fmtInt((wins / dec.length) * 100) : '—'}</b><span>Galibiyet</span></div>
+      <div class="card"><b class="num">${fmtN(tennisLevel().level, 1)}</b><span>Seviye</span></div>
     </div>
-    ${bySurf.length ? `<div class="card" style="margin-top:10px">${bySurf.map(([n, l]) => { const w = l.filter(a => a.result === 'win').length; return `<div class="track-row"><div class="top"><b>${n}</b><span>${w}G · ${l.length - w}M</span></div>
-      <div class="bar"><i style="width:${(w / l.length) * 100}%;background:var(--good)"></i></div></div>`; }).join('')}</div>` : ''}`;
+    <div class="faint small" style="margin:8px 2px 0">${fmtN(hours, hours < 10 ? 1 : 0)} saat tenis</div>`;
 }
 
 // ═════════════════════════ Profil
 const HELP = {
+  tlevel: 'Kendi kayıtlarından hesaplanan yaklaşık bir seviye (1–10). Her maçta rakibinin seviyesine (zayıf / benzer / güçlü) ve kazandığın oyun oranına göre bir performans puanı çıkar; son maçlar daha ağır basar. Resmî UTR veya NTRP değildir.',
   bmi: 'Vücut kitle indeksi (VKİ): kilonun boyunun karesine bölümü. 18,5–25 arası sağlıklı kabul edilir. Kaslı kişilerde yüksek çıkabilir; tek başına yağ oranını göstermez.',
   bmr: 'Bazal metabolizma: hiç hareket etmeden, sadece yaşamak için günde harcadığın kalori.',
   tdee: 'Günlük harcama: bazal metabolizma + gün içindeki hareketin ve sporun. Bu kadar yersen kilon sabit kalır.',
