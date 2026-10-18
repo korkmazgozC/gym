@@ -34,9 +34,11 @@ iPhone ve Android'de uygulama gibi çalışan, **internet olmadan da kullanılab
 - **Rekor kutlaması:** rekor kırdığın anda önceki en iyinle birlikte gösterilir
 - **Notlar:** harekete kalıcı not (makine ayarı, tutuş) ve antrenmana günlük not
 - Antrenman özeti: süre, yakılan kalori, toplam kaldırılan ağırlık, rekorlar
+- **Hatırlatıcılar:** antrenman günlerin iPhone Takvim'e bildirimli etkinlik olarak eklenir; su/protein bildirimi için Kestirmeler rehberi
 
 **Hareketler**
-- 6 bölgede ve 21 alt grupta (biceps, triceps, ön kol, üst göğüs…) **138 hareket**; 41 harekette gerçek **video** (72 açı), diğerlerinde başlangıç ve bitiş fotoğrafları
+- 6 bölgede ve 21 alt grupta (biceps, triceps, ön kol, üst göğüs…) **154 hareket**, Türkçe adlarıyla (uluslararası adı altında)
+- Her harekette **parmakla döndürülebilen 3D gösterim**: halter, dambıl, sehpa, kablo, barfiks barı gibi ekipmanlarla; çalışan kas renkli. 41 harekette ayrıca gerçek **video**, diğerlerinde fotoğraf
 - Ekipmana göre filtre (halter, dambıl, makine, kablo, vücut ağırlığı)
 - Akıllı arama: Türkçe/İngilizce ikinci isimler ve takma adlar ("barfiks" = "pull up", "lat çekiş"), Türkçe karakter ve yazım hatası toleransı
 - Adım adım anlatım, ipuçları, çalışan ana ve yardımcı kaslar
@@ -48,7 +50,7 @@ iPhone ve Android'de uygulama gibi çalışan, **internet olmadan da kullanılab
 - Hedefe göre (yağ yakma, formu koruma, kas kazanma) **günlük örnek menü**; porsiyonlar kalori ve protein hedefine göre ayarlanır
 - Vejetaryen veya "et yok, balık var" seçeneği, yemediğin yiyecekleri çıkarma
 - **Sağlık durumuna göre uyarlama:** diyabet, yüksek tansiyon, yüksek kolesterol, çölyak, laktoz intoleransı, gut, reflü, hamilelik ve böbrek hastalığı için menü, kalori/protein hedefi, beslenme ve antrenman önerileri
-- **Yemek kaydı:** 180 yaygın Türk yemeği ve besinde arama (mercimek çorbası, simit, ayran…), ev ölçüleriyle porsiyon (adet, dilim, kase, kepçe, yemek kaşığı), öğünlere göre liste, son yenenler
+- **Yemek kaydı:** 539 yaygın Türk yemeği ve besinde arama (mercimek çorbası, simit, ayran…), ev ölçüleriyle porsiyon (adet, dilim, kase, kepçe, yemek kaşığı), öğünlere göre liste, son yenenler
 - **Kaynağı belli besin değerleri:** tek malzemeli besinler doğrudan USDA FoodData Central'dan (kamu malı); Türk yemekleri USDA malzeme değerleri ve standart ev tarifleriyle hesaplanır (pişirmedeki ağırlık değişimi dahil)
 - **Kendi tarifim:** 70 ham malzemeden kendi yemeğini oluştur; pişmiş ağırlık ve porsiyon sayısına göre değerler hesaplanır
 - **Barkod okuma:** paketli ürünler Open Food Facts'ten bulunur ve telefonda saklanır; okuyucu uygulamayla birlikte gelir
@@ -103,9 +105,10 @@ Framework ve derleme adımı olmadan düz HTML, CSS ve JavaScript (ES modülleri
 | `bodymap.js` | Ön ve arka vücut haritası (SVG) |
 | `sports.js` | Tenis ve pilates içerikleri: vuruşlar, programlar, rutinler, seanslar |
 | `figure.js` | Hareketli çizim motoru (2D figür, reformer) |
-| `figure3d.js` | 3D gösterim: 2D pozları insan modelinin iskeletine uygular, kas vurgusu, 360° döndürme |
+| `figure3d.js` | 3D gösterim: pozları insan modelinin iskeletine uygular, salon ekipmanı, kas vurgusu, 360° döndürme |
+| `gymfigs.js` | 154 gym hareketinin 3D pozları ve ekipmanı |
 | `models/` | 3D insan modeli (Quaternius, CC0) |
-| `foods.js` | Yiyecek veritabanı (180 besin + 70 malzeme, ev ölçüleri); `tools/build_foods.py` üretir |
+| `foods.js` | Yiyecek veritabanı (539 besin + 115 malzeme, ev ölçüleri); `tools/build_foods.py` üretir |
 | `tools/build_foods.py` | Besin değerlerini USDA verisinden ve Türk tariflerinden hesaplar (`tools/usda_subset.json`) |
 | `tools/screenshots.py` | README ekran görüntülerini örnek verilerle üretir (`tools/shot.html`, headless Chrome) |
 | `vendor/` | Barkod okuyucu: barcode-detector ve zxing-wasm (MIT); three.js (MIT) |

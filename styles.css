@@ -1128,3 +1128,16 @@ body { font-size: 15.5px; letter-spacing: .005em; }
 .next .meta-line { color: var(--text-2); font-size: 14.5px; margin: 4px 0 16px; }
 .next.photo .meta-line { color: #c3c4d6; }
 .wstrip, .quests { display: block; }
+.wex-head .name .en { display: block; font-size: 12px; font-weight: 500; color: var(--text-3); margin-top: 1px; }
+.quest.rest .qi { background: rgba(161, 132, 255, .18) !important; color: #c9b6ff !important; }
+.quest.rest .qb i { opacity: .55; }
+.rm-days { display: grid; grid-template-columns: repeat(7, 1fr); gap: 6px; }
+.rm-days button { height: 44px; border-radius: 14px; background: var(--surface-2); border: 1px solid var(--line); font-weight: 600; font-size: 13.5px; color: var(--text-2); }
+.rm-days button.on { background: var(--grad); color: #fff; border-color: transparent; box-shadow: 0 6px 16px rgba(160, 92, 255, .3); }
+.in-box input[type=time], .rm-sel { width: 100%; border: 0; background: transparent; color: var(--text); font: 700 20px/1.2 var(--font-d); padding: 4px 0 0; outline: none; -webkit-appearance: none; appearance: none; }
+.rm-share { display: block; width: 100%; text-align: center; margin-top: 12px; color: var(--text-2); font-weight: 600; font-size: 14px; }
+.exm { position: relative; }
+.exm-tabs { z-index: 3; }
+.exm .media { margin-top: 0; }
+.fig-card.gym3d { aspect-ratio: 1.12; max-height: 58vh; background: radial-gradient(120% 90% at 50% 15%, #221d3d, #0c0d16 72%); }
+.fig-card.gym3d .fig-stage { inset: 44px 0 0; }

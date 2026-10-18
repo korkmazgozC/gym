@@ -1,507 +1,587 @@
 {
-"170599": {
-"d": "Beef, variety meats and by-products, tripe, raw",
-"kcal": 85.0,
-"p": 12.1,
-"f": 3.69,
-"c": 0.0,
-"fib": 0.0
-},
-"173420": {
-"d": "Cheese, feta",
-"kcal": 265,
-"p": 14.2,
-"f": 21.5,
-"c": 3.88,
-"fib": 0.0
-},
-"169641": {
-"d": "Jams and preserves",
-"kcal": 278,
-"p": 0.37,
-"f": 0.07,
-"c": 68.9,
-"fib": 1.1
-},
-"171265": {
-"d": "Milk, whole, 3.25% milkfat, with added vitamin D",
-"kcal": 61.0,
-"p": 3.15,
-"f": 3.25,
-"c": 4.8,
-"fib": 0.0
-},
-"170440": {
-"d": "Potatoes, boiled, cooked without skin, flesh, without salt",
-"kcal": 86.0,
-"p": 1.71,
-"f": 0.1,
-"c": 20.0,
-"fib": 1.8
-},
-"169593": {
-"d": "Cocoa, dry powder, unsweetened",
-"kcal": 228,
-"p": 19.6,
-"f": 13.7,
-"c": 57.9,
-"fib": 37.0
-},
-"170698": {
-"d": "Fast foods, potato, french fried in vegetable oil",
-"kcal": 312,
-"p": 3.43,
-"f": 14.7,
-"c": 41.4,
-"fib": 3.8
-},
-"168462": {
-"d": "Spinach, raw",
-"kcal": 23.0,
-"p": 2.86,
-"f": 0.39,
-"c": 3.63,
-"fib": 2.2
-},
-"168746": {
-"d": "Alcoholic beverage, beer, regular, all",
-"kcal": 43.0,
-"p": 0.46,
-"f": 0.0,
-"c": 3.55,
-"fib": 0.0
-},
-"170419": {
-"d": "Peas, green, raw",
-"kcal": 81.0,
-"p": 5.42,
-"f": 0.4,
-"c": 14.4,
-"fib": 5.7
-},
-"174950": {
-"d": "Cookies, butter, commercially prepared, enriched",
-"kcal": 467,
-"p": 6.1,
-"f": 18.8,
-"c": 68.9,
-"fib": 0.8
-},
-"168556": {
-"d": "Catsup",
-"kcal": 101,
-"p": 1.04,
-"f": 0.1,
-"c": 27.4,
-"fib": 0.3
-},
-"170184": {
-"d": "Nuts, pistachio nuts, raw",
-"kcal": 560,
-"p": 20.2,
-"f": 45.3,
-"c": 27.2,
-"fib": 10.6
-},
-"170393": {
-"d": "Carrots, raw",
-"kcal": 41.0,
-"p": 0.93,
-"f": 0.24,
-"c": 9.58,
-"fib": 2.8
-},
-"168409": {
-"d": "Cucumber, with peel, raw",
-"kcal": 15.0,
-"p": 0.65,
-"f": 0.11,
-"c": 3.63,
-"fib": 0.5
-},
-"172688": {
-"d": "Bread, whole-wheat, commercially prepared",
-"kcal": 252,
-"p": 12.4,
-"f": 3.5,
-"c": 42.7,
-"fib": 6.0
-},
-"170162": {
-"d": "Nuts, cashew nuts, raw",
-"kcal": 553,
-"p": 18.2,
-"f": 43.8,
-"c": 30.2,
-"fib": 3.3
-},
-"170688": {
-"d": "Bulgur, dry",
-"kcal": 342,
-"p": 12.3,
-"f": 1.33,
-"c": 75.9,
-"fib": 12.5
-},
-"172430": {
-"d": "Peanuts, all types, raw",
-"kcal": 567,
-"p": 25.8,
-"f": 49.2,
-"c": 16.1,
-"fib": 8.5
-},
-"171477": {
-"d": "Chicken, broilers or fryers, breast, meat only, cooked, roasted",
-"kcal": 165,
-"p": 31.0,
-"f": 3.57,
-"c": 0.0,
-"fib": 0.0
-},
-"169092": {
-"d": "Melons, cantaloupe, raw",
-"kcal": 34.0,
-"p": 0.84,
-"f": 0.19,
-"c": 8.16,
-"fib": 0.9
-},
-"171811": {
-"d": "Beef, tenderloin, steak, separable lean only, trimmed to 1/8\" fat, all grades, cooked, broiled",
-"kcal": 200,
-"p": 29.0,
-"f": 8.39,
-"c": 0.0,
-"fib": 0.0
-},
-"167996": {
-"d": "Candies, halavah, plain",
-"kcal": 469,
-"p": 12.5,
-"f": 21.5,
-"c": 60.5,
-"fib": 4.5
-},
 "169640": {
 "d": "Honey",
-"kcal": 304,
 "p": 0.3,
+"fib": 0.2,
 "f": 0.0,
 "c": 82.4,
-"fib": 0.2
+"kcal": 304
 },
-"173424": {
-"d": "Egg, whole, cooked, hard-boiled",
-"kcal": 155,
-"p": 12.6,
-"f": 10.6,
-"c": 1.12,
-"fib": 0.0
-},
-"170317": {
-"d": "Pizza, cheese topping, regular crust, frozen, cooked",
-"kcal": 268,
-"p": 10.4,
-"f": 12.3,
-"c": 29.0,
-"fib": 2.2
-},
-"168575": {
-"d": "Grape leaves, raw",
-"kcal": 93.0,
-"p": 5.6,
-"f": 2.12,
-"c": 17.3,
-"fib": 11.0
-},
-"169928": {
-"d": "Peaches, yellow, raw",
-"kcal": 39.0,
-"p": 0.91,
-"f": 0.25,
-"c": 9.54,
-"fib": 1.5
+"173660": {
+"d": "Beverages, PEPSICO QUAKER, Gatorade, G performance O 2, ready-to-drink.",
+"fib": 0.0,
+"p": 0.0,
+"f": 0.0,
+"c": 6.43,
+"kcal": 26.0
 },
 "169731": {
 "d": "Noodles, egg, dry, enriched",
-"kcal": 384,
-"p": 14.2,
-"f": 4.44,
 "c": 71.3,
-"fib": 3.3
+"kcal": 384,
+"fib": 3.3,
+"p": 14.2,
+"f": 4.44
 },
-"173709": {
-"d": "Fish, tuna, light, canned in water, drained solids (Includes foods for USDA's Food Distribution Program)",
-"kcal": 86.0,
-"p": 19.4,
-"f": 0.96,
-"c": 0.0,
-"fib": 0.0
+"170000": {
+"d": "Onions, raw",
+"f": 0.1,
+"c": 9.34,
+"kcal": 40.0,
+"p": 1.1,
+"fib": 1.7
 },
-"173694": {
-"d": "Fish, sea bass, mixed species, cooked, dry heat",
-"kcal": 124,
-"p": 23.6,
-"f": 2.56,
-"c": 0.0,
-"fib": 0.0
-},
-"170416": {
-"d": "Parsley, fresh",
-"kcal": 36.0,
-"p": 2.97,
-"f": 0.79,
-"c": 6.33,
-"fib": 3.3
-},
-"168894": {
-"d": "Wheat flour, white, all-purpose, enriched, bleached",
-"kcal": 364,
-"p": 10.3,
-"f": 0.98,
-"c": 76.3,
-"fib": 2.7
-},
-"171077": {
-"d": "Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw",
-"kcal": 120,
-"p": 22.5,
-"f": 2.62,
-"c": 0.0,
-"fib": 0.0
-},
-"171697": {
-"d": "Apricots, raw",
-"kcal": 48.0,
-"p": 1.4,
-"f": 0.39,
-"c": 11.1,
-"fib": 2.0
-},
-"170273": {
-"d": "Chocolate, dark, 70-85% cacao solids",
-"kcal": 598,
-"p": 7.79,
-"f": 42.6,
-"c": 45.9,
-"fib": 10.9
-},
-"168165": {
-"d": "Raisins, dark, seedless (Includes foods for USDA's Food Distribution Program)",
-"kcal": 299,
-"p": 3.3,
-"f": 0.25,
-"c": 79.3,
-"fib": 4.5
-},
-"171726": {
-"d": "Dates, deglet noor",
-"kcal": 282,
-"p": 2.45,
-"f": 0.39,
-"c": 75.0,
-"fib": 8.0
-},
-"171925": {
-"d": "Alcoholic Beverage, wine, table, red, Merlot",
-"kcal": 83.0,
-"p": 0.07,
-"f": 0.0,
-"c": 2.51,
-"fib": 0.0
-},
-"169703": {
-"d": "Rice, brown, long-grain, raw (Includes foods for USDA's Food Distribution Program)",
-"kcal": 367,
-"p": 7.54,
-"f": 3.2,
-"c": 76.2,
-"fib": 3.6
-},
-"171796": {
-"d": "Beef, ground, 85% lean meat / 15% fat, raw (Includes foods for USDA's Food Distribution Program)",
-"kcal": 215,
-"p": 18.6,
-"f": 15.0,
-"c": 0.0,
-"fib": 0.0
-},
-"171890": {
-"d": "Beverages, coffee, brewed, prepared with tap water",
-"kcal": 1.0,
-"p": 0.12,
-"f": 0.02,
-"c": 0.0,
-"fib": 0.0
-},
-"173757": {
-"d": "Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt",
-"kcal": 164,
-"p": 8.86,
-"f": 2.59,
-"c": 27.4,
-"fib": 7.6
-},
-"173625": {
-"d": "Chicken, broilers or fryers, thigh, meat and skin, cooked, roasted",
-"kcal": 232,
-"p": 23.3,
-"f": 14.7,
-"c": 0.0,
-"fib": 0.0
-},
-"173021": {
-"d": "Figs, raw",
-"kcal": 74.0,
-"p": 0.75,
-"f": 0.3,
-"c": 19.2,
-"fib": 2.9
-},
-"170581": {
-"d": "Nuts, hazelnuts or filberts",
-"kcal": 628,
-"p": 15.0,
-"f": 60.8,
-"c": 16.7,
-"fib": 9.7
-},
-"171413": {
-"d": "Oil, olive, salad or cooking",
-"kcal": 884,
+"173468": {
+"d": "Salt, table",
+"fib": 0.0,
 "p": 0.0,
-"f": 100,
+"f": 0.0,
 "c": 0.0,
+"kcal": 0.0
+},
+"169092": {
+"d": "Melons, cantaloupe, raw",
+"c": 8.16,
+"kcal": 34.0,
+"fib": 0.9,
+"p": 0.84,
+"f": 0.19
+},
+"174915": {
+"d": "Bread, pita, white, enriched",
+"fib": 2.2,
+"f": 1.2,
+"c": 55.7,
+"kcal": 275,
+"p": 9.1
+},
+"167996": {
+"d": "Candies, halavah, plain",
+"fib": 4.5,
+"p": 12.5,
+"f": 21.5,
+"c": 60.5,
+"kcal": 469
+},
+"169124": {
+"d": "Pineapple, raw, all varieties",
+"p": 0.54,
+"f": 0.12,
+"fib": 1.4,
+"c": 13.1,
+"kcal": 50.0
+},
+"171269": {
+"d": "Milk, nonfat, fluid, with added vitamin A and vitamin D (fat free or skim)",
+"f": 0.08,
+"p": 3.37,
+"c": 4.96,
+"kcal": 34.0,
+"fib": 0.0
+},
+"169655": {
+"d": "Sugars, granulated",
+"p": 0.0,
+"f": 0.0,
+"kcal": 387,
+"c": 100,
+"fib": 0.0
+},
+"171579": {
+"d": "Sauce, pesto, ready-to-serve, refrigerated",
+"f": 37.6,
+"c": 10.1,
+"kcal": 418,
+"p": 9.83,
+"fib": 1.8
+},
+"172684": {
+"d": "Bread, rye",
+"fib": 5.8,
+"kcal": 259,
+"p": 8.5,
+"f": 3.3,
+"c": 48.3
+},
+"174277": {
+"d": "Soy sauce made from soy and wheat (shoyu)",
+"f": 0.57,
+"c": 4.93,
+"p": 8.14,
+"kcal": 53.0,
+"fib": 0.8
+},
+"170458": {
+"d": "Tomato juice, canned, with salt added",
+"kcal": 17.0,
+"p": 0.85,
+"f": 0.29,
+"c": 3.53,
+"fib": 0.4
+},
+"169205": {
+"d": "Artichokes, (globe or french), raw",
+"kcal": 47.0,
+"c": 10.5,
+"f": 0.15,
+"p": 3.27,
+"fib": 5.4
+},
+"173904": {
+"d": "Cereals, oats, regular and quick, not fortified, dry",
+"fib": 10.1,
+"f": 6.52,
+"c": 67.7,
+"kcal": 379,
+"p": 13.2
+},
+"175180": {
+"d": "Crustaceans, shrimp, cooked",
+"p": 24.0,
+"f": 0.28,
+"c": 0.2,
+"kcal": 99.0,
 "fib": 0.0
 },
 "169961": {
 "d": "Beans, snap, green, raw",
-"kcal": 31.0,
-"p": 1.83,
 "f": 0.22,
+"p": 1.83,
+"fib": 2.7,
 "c": 6.97,
-"fib": 2.7
+"kcal": 31.0
 },
-"169721": {
-"d": "Wheat, durum",
-"kcal": 339,
-"p": 13.7,
-"f": 2.47,
-"c": 71.1,
-"fib": 0
+"168013": {
+"d": "Bread, multi-grain (includes whole-grain)",
+"f": 4.23,
+"c": 43.3,
+"kcal": 265,
+"fib": 7.4,
+"p": 13.4
 },
-"167776": {
-"d": "Pears, raw, bartlett (Includes foods for USDA's Food Distribution Program)",
-"kcal": 63.0,
-"p": 0.39,
-"f": 0.16,
-"c": 15.0,
-"fib": 3.1
+"170688": {
+"d": "Bulgur, dry",
+"fib": 12.5,
+"f": 1.33,
+"c": 75.9,
+"kcal": 342,
+"p": 12.3
 },
-"175167": {
-"d": "Fish, salmon, Atlantic, farmed, raw",
-"kcal": 208,
-"p": 20.4,
-"f": 13.4,
-"c": 0.0,
-"fib": 0.0
-},
-"173210": {
-"d": "Beverages, Energy drink, RED BULL",
-"kcal": 43.0,
-"p": 0.46,
-"f": 0.0,
-"c": 10.2,
-"fib": 0.0
-},
-"170189": {
-"d": "Seeds, sesame butter, tahini, from roasted and toasted kernels (most common type)",
-"kcal": 595,
-"p": 17.0,
-"f": 53.8,
-"c": 21.2,
-"fib": 9.3
-},
-"169999": {
-"d": "Corn, sweet, yellow, cooked, boiled, drained, without salt",
-"kcal": 96.0,
-"p": 3.41,
-"f": 1.5,
-"c": 21.0,
-"fib": 2.4
-},
-"171705": {
-"d": "Avocados, raw, all commercial varieties",
-"kcal": 160,
-"p": 2.0,
-"f": 14.7,
-"c": 8.53,
-"fib": 6.7
-},
-"168893": {
-"d": "Wheat flour, whole-grain (Includes foods for USDA's Food Distribution Program)",
-"kcal": 340,
-"p": 13.2,
-"f": 2.5,
-"c": 72.0,
-"fib": 10.7
-},
-"171304": {
-"d": "Yogurt, Greek, plain, whole milk",
-"kcal": 97.0,
-"p": 9.0,
-"f": 5.0,
-"c": 3.98,
-"fib": 0.0
-},
-"169098": {
-"d": "Orange juice, raw (Includes foods for USDA's Food Distribution Program)",
-"kcal": 45.0,
-"p": 0.7,
-"f": 0.2,
-"c": 10.4,
-"fib": 0.2
-},
-"173941": {
-"d": "Apricots, dried, sulfured, uncooked",
-"kcal": 241,
-"p": 3.39,
-"f": 0.51,
-"c": 62.6,
-"fib": 7.3
-},
-"169291": {
-"d": "Squash, summer, zucchini, includes skin, raw",
-"kcal": 17.0,
-"p": 1.21,
-"f": 0.32,
-"c": 3.11,
-"fib": 1.0
+"167762": {
+"d": "Strawberries, raw",
+"f": 0.3,
+"fib": 2.0,
+"p": 0.67,
+"c": 7.68,
+"kcal": 32.0
 },
 "171009": {
 "d": "Salad dressing, mayonnaise, regular",
-"kcal": 680,
 "p": 0.96,
 "f": 74.8,
 "c": 0.57,
+"kcal": 680,
 "fib": 0.0
 },
-"170459": {
-"d": "Tomato products, canned, paste, without salt added (Includes foods for USDA's Food Distribution Program)",
-"kcal": 82.0,
-"p": 4.32,
-"f": 0.47,
-"c": 18.9,
-"fib": 4.1
+"169715": {
+"d": "Semolina, enriched",
+"p": 12.7,
+"fib": 3.9,
+"f": 1.05,
+"c": 72.8,
+"kcal": 360
 },
-"173904": {
-"d": "Cereals, oats, regular and quick, not fortified, dry",
-"kcal": 379,
+"170457": {
+"d": "Tomatoes, red, ripe, raw, year round average",
+"c": 3.89,
+"kcal": 18.0,
+"f": 0.2,
+"fib": 1.2,
+"p": 0.88
+},
+"174831": {
+"d": "Beverages, Coconut water, ready-to-drink, unsweetened",
+"p": 0.22,
+"fib": 0.0,
+"f": 0.0,
+"c": 4.24,
+"kcal": 18.0
+},
+"169098": {
+"d": "Orange juice, raw (Includes foods for USDA's Food Distribution Program)",
+"p": 0.7,
+"fib": 0.2,
+"f": 0.2,
+"c": 10.4,
+"kcal": 45.0
+},
+"168105": {
+"d": "Frozen yogurts, flavors other than chocolate",
+"f": 3.6,
+"c": 21.6,
+"kcal": 127,
+"p": 3.0,
+"fib": 0.0
+},
+"167787": {
+"d": "Pomegranate juice, bottled",
+"f": 0.29,
+"c": 13.1,
+"kcal": 54.0,
+"p": 0.15,
+"fib": 0.1
+},
+"175179": {
+"d": "Crustaceans, shrimp, raw",
+"f": 0.51,
+"c": 0.0,
+"kcal": 85.0,
+"p": 20.1,
+"fib": 0.0
+},
+"170005": {
+"d": "Onions, spring or scallions (includes tops and bulb), raw",
+"kcal": 32.0,
+"f": 0.19,
+"p": 1.83,
+"fib": 2.6,
+"c": 7.34
+},
+"173625": {
+"d": "Chicken, broilers or fryers, thigh, meat and skin, cooked, roasted",
+"p": 23.3,
+"f": 14.7,
+"kcal": 232,
+"c": 0.0,
+"fib": 0.0
+},
+"171278": {
+"d": "Milk, goat, fluid, with added vitamin D",
+"kcal": 69.0,
+"p": 3.56,
+"fib": 0.0,
+"f": 4.14,
+"c": 4.45
+},
+"173708": {
+"d": "Fish, tuna, light, canned in oil, drained solids",
+"kcal": 198,
+"f": 8.21,
+"c": 0.0,
+"p": 29.1,
+"fib": 0.0
+},
+"171891": {
+"d": "Beverages, coffee, brewed, espresso, restaurant-prepared",
+"fib": 0.0,
+"f": 0.18,
+"p": 0.12,
+"c": 1.67,
+"kcal": 9.0
+},
+"168555": {
+"d": "Potatoes, mashed, home-prepared, whole milk and butter added",
+"f": 4.22,
+"c": 16.8,
+"kcal": 113,
+"p": 1.86,
+"fib": 1.5
+},
+"173021": {
+"d": "Figs, raw",
+"f": 0.3,
+"c": 19.2,
+"kcal": 74.0,
+"p": 0.75,
+"fib": 2.9
+},
+"169703": {
+"d": "Rice, brown, long-grain, raw (Includes foods for USDA's Food Distribution Program)",
+"f": 3.2,
+"c": 76.2,
+"kcal": 367,
+"fib": 3.6,
+"p": 7.54
+},
+"171688": {
+"d": "Apples, raw, with skin (Includes foods for USDA's Food Distribution Program)",
+"c": 13.8,
+"kcal": 52.0,
+"f": 0.17,
+"fib": 2.4,
+"p": 0.26
+},
+"173433": {
+"d": "Cheese, goat, semisoft type",
+"kcal": 364,
+"c": 0.12,
+"fib": 0.0,
+"p": 21.6,
+"f": 29.8
+},
+"168000": {
+"d": "Chocolate-flavored hazelnut spread",
+"c": 62.4,
+"kcal": 539,
+"f": 29.7,
+"fib": 5.4,
+"p": 5.41
+},
+"171796": {
+"d": "Beef, ground, 85% lean meat / 15% fat, raw (Includes foods for USDA's Food Distribution Program)",
+"fib": 0.0,
+"f": 15.0,
+"p": 18.6,
+"c": 0.0,
+"kcal": 215
+},
+"169146": {
+"d": "Beets, cooked, boiled, drained",
+"p": 1.68,
+"f": 0.18,
+"c": 9.96,
+"kcal": 44.0,
+"fib": 2.0
+},
+"170093": {
+"d": "Potatoes, baked, flesh and skin, without salt",
+"fib": 2.2,
+"p": 2.5,
+"f": 0.13,
+"c": 21.2,
+"kcal": 93.0
+},
+"173709": {
+"d": "Fish, tuna, light, canned in water, drained solids (Includes foods for USDA's Food Distribution Program)",
+"f": 0.96,
+"kcal": 86.0,
+"p": 19.4,
+"fib": 0.0,
+"c": 0.0
+},
+"174370": {
+"d": "Lamb, ground, raw",
+"f": 23.4,
+"c": 0.0,
+"kcal": 282,
+"p": 16.6,
+"fib": 0.0
+},
+"170860": {
+"d": "Cream, whipped, cream topping, pressurized",
+"kcal": 257,
+"fib": 0.0,
+"p": 3.2,
+"f": 22.2,
+"c": 12.5
+},
+"170250": {
+"d": "Snacks, rice cakes, brown rice, plain, unsalted",
+"f": 2.8,
+"c": 81.5,
+"kcal": 387,
+"p": 8.2,
+"fib": 4.2
+},
+"168893": {
+"d": "Wheat flour, whole-grain (Includes foods for USDA's Food Distribution Program)",
+"f": 2.5,
+"c": 72.0,
+"kcal": 340,
 "p": 13.2,
-"f": 6.52,
-"c": 67.7,
-"fib": 10.1
+"fib": 10.7
+},
+"169697": {
+"d": "Cornmeal, whole-grain, yellow",
+"f": 3.59,
+"c": 76.9,
+"kcal": 362,
+"p": 8.12,
+"fib": 7.3
+},
+"174924": {
+"d": "Bread, white, commercially prepared (includes soft bread crumbs)",
+"fib": 2.7,
+"f": 3.33,
+"c": 49.4,
+"kcal": 266,
+"p": 8.85
+},
+"172239": {
+"d": "Spearmint, dried",
+"p": 19.9,
+"f": 6.03,
+"c": 52.0,
+"kcal": 285,
+"fib": 29.8
+},
+"167990": {
+"d": "Candies, hard",
+"fib": 0.0,
+"f": 0.2,
+"c": 98.0,
+"kcal": 394,
+"p": 0.0
+},
+"175043": {
+"d": "Leavening agents, yeast, baker's, active dry",
+"f": 7.61,
+"c": 41.2,
+"kcal": 325,
+"p": 40.4,
+"fib": 26.9
+},
+"173862": {
+"d": "Frankfurter, beef, unheated",
+"f": 28.1,
+"c": 2.97,
+"kcal": 315,
+"p": 11.7,
+"fib": 0.0
+},
+"171811": {
+"d": "Beef, tenderloin, steak, separable lean only, trimmed to 1/8\" fat, all grades, cooked, broiled",
+"p": 29.0,
+"fib": 0.0,
+"f": 8.39,
+"c": 0.0,
+"kcal": 200
+},
+"170686": {
+"d": "Buckwheat groats, roasted, cooked",
+"fib": 2.7,
+"f": 0.62,
+"c": 19.9,
+"kcal": 92.0,
+"p": 3.38
+},
+"171257": {
+"d": "Cream, sour, cultured",
+"p": 2.44,
+"f": 19.4,
+"c": 4.63,
+"kcal": 198,
+"fib": 0.0
+},
+"172233": {
+"d": "Dill weed, fresh",
+"f": 1.12,
+"c": 7.02,
+"kcal": 43.0,
+"p": 3.46,
+"fib": 2.1
+},
+"173674": {
+"d": "Fish, mackerel, spanish, cooked, dry heat",
+"f": 6.32,
+"c": 0.0,
+"kcal": 158,
+"p": 23.6,
+"fib": 0.0
+},
+"170170": {
+"d": "Nuts, coconut meat, dried (desiccated), not sweetened",
+"fib": 16.3,
+"f": 64.5,
+"kcal": 660,
+"p": 6.88,
+"c": 23.6
+},
+"167992": {
+"d": "Candies, KIT KAT Wafer Bar",
+"c": 64.6,
+"kcal": 518,
+"f": 26.0,
+"fib": 1.0,
+"p": 6.51
+},
+"175142": {
+"d": "Fish, sea bass, mixed species, raw",
+"fib": 0.0,
+"p": 18.4,
+"f": 2.0,
+"c": 0.0,
+"kcal": 97.0
+},
+"167746": {
+"d": "Lemons, raw, without peel",
+"p": 1.1,
+"fib": 2.8,
+"f": 0.3,
+"c": 9.32,
+"kcal": 29.0
+},
+"171917": {
+"d": "Beverages, tea, green, brewed, regular",
+"f": 0.0,
+"c": 0.0,
+"kcal": 1.0,
+"p": 0.22,
+"fib": 0.0
+},
+"169699": {
+"d": "Couscous, dry",
+"fib": 5.0,
+"p": 12.8,
+"f": 0.64,
+"c": 77.4,
+"kcal": 376
+},
+"169230": {
+"d": "Garlic, raw",
+"c": 33.1,
+"kcal": 149,
+"fib": 2.1,
+"p": 6.36,
+"f": 0.5
+},
+"167954": {
+"d": "Snacks, granola bars, soft, uncoated, plain",
+"fib": 4.6,
+"p": 7.4,
+"f": 17.2,
+"c": 67.3,
+"kcal": 443
+},
+"171447": {
+"d": "Chicken, broilers or fryers, meat and skin, raw",
+"fib": 0.0,
+"p": 18.6,
+"f": 15.1,
+"c": 0.0,
+"kcal": 215
+},
+"170026": {
+"d": "Potatoes, flesh and skin, raw",
+"f": 0.09,
+"kcal": 77.0,
+"p": 2.05,
+"fib": 2.1,
+"c": 17.5
+},
+"174683": {
+"d": "Grapes, red or green (European type, such as Thompson seedless), raw",
+"f": 0.16,
+"p": 0.72,
+"fib": 0.9,
+"c": 18.1,
+"kcal": 69.0
+},
+"172420": {
+"d": "Lentils, raw",
+"f": 1.06,
+"fib": 10.7,
+"p": 24.6,
+"c": 63.4,
+"kcal": 352
+},
+"169291": {
+"d": "Squash, summer, zucchini, includes skin, raw",
+"f": 0.32,
+"c": 3.11,
+"kcal": 17.0,
+"fib": 1.0,
+"p": 1.21
 },
 "171287": {
 "d": "Egg, whole, raw, fresh",
@@ -511,548 +591,2020 @@
 "c": 0.72,
 "fib": 0.0
 },
-"169097": {
-"d": "Oranges, raw, all commercial varieties",
-"kcal": 47.0,
-"p": 0.94,
-"f": 0.12,
-"c": 11.8,
-"fib": 2.4
+"172508": {
+"d": "Lamb, cubed for stew or kabob (leg and shoulder), separable lean only, trimmed to 1/4\" fat, raw",
+"p": 20.2,
+"fib": 0.0,
+"f": 5.28,
+"c": 0.0,
+"kcal": 134
 },
-"169699": {
-"d": "Couscous, dry",
-"kcal": 376,
-"p": 12.8,
-"f": 0.64,
-"c": 77.4,
-"fib": 5.0
+"171697": {
+"d": "Apricots, raw",
+"fib": 2.0,
+"p": 1.4,
+"f": 0.39,
+"c": 11.1,
+"kcal": 48.0
 },
-"172420": {
-"d": "Lentils, raw",
-"kcal": 352,
-"p": 24.6,
-"f": 1.06,
-"c": 63.4,
-"fib": 10.7
+"171719": {
+"d": "Cherries, sweet, raw",
+"c": 16.0,
+"kcal": 63.0,
+"f": 0.2,
+"p": 1.06,
+"fib": 2.1
 },
-"168153": {
-"d": "Kiwifruit, green, raw",
-"kcal": 61.0,
-"p": 1.14,
-"f": 0.52,
-"c": 14.7,
-"fib": 3.0
+"171797": {
+"d": "Beef, ground, 80% lean meat / 20% fat, patty, cooked, broiled",
+"c": 0.0,
+"fib": 0.0,
+"p": 25.8,
+"f": 17.8,
+"kcal": 270
 },
-"169736": {
-"d": "Pasta, dry, enriched",
-"kcal": 371,
-"p": 13.0,
-"f": 1.51,
-"c": 74.7,
-"fib": 3.2
+"170554": {
+"d": "Seeds, chia seeds, dried",
+"p": 16.5,
+"fib": 34.4,
+"f": 30.7,
+"c": 42.1,
+"kcal": 486
+},
+"170889": {
+"d": "Yogurt, fruit, low fat,9 g protein/8 oz",
+"kcal": 99.0,
+"fib": 0.0,
+"p": 3.98,
+"f": 1.15,
+"c": 18.6
+},
+"169276": {
+"d": "Radishes, raw",
+"c": 3.4,
+"kcal": 16.0,
+"p": 0.68,
+"fib": 1.6,
+"f": 0.1
+},
+"172796": {
+"d": "Rolls, hamburger or hotdog, plain",
+"fib": 1.8,
+"p": 9.77,
+"f": 3.91,
+"c": 50.1,
+"kcal": 279
+},
+"168877": {
+"d": "Rice, white, long-grain, regular, raw, enriched",
+"f": 0.66,
+"c": 80.0,
+"kcal": 365,
+"p": 7.13,
+"fib": 1.3
+},
+"168599": {
+"d": "Nuts, mixed nuts, dry roasted, with peanuts, with salt added",
+"p": 17.3,
+"fib": 9.0,
+"f": 51.4,
+"c": 25.4,
+"kcal": 594
+},
+"170150": {
+"d": "Seeds, sesame seeds, whole, dried",
+"p": 17.7,
+"fib": 11.8,
+"f": 49.7,
+"c": 23.4,
+"kcal": 573
+},
+"170427": {
+"d": "Peppers, sweet, green, raw",
+"f": 0.17,
+"p": 0.86,
+"fib": 1.7,
+"c": 4.64,
+"kcal": 20.0
+},
+"173757": {
+"d": "Chickpeas (garbanzo beans, bengal gram), mature seeds, cooked, boiled, without salt",
+"fib": 7.6,
+"c": 27.4,
+"kcal": 164,
+"f": 2.59,
+"p": 8.86
+},
+"171277": {
+"d": "Milk, chocolate beverage, hot cocoa, homemade",
+"fib": 1.0,
+"f": 2.34,
+"c": 10.7,
+"kcal": 77.0,
+"p": 3.52
+},
+"171192": {
+"d": "Sauce, pasta, spaghetti/marinara, ready-to-serve",
+"fib": 1.8,
+"f": 1.61,
+"c": 7.43,
+"kcal": 50.0,
+"p": 1.39
+},
+"170273": {
+"d": "Chocolate, dark, 70-85% cacao solids",
+"f": 42.6,
+"c": 45.9,
+"kcal": 598,
+"p": 7.79,
+"fib": 10.9
+},
+"174916": {
+"d": "Bread, pita, whole-wheat",
+"f": 1.71,
+"fib": 6.1,
+"p": 9.8,
+"c": 55.9,
+"kcal": 262
 },
 "169105": {
 "d": "Tangerines, (mandarin oranges), raw",
-"kcal": 53.0,
-"p": 0.81,
 "f": 0.31,
 "c": 13.3,
+"kcal": 53.0,
+"p": 0.81,
 "fib": 1.8
 },
-"170567": {
-"d": "Nuts, almonds",
-"kcal": 579,
-"p": 21.2,
-"f": 49.9,
-"c": 21.6,
-"fib": 12.5
+"169589": {
+"d": "Candies, MARS SNACKFOOD US, SNICKERS Bar",
+"p": 7.53,
+"fib": 2.3,
+"f": 23.8,
+"c": 61.5,
+"kcal": 491
+},
+"175139": {
+"d": "Fish, sardine, Atlantic, canned in oil, drained solids with bone",
+"f": 11.4,
+"c": 0.0,
+"kcal": 208,
+"fib": 0.0,
+"p": 24.6
+},
+"173946": {
+"d": "Blackberries, raw",
+"f": 0.49,
+"p": 1.39,
+"fib": 5.3,
+"c": 9.61,
+"kcal": 43.0
+},
+"169260": {
+"d": "Okra, raw",
+"fib": 3.2,
+"p": 1.93,
+"f": 0.19,
+"c": 7.45,
+"kcal": 33.0
+},
+"172758": {
+"d": "Doughnuts, yeast-leavened, glazed, enriched (includes honey buns)",
+"p": 6.14,
+"f": 22.7,
+"c": 47.9,
+"kcal": 421,
+"fib": 2.1
+},
+"173042": {
+"d": "Grape juice, canned or bottled, unsweetened, without added ascorbic acid",
+"fib": 0.2,
+"p": 0.37,
+"f": 0.13,
+"c": 14.8,
+"kcal": 60.0
+},
+"171646": {
+"d": "Cereals ready-to-eat, granola, homemade",
+"f": 24.3,
+"c": 53.9,
+"p": 13.7,
+"fib": 8.9,
+"kcal": 489
+},
+"169247": {
+"d": "Lettuce, cos or romaine, raw",
+"c": 3.29,
+"kcal": 17.0,
+"f": 0.3,
+"fib": 2.1,
+"p": 1.23
+},
+"170459": {
+"d": "Tomato products, canned, paste, without salt added (Includes foods for USDA's Food Distribution Program)",
+"c": 18.9,
+"kcal": 82.0,
+"f": 0.47,
+"p": 4.32,
+"fib": 4.1
+},
+"173418": {
+"d": "Cheese, cream",
+"p": 6.15,
+"f": 34.4,
+"c": 5.52,
+"kcal": 350,
+"fib": 0.0
+},
+"171477": {
+"d": "Chicken, broilers or fryers, breast, meat only, cooked, roasted",
+"f": 3.57,
+"c": 0.0,
+"kcal": 165,
+"p": 31.0,
+"fib": 0.0
+},
+"170581": {
+"d": "Nuts, hazelnuts or filberts",
+"c": 16.7,
+"kcal": 628,
+"f": 60.8,
+"fib": 9.7,
+"p": 15.0
+},
+"172179": {
+"d": "Cheese, cottage, creamed, large or small curd",
+"c": 3.38,
+"kcal": 98.0,
+"p": 11.1,
+"f": 4.3,
+"fib": 0.0
+},
+"171723": {
+"d": "Cranberries, dried, sweetened (Includes foods for USDA's Food Distribution Program)",
+"kcal": 308,
+"fib": 5.3,
+"p": 0.17,
+"f": 1.09,
+"c": 82.8
+},
+"175203": {
+"d": "Beans, white, mature seeds, cooked, boiled, without salt",
+"c": 25.1,
+"kcal": 139,
+"fib": 6.3,
+"p": 9.73,
+"f": 0.35
+},
+"172675": {
+"d": "Bread, french or vienna (includes sourdough)",
+"p": 10.8,
+"fib": 2.2,
+"f": 2.42,
+"c": 51.9,
+"kcal": 272
+},
+"175189": {
+"d": "Beans, cranberry (roman), mature seeds, raw",
+"fib": 24.7,
+"f": 1.23,
+"c": 60.0,
+"kcal": 335,
+"p": 23.0
+},
+"169721": {
+"d": "Wheat, durum",
+"p": 13.7,
+"f": 2.47,
+"c": 71.1,
+"kcal": 339,
+"fib": 0.0
+},
+"169714": {
+"d": "Rice flour, white, unenriched",
+"f": 1.42,
+"c": 80.1,
+"kcal": 366,
+"p": 5.95,
+"fib": 2.4
+},
+"175039": {
+"d": "Waffles, plain, prepared from recipe",
+"p": 7.9,
+"f": 14.1,
+"c": 32.9,
+"kcal": 291,
+"fib": 0.0
+},
+"169274": {
+"d": "Purslane, raw",
+"f": 0.36,
+"c": 3.39,
+"kcal": 20.0,
+"p": 2.03,
+"fib": 0.0
+},
+"168746": {
+"d": "Alcoholic beverage, beer, regular, all",
+"p": 0.46,
+"c": 3.55,
+"kcal": 43.0,
+"fib": 0.0,
+"f": 0.0
+},
+"172973": {
+"d": "Cereals ready-to-eat, chocolate-flavored frosted puffed corn",
+"p": 3.34,
+"fib": 3.8,
+"f": 3.5,
+"c": 87.2,
+"kcal": 405
+},
+"172234": {
+"d": "Mustard, prepared, yellow",
+"p": 3.74,
+"fib": 4.0,
+"f": 3.34,
+"c": 5.83,
+"kcal": 60.0
+},
+"173905": {
+"d": "Cereals, oats, regular and quick, unenriched, cooked with water (includes boiling and microwaving), without salt",
+"p": 2.54,
+"fib": 1.7,
+"f": 1.52,
+"c": 12.0,
+"kcal": 71.0
+},
+"175202": {
+"d": "Beans, white, mature seeds, raw",
+"c": 60.3,
+"kcal": 333,
+"f": 0.85,
+"p": 23.4,
+"fib": 15.2
+},
+"170845": {
+"d": "Cheese, mozzarella, whole milk",
+"p": 22.2,
+"f": 22.1,
+"c": 2.4,
+"kcal": 299,
+"fib": 0.0
+},
+"172749": {
+"d": "Crackers, whole-wheat",
+"p": 10.6,
+"fib": 10.3,
+"f": 14.1,
+"c": 69.6,
+"kcal": 427
+},
+"169928": {
+"d": "Peaches, yellow, raw",
+"c": 9.54,
+"kcal": 39.0,
+"fib": 1.5,
+"p": 0.91,
+"f": 0.25
+},
+"167555": {
+"d": "Snacks, pretzels, hard, plain, salted",
+"kcal": 384,
+"fib": 3.4,
+"p": 10.0,
+"c": 80.4,
+"f": 2.93
+},
+"174491": {
+"d": "Chicken, liver, all classes, cooked, pan-fried",
+"fib": 0.0,
+"p": 25.8,
+"f": 6.43,
+"c": 1.11,
+"kcal": 172
+},
+"169736": {
+"d": "Pasta, dry, enriched",
+"c": 74.7,
+"kcal": 371,
+"f": 1.51,
+"fib": 3.2,
+"p": 13.0
+},
+"173423": {
+"d": "Egg, whole, cooked, fried",
+"fib": 0.0,
+"p": 13.6,
+"f": 14.8,
+"c": 0.83,
+"kcal": 196
+},
+"169134": {
+"d": "Pomegranates, raw",
+"p": 1.67,
+"fib": 4.0,
+"f": 1.17,
+"c": 18.7,
+"kcal": 83.0
+},
+"174832": {
+"d": "Beverages, almond milk, unsweetened, shelf stable",
+"fib": 0.2,
+"p": 0.4,
+"f": 0.96,
+"c": 1.31,
+"kcal": 15.0
+},
+"174842": {
+"d": "Beverages, carbonated, club soda",
+"fib": 0.0,
+"f": 0.0,
+"c": 0.0,
+"kcal": 0.0,
+"p": 0.0
+},
+"169913": {
+"d": "Mulberries, raw",
+"f": 0.39,
+"c": 9.8,
+"kcal": 43.0,
+"p": 1.44,
+"fib": 1.7
+},
+"169908": {
+"d": "Loquats, raw",
+"fib": 1.7,
+"p": 0.43,
+"f": 0.2,
+"c": 12.1,
+"kcal": 47.0
+},
+"171691": {
+"d": "Apples, dried, sulfured, uncooked",
+"fib": 8.7,
+"p": 0.93,
+"f": 0.32,
+"c": 65.9,
+"kcal": 243
+},
+"173694": {
+"d": "Fish, sea bass, mixed species, cooked, dry heat",
+"f": 2.56,
+"c": 0.0,
+"kcal": 124,
+"p": 23.6,
+"fib": 0.0
+},
+"170419": {
+"d": "Peas, green, raw",
+"c": 14.4,
+"kcal": 81.0,
+"p": 5.42,
+"f": 0.4,
+"fib": 5.7
+},
+"169264": {
+"d": "Potatoes, french fried, all types, salt added in processing, frozen, home-prepared, oven heated",
+"p": 2.75,
+"fib": 2.0,
+"f": 5.48,
+"c": 25.6,
+"kcal": 158
+},
+"170162": {
+"d": "Nuts, cashew nuts, raw",
+"p": 18.2,
+"f": 43.8,
+"c": 30.2,
+"kcal": 553,
+"fib": 3.3
+},
+"171870": {
+"d": "Beverages, Energy drink, RED BULL, sugar free, with added caffeine, niacin, pantothenic acid, vitamins B6 and B12",
+"p": 0.25,
+"f": 0.08,
+"c": 0.7,
+"kcal": 5.0,
+"fib": 0.0
+},
+"174249": {
+"d": "Mollusks, octopus, common, cooked, moist heat",
+"f": 2.08,
+"c": 4.4,
+"kcal": 164,
+"p": 29.8,
+"fib": 0.0
+},
+"171304": {
+"d": "Yogurt, Greek, plain, whole milk",
+"p": 9.0,
+"fib": 0.0,
+"f": 5.0,
+"c": 3.98,
+"kcal": 97.0
+},
+"171450": {
+"d": "Chicken, broilers or fryers, meat and skin, cooked, roasted",
+"f": 13.6,
+"c": 0.0,
+"kcal": 239,
+"p": 27.3,
+"fib": 0.0
+},
+"170894": {
+"d": "Yogurt, Greek, plain, nonfat (Includes foods for USDA's Food Distribution Program)",
+"fib": 0.0,
+"p": 10.2,
+"f": 0.39,
+"c": 3.6,
+"kcal": 59.0
+},
+"169967": {
+"d": "Broccoli, cooked, boiled, drained, without salt",
+"f": 0.41,
+"fib": 3.3,
+"p": 2.38,
+"c": 7.18,
+"kcal": 35.0
+},
+"175205": {
+"d": "Broadbeans (fava beans), mature seeds, raw",
+"f": 1.53,
+"p": 26.1,
+"fib": 25.0,
+"c": 58.3,
+"kcal": 341
+},
+"174312": {
+"d": "Lamb, leg, whole (shank and sirloin), separable lean and fat, trimmed to 1/4\" fat, choice, cooked, roasted",
+"kcal": 258,
+"f": 16.5,
+"c": 0.0,
+"fib": 0.0,
+"p": 25.6
+},
+"173630": {
+"d": "Chicken, broilers or fryers, wing, meat and skin, cooked, roasted",
+"f": 16.9,
+"kcal": 254,
+"p": 23.8,
+"fib": 0.0,
+"c": 0.0
+},
+"172713": {
+"d": "Cookies, brownies, commercially prepared",
+"f": 16.3,
+"c": 63.9,
+"kcal": 405,
+"fib": 2.1,
+"p": 4.8
+},
+"172678": {
+"d": "Bread, oatmeal",
+"fib": 4.0,
+"f": 4.4,
+"c": 48.5,
+"kcal": 269,
+"p": 8.4
+},
+"171982": {
+"d": "Mollusks, squid, mixed species, cooked, fried",
+"f": 7.48,
+"c": 7.79,
+"kcal": 175,
+"p": 17.9,
+"fib": 0.0
+},
+"172187": {
+"d": "Egg, whole, cooked, scrambled",
+"fib": 0.0,
+"p": 9.99,
+"f": 11.0,
+"c": 1.61,
+"kcal": 149
+},
+"172421": {
+"d": "Lentils, mature seeds, cooked, boiled, without salt",
+"c": 20.1,
+"kcal": 116,
+"p": 9.02,
+"fib": 7.9,
+"f": 0.38
+},
+"171436": {
+"d": "Margarine, regular, 80% fat, composite, tub, with salt, with added vitamin D",
+"p": 0.22,
+"fib": 0.0,
+"f": 80.2,
+"c": 0.75,
+"kcal": 713
+},
+"168894": {
+"d": "Wheat flour, white, all-purpose, enriched, bleached",
+"fib": 2.7,
+"p": 10.3,
+"f": 0.98,
+"c": 76.3,
+"kcal": 364
+},
+"171478": {
+"d": "Chicken, broilers or fryers, breast, meat only, cooked, stewed",
+"p": 29.0,
+"fib": 0.0,
+"f": 3.03,
+"c": 0.0,
+"kcal": 151
+},
+"171705": {
+"d": "Avocados, raw, all commercial varieties",
+"p": 2.0,
+"fib": 6.7,
+"f": 14.7,
+"c": 8.53,
+"kcal": 160
+},
+"174229": {
+"d": "Fish, bluefish, cooked, dry heat",
+"f": 5.44,
+"c": 0.0,
+"kcal": 159,
+"fib": 0.0,
+"p": 25.7
+},
+"175009": {
+"d": "Pancakes, plain, prepared from recipe",
+"p": 6.4,
+"f": 9.7,
+"c": 28.3,
+"kcal": 227,
+"fib": 0.0
+},
+"168163": {
+"d": "Quinces, raw",
+"p": 0.4,
+"fib": 1.9,
+"f": 0.1,
+"c": 15.3,
+"kcal": 57.0
+},
+"173232": {
+"d": "Beverages, tea, herb, other than chamomile, brewed",
+"p": 0.0,
+"fib": 0.0,
+"f": 0.0,
+"c": 0.2,
+"kcal": 1.0
+},
+"170884": {
+"d": "Milk shakes, thick vanilla",
+"f": 3.03,
+"c": 17.8,
+"kcal": 112,
+"p": 3.86,
+"fib": 0.0
+},
+"167776": {
+"d": "Pears, raw, bartlett (Includes foods for USDA's Food Distribution Program)",
+"p": 0.39,
+"fib": 3.1,
+"f": 0.16,
+"c": 15.0,
+"kcal": 63.0
+},
+"168935": {
+"d": "Rice, white, long-grain, regular, cooked, unenriched, with salt",
+"fib": 0.4,
+"p": 2.69,
+"f": 0.28,
+"c": 28.2,
+"kcal": 130
+},
+"170373": {
+"d": "Pizza, cheese topping, thin crust, frozen, cooked",
+"fib": 3.0,
+"f": 11.1,
+"c": 28.8,
+"kcal": 263,
+"p": 11.9
+},
+"169414": {
+"d": "Seeds, flaxseed",
+"f": 42.2,
+"fib": 27.3,
+"p": 18.3,
+"c": 28.9,
+"kcal": 534
+},
+"174854": {
+"d": "Beverages, carbonated, orange",
+"p": 0.0,
+"fib": 0.0,
+"f": 0.0,
+"c": 12.3,
+"kcal": 48.0
+},
+"169246": {
+"d": "Leeks, (bulb and lower leaf-portion), raw",
+"kcal": 61.0,
+"f": 0.3,
+"fib": 1.8,
+"p": 1.5,
+"c": 14.2
+},
+"168165": {
+"d": "Raisins, dark, seedless (Includes foods for USDA's Food Distribution Program)",
+"fib": 4.5,
+"p": 3.3,
+"f": 0.25,
+"c": 79.3,
+"kcal": 299
+},
+"173954": {
+"d": "Cherries, sour, red, raw",
+"fib": 1.6,
+"p": 1.0,
+"f": 0.3,
+"c": 12.2,
+"kcal": 50.0
+},
+"171247": {
+"d": "Cheese, parmesan, grated",
+"f": 27.8,
+"c": 13.9,
+"kcal": 420,
+"p": 28.4,
+"fib": 0.0
 },
 "174289": {
 "d": "Hummus, commercial",
-"kcal": 237,
 "p": 7.78,
+"fib": 5.5,
 "f": 17.8,
 "c": 15.0,
-"fib": 5.5
+"kcal": 237
+},
+"167989": {
+"d": "Candies, gumdrops, starch jelly pieces",
+"f": 0.0,
+"c": 98.9,
+"kcal": 396,
+"fib": 0.1,
+"p": 0.0
+},
+"167959": {
+"d": "Snacks, popcorn, air-popped",
+"kcal": 387,
+"c": 77.8,
+"f": 4.54,
+"p": 12.9,
+"fib": 14.5
+},
+"167747": {
+"d": "Lemon juice, raw",
+"p": 0.35,
+"fib": 0.3,
+"f": 0.24,
+"c": 6.9,
+"kcal": 22.0
 },
 "173627": {
 "d": "Chicken, broilers or fryers, dark meat, thigh, meat only, raw",
 "kcal": 121,
-"p": 19.7,
 "f": 4.12,
+"p": 19.7,
 "c": 0.0,
 "fib": 0.0
 },
-"175142": {
-"d": "Fish, sea bass, mixed species, raw",
-"kcal": 97.0,
-"p": 18.4,
-"f": 2.0,
-"c": 0.0,
-"fib": 0.0
-},
-"170093": {
-"d": "Potatoes, baked, flesh and skin, without salt",
-"kcal": 93.0,
-"p": 2.5,
-"f": 0.13,
-"c": 21.2,
-"fib": 2.2
-},
-"169967": {
-"d": "Broccoli, cooked, boiled, drained, without salt",
-"kcal": 35.0,
-"p": 2.38,
-"f": 0.41,
-"c": 7.18,
-"fib": 3.3
-},
-"167747": {
-"d": "Lemon juice, raw",
-"kcal": 22.0,
-"p": 0.35,
-"f": 0.24,
-"c": 6.9,
-"fib": 0.3
-},
-"174182": {
-"d": "Fish, anchovy, european, raw",
-"kcal": 131,
-"p": 20.4,
-"f": 4.84,
-"c": 0.0,
-"fib": 0.0
-},
-"172684": {
-"d": "Bread, rye",
-"kcal": 259,
-"p": 8.5,
-"f": 3.3,
-"c": 48.3,
-"fib": 5.8
-},
-"175009": {
-"d": "Pancakes, plain, prepared from recipe",
-"kcal": 227,
-"p": 6.4,
-"f": 9.7,
-"c": 28.3,
-"fib": 0
-},
-"169698": {
-"d": "Cornstarch",
-"kcal": 381,
-"p": 0.26,
-"f": 0.05,
-"c": 91.3,
-"fib": 0.9
-},
-"174284": {
-"d": "Lentils, pink or red, raw",
-"kcal": 358,
-"p": 23.9,
-"f": 2.17,
-"c": 63.1,
-"fib": 10.8
-},
-"168877": {
-"d": "Rice, white, long-grain, regular, raw, enriched",
-"kcal": 365,
-"p": 7.13,
-"f": 0.66,
-"c": 80.0,
-"fib": 1.3
-},
-"171790": {
-"d": "Beef, ground, 95% lean meat / 5% fat, raw",
-"kcal": 137,
-"p": 21.4,
-"f": 5.0,
-"c": 0.0,
-"fib": 0.0
-},
-"169655": {
-"d": "Sugars, granulated",
-"kcal": 387,
-"p": 0.0,
-"f": 0.0,
-"c": 100,
-"fib": 0.0
-},
-"170187": {
-"d": "Nuts, walnuts, english",
-"kcal": 654,
-"p": 15.2,
-"f": 65.2,
-"c": 13.7,
-"fib": 6.7
-},
-"169247": {
-"d": "Lettuce, cos or romaine, raw",
-"kcal": 17.0,
-"p": 1.23,
-"f": 0.3,
-"c": 3.29,
-"fib": 2.1
-},
-"167587": {
-"d": "Candies, milk chocolate",
-"kcal": 535,
-"p": 7.65,
-"f": 29.7,
-"c": 59.4,
-"fib": 3.4
-},
-"170850": {
-"d": "Cheese, provolone",
-"kcal": 351,
-"p": 25.6,
-"f": 26.6,
-"c": 2.14,
-"fib": 0.0
-},
-"172791": {
-"d": "Phyllo dough",
-"kcal": 299,
-"p": 7.1,
-"f": 6.0,
-"c": 52.6,
-"fib": 1.9
-},
-"173423": {
-"d": "Egg, whole, cooked, fried",
-"kcal": 196,
-"p": 13.6,
-"f": 14.8,
-"c": 0.83,
-"fib": 0.0
-},
-"169715": {
-"d": "Semolina, enriched",
-"kcal": 360,
-"p": 12.7,
-"f": 1.05,
-"c": 72.8,
-"fib": 3.9
-},
-"170000": {
-"d": "Onions, raw",
-"kcal": 40.0,
-"p": 1.1,
+"168448": {
+"d": "Pumpkin, raw",
+"c": 6.5,
+"fib": 0.5,
+"kcal": 26.0,
 "f": 0.1,
-"c": 9.34,
-"fib": 1.7
+"p": 1.0
 },
-"169230": {
-"d": "Garlic, raw",
-"kcal": 149,
-"p": 6.36,
-"f": 0.5,
-"c": 33.1,
-"fib": 2.1
-},
-"172239": {
-"d": "Spearmint, dried",
-"kcal": 285,
-"p": 19.9,
-"f": 6.03,
-"c": 52.0,
-"fib": 29.8
-},
-"170562": {
-"d": "Seeds, sunflower seed kernels, dried",
-"kcal": 584,
-"p": 20.8,
-"f": 51.5,
-"c": 20.0,
-"fib": 8.6
-},
-"168820": {
-"d": "Molasses",
-"kcal": 290,
-"p": 0.0,
-"f": 0.1,
-"c": 74.7,
-"fib": 0.0
-},
-"173468": {
-"d": "Salt, table",
-"kcal": 0.0,
-"p": 0.0,
-"f": 0.0,
-"c": 0.0,
-"fib": 0.0
-},
-"171688": {
-"d": "Apples, raw, with skin (Includes foods for USDA's Food Distribution Program)",
-"kcal": 52.0,
-"p": 0.26,
-"f": 0.17,
-"c": 13.8,
-"fib": 2.4
-},
-"171267": {
-"d": "Milk, reduced fat, fluid, 2% milkfat, with added vitamin A and vitamin D",
-"kcal": 50.0,
-"p": 3.3,
-"f": 1.98,
-"c": 4.8,
-"fib": 0.0
-},
-"175168": {
-"d": "Fish, salmon, Atlantic, farmed, cooked, dry heat",
-"kcal": 206,
-"p": 22.1,
-"f": 12.4,
-"c": 0.0,
-"fib": 0.0
+"172718": {
+"d": "Cookies, chocolate sandwich, with creme filling, regular",
+"c": 71.0,
+"fib": 2.9,
+"p": 5.21,
+"kcal": 464,
+"f": 19.1
 },
 "171284": {
 "d": "Yogurt, plain, whole milk",
 "kcal": 61.0,
 "p": 3.47,
+"fib": 0.0,
 "f": 3.25,
-"c": 4.66,
-"fib": 0.0
-},
-"171719": {
-"d": "Cherries, sweet, raw",
-"kcal": 63.0,
-"p": 1.06,
-"f": 0.2,
-"c": 16.0,
-"fib": 2.1
-},
-"170845": {
-"d": "Cheese, mozzarella, whole milk",
-"kcal": 299,
-"p": 22.2,
-"f": 22.1,
-"c": 2.4,
-"fib": 0.0
-},
-"170026": {
-"d": "Potatoes, flesh and skin, raw",
-"kcal": 77.0,
-"p": 2.05,
-"f": 0.09,
-"c": 17.5,
-"fib": 2.1
-},
-"172704": {
-"d": "Cake, pound, commercially prepared, butter (includes fresh and frozen)",
-"kcal": 353,
-"p": 5.0,
-"f": 14.0,
-"c": 53.6,
-"fib": 0.6
-},
-"174051": {
-"d": "Beef, chuck, arm pot roast, separable lean only, trimmed to 1/8\" fat, all grades, raw",
-"kcal": 132,
-"p": 22.1,
-"f": 4.19,
-"c": 0.0,
-"fib": 0.0
-},
-"171646": {
-"d": "Cereals ready-to-eat, granola, homemade",
-"kcal": 489,
-"p": 13.7,
-"f": 24.3,
-"c": 53.9,
-"fib": 8.9
-},
-"169677": {
-"d": "Snacks, potato chips, plain, salted",
-"kcal": 532,
-"p": 6.39,
-"f": 34.0,
-"c": 53.8,
-"fib": 3.1
-},
-"167762": {
-"d": "Strawberries, raw",
-"kcal": 32.0,
-"p": 0.67,
-"f": 0.3,
-"c": 7.68,
-"fib": 2.0
-},
-"169134": {
-"d": "Pomegranates, raw",
-"kcal": 83.0,
-"p": 1.67,
-"f": 1.17,
-"c": 18.7,
-"fib": 4.0
-},
-"167959": {
-"d": "Snacks, popcorn, air-popped",
-"kcal": 387,
-"p": 12.9,
-"f": 4.54,
-"c": 77.8,
-"fib": 14.5
-},
-"170457": {
-"d": "Tomatoes, red, ripe, raw, year round average",
-"kcal": 18.0,
-"p": 0.88,
-"f": 0.2,
-"c": 3.89,
-"fib": 1.2
-},
-"170427": {
-"d": "Peppers, sweet, green, raw",
-"kcal": 20.0,
-"p": 0.86,
-"f": 0.17,
-"c": 4.64,
-"fib": 1.7
-},
-"175202": {
-"d": "Beans, white, mature seeds, raw",
-"kcal": 333,
-"p": 23.4,
-"f": 0.85,
-"c": 60.3,
-"fib": 15.2
-},
-"173944": {
-"d": "Bananas, raw",
-"kcal": 89.0,
-"p": 1.09,
-"f": 0.33,
-"c": 22.8,
-"fib": 2.6
-},
-"173410": {
-"d": "Butter, salted",
-"kcal": 717,
-"p": 0.85,
-"f": 81.1,
-"c": 0.06,
-"fib": 0.0
-},
-"173756": {
-"d": "Chickpeas (garbanzo beans, bengal gram), mature seeds, raw",
-"kcal": 378,
-"p": 20.5,
-"f": 6.04,
-"c": 63.0,
-"fib": 12.2
-},
-"173227": {
-"d": "Beverages, tea, black, brewed, prepared with tap water",
-"kcal": 1.0,
-"p": 0.0,
-"f": 0.0,
-"c": 0.3,
-"fib": 0.0
-},
-"174370": {
-"d": "Lamb, ground, raw",
-"kcal": 282,
-"p": 16.6,
-"f": 23.4,
-"c": 0.0,
-"fib": 0.0
-},
-"170894": {
-"d": "Yogurt, Greek, plain, nonfat (Includes foods for USDA's Food Distribution Program)",
-"kcal": 59.0,
-"p": 10.2,
-"f": 0.39,
-"c": 3.6,
-"fib": 0.0
-},
-"173647": {
-"d": "Beverages, water, tap, drinking",
-"kcal": 0.0,
-"p": 0.0,
-"f": 0.0,
-"c": 0.0,
-"fib": 0.0
-},
-"175043": {
-"d": "Leavening agents, yeast, baker's, active dry",
-"kcal": 325,
-"p": 40.4,
-"f": 7.61,
-"c": 41.2,
-"fib": 26.9
-},
-"174683": {
-"d": "Grapes, red or green (European type, such as Thompson seedless), raw",
-"kcal": 69.0,
-"p": 0.72,
-"f": 0.16,
-"c": 18.1,
-"fib": 0.9
-},
-"174915": {
-"d": "Bread, pita, white, enriched",
-"kcal": 275,
-"p": 9.1,
-"f": 1.2,
-"c": 55.7,
-"fib": 2.2
-},
-"167765": {
-"d": "Watermelon, raw",
-"kcal": 30.0,
-"p": 0.61,
-"f": 0.15,
-"c": 7.55,
-"fib": 0.4
-},
-"170106": {
-"d": "Peppers, hot chili, red, raw",
-"kcal": 40.0,
-"p": 1.87,
-"f": 0.44,
-"c": 8.81,
-"fib": 1.5
+"c": 4.66
 },
 "169228": {
 "d": "Eggplant, raw",
-"kcal": 25.0,
-"p": 0.98,
 "f": 0.18,
 "c": 5.88,
-"fib": 3.0
+"kcal": 25.0,
+"fib": 3.0,
+"p": 0.98
+},
+"172688": {
+"d": "Bread, whole-wheat, commercially prepared",
+"f": 3.5,
+"c": 42.7,
+"kcal": 252,
+"p": 12.4,
+"fib": 6.0
+},
+"172791": {
+"d": "Phyllo dough",
+"fib": 1.9,
+"p": 7.1,
+"f": 6.0,
+"c": 52.6,
+"kcal": 299
+},
+"170591": {
+"d": "Nuts, pine nuts, dried",
+"f": 68.4,
+"p": 13.7,
+"fib": 3.7,
+"c": 13.1,
+"kcal": 673
+},
+"168185": {
+"d": "Peach nectar, canned, with added ascorbic acid",
+"f": 0.51,
+"c": 11.9,
+"kcal": 50.0,
+"p": 0.21,
+"fib": 0.1
+},
+"170379": {
+"d": "Broccoli, raw",
+"c": 6.64,
+"kcal": 34.0,
+"f": 0.37,
+"p": 2.82,
+"fib": 2.6
+},
+"168849": {
+"d": "Snacks, banana chips",
+"c": 58.4,
+"kcal": 519,
+"f": 33.6,
+"fib": 7.7,
+"p": 2.3
+},
+"173033": {
+"d": "Grapefruit, raw, pink and red and white, all areas",
+"f": 0.1,
+"c": 8.08,
+"kcal": 32.0,
+"p": 0.63,
+"fib": 1.1
+},
+"171265": {
+"d": "Milk, whole, 3.25% milkfat, with added vitamin D",
+"f": 3.25,
+"c": 4.8,
+"kcal": 61.0,
+"fib": 0.0,
+"p": 3.15
+},
+"170190": {
+"d": "Nuts, chestnuts, european, roasted",
+"fib": 5.1,
+"p": 3.17,
+"f": 2.2,
+"c": 53.0,
+"kcal": 245
+},
+"170400": {
+"d": "Celeriac, raw",
+"kcal": 42.0,
+"f": 0.3,
+"c": 9.2,
+"fib": 1.8,
+"p": 1.5
+},
+"169641": {
+"d": "Jams and preserves",
+"p": 0.37,
+"f": 0.07,
+"fib": 1.1,
+"c": 68.9,
+"kcal": 278
+},
+"168187": {
+"d": "Pineapple juice, canned or bottled, unsweetened, with added ascorbic acid",
+"c": 12.9,
+"kcal": 53.0,
+"f": 0.12,
+"fib": 0.2,
+"p": 0.36
 },
 "172470": {
 "d": "Peanut butter, smooth style, without salt",
-"kcal": 598,
 "p": 22.2,
+"fib": 5.0,
 "f": 51.4,
 "c": 22.3,
-"fib": 5.0
+"kcal": 598
 },
-"169205": {
-"d": "Artichokes, (globe or french), raw",
-"kcal": 47.0,
-"p": 3.27,
-"f": 0.15,
-"c": 10.5,
-"fib": 5.4
+"169698": {
+"d": "Cornstarch",
+"f": 0.05,
+"c": 91.3,
+"kcal": 381,
+"p": 0.26,
+"fib": 0.9
 },
-"174924": {
-"d": "Bread, white, commercially prepared (includes soft bread crumbs)",
-"kcal": 266,
-"p": 8.85,
-"f": 3.33,
+"175167": {
+"d": "Fish, salmon, Atlantic, farmed, raw",
+"kcal": 208,
+"f": 13.4,
+"p": 20.4,
+"fib": 0.0,
+"c": 0.0
+},
+"169096": {
+"d": "Olives, pickled, canned or bottled, green",
+"f": 15.3,
+"fib": 3.3,
+"p": 1.03,
+"c": 3.84,
+"kcal": 145
+},
+"168917": {
+"d": "Quinoa, cooked",
+"p": 4.4,
+"fib": 2.8,
+"f": 1.92,
+"c": 21.3,
+"kcal": 120
+},
+"171869": {
+"d": "Beverages, carbonated, tonic water",
+"c": 8.8,
+"kcal": 34.0,
+"fib": 0.0,
+"p": 0.0,
+"f": 0.0
+},
+"169279": {
+"d": "Sauerkraut, canned, solids and liquids",
+"fib": 2.9,
+"c": 4.28,
+"kcal": 19.0,
+"f": 0.14,
+"p": 0.91
+},
+"170599": {
+"d": "Beef, variety meats and by-products, tripe, raw",
+"p": 12.1,
+"f": 3.69,
+"fib": 0.0,
+"c": 0.0,
+"kcal": 85.0
+},
+"169451": {
+"d": "Beef, variety meats and by-products, liver, raw",
+"f": 3.63,
+"p": 20.4,
+"c": 3.89,
+"kcal": 135,
+"fib": 0.0
+},
+"174614": {
+"d": "Frankfurter, beef, heated",
+"f": 29.4,
+"c": 2.66,
+"kcal": 322,
+"p": 11.7,
+"fib": 0.0
+},
+"170697": {
+"d": "Fast foods, onion rings, breaded and fried",
+"f": 25.2,
+"c": 43.6,
+"kcal": 411,
+"fib": 2.7,
+"p": 3.86
+},
+"172704": {
+"d": "Cake, pound, commercially prepared, butter (includes fresh and frozen)",
+"f": 14.0,
+"c": 53.6,
+"kcal": 353,
+"p": 5.0,
+"fib": 0.6
+},
+"167807": {
+"d": "Cherry juice, tart",
+"f": 0.54,
+"c": 13.7,
+"kcal": 59.0,
+"p": 0.31,
+"fib": 0.0
+},
+"173141": {
+"d": "Popcorn, microwave, regular (butter) flavor, made with palm oil",
+"fib": 10.0,
+"p": 8.38,
+"f": 30.2,
+"c": 57.3,
+"kcal": 535
+},
+"172455": {
+"d": "Falafel, home-prepared",
+"p": 13.3,
+"f": 17.8,
+"c": 31.8,
+"kcal": 333,
+"fib": 0.0
+},
+"170562": {
+"d": "Seeds, sunflower seed kernels, dried",
+"p": 20.8,
+"fib": 8.6,
+"f": 51.5,
+"c": 20.0,
+"kcal": 584
+},
+"167587": {
+"d": "Candies, milk chocolate",
+"f": 29.7,
+"fib": 3.4,
+"p": 7.65,
+"c": 59.4,
+"kcal": 535
+},
+"174957": {
+"d": "Cookies, graham crackers, plain or honey (includes cinnamon)",
+"f": 10.6,
+"c": 77.7,
+"kcal": 430,
+"p": 6.69,
+"fib": 3.4
+},
+"167771": {
+"d": "Apple juice, canned or bottled, unsweetened, with added ascorbic acid",
+"fib": 0.2,
+"p": 0.1,
+"f": 0.13,
+"c": 11.3,
+"kcal": 46.0
+},
+"168405": {
+"d": "Cowpeas, young pods with seeds, raw",
+"p": 3.3,
+"f": 0.3,
+"c": 9.5,
+"kcal": 44.0,
+"fib": 3.3
+},
+"169914": {
+"d": "Nectarines, raw",
+"c": 10.6,
+"kcal": 44.0,
+"f": 0.32,
+"fib": 1.7,
+"p": 1.06
+},
+"173217": {
+"d": "Lemonade, frozen concentrate, white, prepared with water",
+"p": 0.07,
+"fib": 0.0,
+"f": 0.04,
+"c": 10.4,
+"kcal": 40.0
+},
+"174182": {
+"d": "Fish, anchovy, european, raw",
+"fib": 0.0,
+"p": 20.4,
+"f": 4.84,
+"c": 0.0,
+"kcal": 131
+},
+"173227": {
+"d": "Beverages, tea, black, brewed, prepared with tap water",
+"fib": 0.0,
+"p": 0.0,
+"f": 0.0,
+"c": 0.3,
+"kcal": 1.0
+},
+"173687": {
+"d": "Fish, salmon, chinook, smoked",
+"f": 4.32,
+"c": 0.0,
+"kcal": 117,
+"p": 18.3,
+"fib": 0.0
+},
+"169677": {
+"d": "Snacks, potato chips, plain, salted",
+"f": 34.0,
+"c": 53.8,
+"kcal": 532,
+"p": 6.39,
+"fib": 3.1
+},
+"175037": {
+"d": "Tortillas, ready-to-bake or -fry, flour, refrigerated",
+"f": 7.99,
 "c": 49.4,
-"fib": 2.7
+"kcal": 306,
+"p": 8.2,
+"fib": 3.5
+},
+"168153": {
+"d": "Kiwifruit, green, raw",
+"p": 1.14,
+"fib": 3.0,
+"f": 0.52,
+"c": 14.7,
+"kcal": 61.0
+},
+"171920": {
+"d": "Alcoholic beverage, distilled, all (gin, rum, vodka, whiskey) 90 proof",
+"f": 0.0,
+"c": 0.0,
+"kcal": 263,
+"p": 0.0,
+"fib": 0.0
+},
+"171413": {
+"d": "Oil, olive, salad or cooking",
+"f": 100,
+"c": 0.0,
+"kcal": 884,
+"p": 0.0,
+"fib": 0.0
+},
+"170440": {
+"d": "Potatoes, boiled, cooked without skin, flesh, without salt",
+"c": 20.0,
+"kcal": 86.0,
+"f": 0.1,
+"p": 1.71,
+"fib": 1.8
+},
+"174216": {
+"d": "Mollusks, mussel, blue, raw",
+"f": 2.24,
+"c": 3.69,
+"kcal": 86.0,
+"fib": 0.0,
+"p": 11.9
+},
+"168483": {
+"d": "Sweet potato, cooked, baked in skin, flesh, without salt",
+"c": 20.7,
+"kcal": 90.0,
+"f": 0.15,
+"fib": 3.3,
+"p": 2.01
+},
+"171017": {
+"d": "Oil, sunflower, linoleic (less than 60%)",
+"f": 100,
+"c": 0.0,
+"kcal": 884,
+"p": 0.0,
+"fib": 0.0
+},
+"175161": {
+"d": "Fish, whiting, mixed species, cooked, dry heat",
+"kcal": 116,
+"f": 1.69,
+"c": 0.0,
+"p": 23.5,
+"fib": 0.0
+},
+"168409": {
+"d": "Cucumber, with peel, raw",
+"c": 3.63,
+"kcal": 15.0,
+"f": 0.11,
+"fib": 0.5,
+"p": 0.65
+},
+"170491": {
+"d": "Carrot juice, canned",
+"c": 9.28,
+"kcal": 40.0,
+"f": 0.15,
+"p": 0.95,
+"fib": 0.8
+},
+"169975": {
+"d": "Cabbage, raw",
+"f": 0.1,
+"c": 5.8,
+"kcal": 25.0,
+"p": 1.28,
+"fib": 2.5
+},
+"172765": {
+"d": "Muffins, blueberry, commercially prepared (Includes mini-muffins)",
+"p": 4.49,
+"fib": 1.1,
+"f": 16.1,
+"c": 53.0,
+"kcal": 375
+},
+"172707": {
+"d": "Cake, sponge, prepared from recipe",
+"p": 7.3,
+"f": 4.3,
+"c": 57.7,
+"kcal": 297,
+"fib": 0.0
+},
+"168575": {
+"d": "Grape leaves, raw",
+"p": 5.6,
+"fib": 11.0,
+"c": 17.3,
+"kcal": 93.0,
+"f": 2.12
+},
+"174051": {
+"d": "Beef, chuck, arm pot roast, separable lean only, trimmed to 1/8\" fat, all grades, raw",
+"f": 4.19,
+"c": 0.0,
+"fib": 0.0,
+"p": 22.1,
+"kcal": 132
+},
+"170106": {
+"d": "Peppers, hot chili, red, raw",
+"fib": 1.5,
+"f": 0.44,
+"c": 8.81,
+"kcal": 40.0,
+"p": 1.87
+},
+"170189": {
+"d": "Seeds, sesame butter, tahini, from roasted and toasted kernels (most common type)",
+"f": 53.8,
+"c": 21.2,
+"kcal": 595,
+"p": 17.0,
+"fib": 9.3
+},
+"170850": {
+"d": "Cheese, provolone",
+"kcal": 351,
+"fib": 0.0,
+"p": 25.6,
+"f": 26.6,
+"c": 2.14
+},
+"170692": {
+"d": "Fast foods, cheeseburger; single, regular patty, with condiments and vegetables",
+"p": 13.1,
+"fib": 1.4,
+"f": 11.5,
+"c": 25.0,
+"kcal": 254
+},
+"171925": {
+"d": "Alcoholic Beverage, wine, table, red, Merlot",
+"f": 0.0,
+"c": 2.51,
+"fib": 0.0,
+"p": 0.07,
+"kcal": 83.0
+},
+"170184": {
+"d": "Nuts, pistachio nuts, raw",
+"f": 45.3,
+"c": 27.2,
+"kcal": 560,
+"fib": 10.6,
+"p": 20.2
+},
+"171956": {
+"d": "Fish, cod, Atlantic, cooked, dry heat",
+"kcal": 105,
+"f": 0.86,
+"c": 0.0,
+"p": 22.8,
+"fib": 0.0
+},
+"170318": {
+"d": "Fast Foods, crispy chicken filet sandwich, with lettuce and mayonnaise",
+"p": 10.9,
+"f": 13.6,
+"c": 27.4,
+"kcal": 276,
+"fib": 1.4
+},
+"171077": {
+"d": "Chicken, broiler or fryers, breast, skinless, boneless, meat only, raw",
+"f": 2.62,
+"kcal": 120,
+"p": 22.5,
+"c": 0.0,
+"fib": 0.0
+},
+"167765": {
+"d": "Watermelon, raw",
+"p": 0.61,
+"fib": 0.4,
+"f": 0.15,
+"c": 7.55,
+"kcal": 30.0
+},
+"171475": {
+"d": "Chicken, broilers or fryers, breast, meat and skin, cooked, fried, batter",
+"f": 13.2,
+"c": 8.99,
+"kcal": 260,
+"p": 24.8,
+"fib": 0.3
+},
+"173944": {
+"d": "Bananas, raw",
+"c": 22.8,
+"kcal": 89.0,
+"fib": 2.6,
+"p": 1.09,
+"f": 0.33
+},
+"169251": {
+"d": "Mushrooms, white, raw",
+"fib": 1.0,
+"f": 0.34,
+"p": 3.09,
+"c": 3.26,
+"kcal": 22.0
+},
+"169941": {
+"d": "Persimmons, japanese, raw",
+"p": 0.58,
+"fib": 3.6,
+"f": 0.19,
+"c": 18.6,
+"kcal": 70.0
+},
+"171506": {
+"d": "Turkey, Ground, cooked",
+"p": 27.4,
+"kcal": 203,
+"f": 10.4,
+"fib": 0.0,
+"c": 0.0
+},
+"175120": {
+"d": "Fish, mackerel, Atlantic, cooked, dry heat",
+"p": 23.8,
+"fib": 0.0,
+"f": 17.8,
+"c": 0.0,
+"kcal": 262
+},
+"173756": {
+"d": "Chickpeas (garbanzo beans, bengal gram), mature seeds, raw",
+"c": 63.0,
+"kcal": 378,
+"fib": 12.2,
+"p": 20.5,
+"f": 6.04
+},
+"170762": {
+"d": "Fast Food, Pizza Chain, 14\" pizza, pepperoni topping, thin crust",
+"f": 17.6,
+"c": 29.0,
+"kcal": 331,
+"p": 14.0,
+"fib": 2.3
+},
+"167571": {
+"d": "Candies, white chocolate",
+"f": 32.1,
+"p": 5.87,
+"fib": 0.2,
+"c": 59.2,
+"kcal": 539
+},
+"171890": {
+"d": "Beverages, coffee, brewed, prepared with tap water",
+"kcal": 1.0,
+"p": 0.12,
+"f": 0.02,
+"c": 0.0,
+"fib": 0.0
+},
+"170393": {
+"d": "Carrots, raw",
+"p": 0.93,
+"f": 0.24,
+"c": 9.58,
+"kcal": 41.0,
+"fib": 2.8
+},
+"171019": {
+"d": "Salad dressing, italian dressing, commercial, regular",
+"fib": 0.0,
+"p": 0.41,
+"f": 21.1,
+"c": 12.1,
+"kcal": 240
+},
+"168462": {
+"d": "Spinach, raw",
+"p": 2.86,
+"fib": 2.2,
+"f": 0.39,
+"c": 3.63,
+"kcal": 23.0
+},
+"169214": {
+"d": "Corn, sweet, yellow, canned, whole kernel, drained solids",
+"f": 1.22,
+"c": 14.3,
+"kcal": 67.0,
+"fib": 2.0,
+"p": 2.29
+},
+"173420": {
+"d": "Cheese, feta",
+"f": 21.5,
+"c": 3.88,
+"kcal": 265,
+"p": 14.2,
+"fib": 0.0
+},
+"173205": {
+"d": "Beverages, carbonated, lemon-lime soda, no caffeine",
+"fib": 0.0,
+"f": 0.0,
+"c": 10.4,
+"kcal": 41.0,
+"p": 0.09
+},
+"170287": {
+"d": "Bulgur, cooked",
+"fib": 4.5,
+"p": 3.08,
+"f": 0.24,
+"c": 18.6,
+"kcal": 83.0
+},
+"169986": {
+"d": "Cauliflower, raw",
+"c": 4.97,
+"kcal": 25.0,
+"p": 1.92,
+"fib": 2.0,
+"f": 0.28
+},
+"172736": {
+"d": "Cookies, sugar wafers with creme filling, regular",
+"p": 3.84,
+"fib": 1.6,
+"f": 23.2,
+"c": 70.6,
+"kcal": 502
+},
+"170879": {
+"d": "Milk, chocolate, fluid, commercial, whole, with added vitamin A and vitamin D",
+"fib": 0.8,
+"kcal": 83.0,
+"p": 3.17,
+"f": 3.39,
+"c": 10.3
+},
+"173647": {
+"d": "Beverages, water, tap, drinking",
+"f": 0.0,
+"c": 0.0,
+"kcal": 0.0,
+"p": 0.0,
+"fib": 0.0
+},
+"172751": {
+"d": "Croutons, plain",
+"f": 6.6,
+"c": 73.5,
+"kcal": 407,
+"p": 11.9,
+"fib": 5.1
+},
+"173414": {
+"d": "Cheese, cheddar (Includes foods for USDA's Food Distribution Program)",
+"c": 3.37,
+"kcal": 403,
+"p": 22.9,
+"f": 33.3,
+"fib": 0.0
+},
+"174987": {
+"d": "Croissants, butter",
+"fib": 2.6,
+"p": 8.2,
+"f": 21.0,
+"c": 45.8,
+"kcal": 406
+},
+"174245": {
+"d": "Fish, turbot, european, cooked, dry heat",
+"f": 3.78,
+"c": 0.0,
+"kcal": 122,
+"p": 20.6,
+"fib": 0.0
+},
+"172112": {
+"d": "Chicken, nuggets, white meat, precooked, frozen, not reheated",
+"f": 15.4,
+"c": 16.2,
+"kcal": 261,
+"p": 14.4,
+"fib": 0.7
+},
+"174815": {
+"d": "Alcoholic beverage, distilled, all (gin, rum, vodka, whiskey) 80 proof",
+"f": 0.0,
+"c": 0.0,
+"kcal": 231,
+"fib": 0.0,
+"p": 0.0
+},
+"172183": {
+"d": "Egg, white, raw, fresh",
+"fib": 0.0,
+"p": 10.9,
+"f": 0.17,
+"kcal": 52.0,
+"c": 0.73
+},
+"168627": {
+"d": "Beef, variety meats and by-products, liver, cooked, pan-fried",
+"f": 4.68,
+"p": 26.5,
+"c": 5.16,
+"kcal": 175,
+"fib": 0.0
+},
+"173718": {
+"d": "Fish, trout, rainbow, farmed, cooked, dry heat",
+"p": 23.8,
+"fib": 0.0,
+"f": 7.38,
+"c": 0.0,
+"kcal": 168
+},
+"171790": {
+"d": "Beef, ground, 95% lean meat / 5% fat, raw",
+"p": 21.4,
+"fib": 0.0,
+"f": 5.0,
+"c": 0.0,
+"kcal": 137
+},
+"173424": {
+"d": "Egg, whole, cooked, hard-boiled",
+"fib": 0.0,
+"kcal": 155,
+"p": 12.6,
+"f": 10.6,
+"c": 1.12
+},
+"172388": {
+"d": "Chicken, broilers or fryers, thigh, meat only, cooked, roasted",
+"p": 24.8,
+"f": 8.15,
+"kcal": 179,
+"c": 0.0,
+"fib": 0.0
+},
+"169415": {
+"d": "Seeds, pumpkin and squash seed kernels, roasted, with salt added",
+"fib": 6.5,
+"p": 29.8,
+"f": 49.0,
+"c": 14.7,
+"kcal": 574
+},
+"170317": {
+"d": "Pizza, cheese topping, regular crust, frozen, cooked",
+"f": 12.3,
+"p": 10.4,
+"fib": 2.2,
+"c": 29.0,
+"kcal": 268
+},
+"175168": {
+"d": "Fish, salmon, Atlantic, farmed, cooked, dry heat",
+"f": 12.4,
+"c": 0.0,
+"p": 22.1,
+"fib": 0.0,
+"kcal": 206
+},
+"171711": {
+"d": "Blueberries, raw",
+"c": 14.5,
+"kcal": 57.0,
+"f": 0.33,
+"fib": 2.4,
+"p": 0.74
+},
+"175119": {
+"d": "Fish, mackerel, Atlantic, raw",
+"f": 13.9,
+"c": 0.0,
+"kcal": 205,
+"p": 18.6,
+"fib": 0.0
+},
+"169097": {
+"d": "Oranges, raw, all commercial varieties",
+"f": 0.12,
+"c": 11.8,
+"kcal": 47.0,
+"fib": 2.4,
+"p": 0.94
+},
+"172711": {
+"d": "Cake, cheesecake, commercially prepared",
+"fib": 0.4,
+"f": 22.5,
+"c": 25.5,
+"kcal": 321,
+"p": 5.5
+},
+"174934": {
+"d": "Cake, chocolate, commercially prepared with chocolate frosting, in-store bakery",
+"f": 20.0,
+"c": 52.8,
+"kcal": 389,
+"p": 3.48,
+"fib": 2.2
+},
+"171726": {
+"d": "Dates, deglet noor",
+"c": 75.0,
+"kcal": 282,
+"f": 0.39,
+"p": 2.45,
+"fib": 8.0
+},
+"172482": {
+"d": "Lamb, foreshank, separable lean and fat, trimmed to 1/4\" fat, choice, cooked, braised",
+"f": 13.5,
+"c": 0.0,
+"kcal": 243,
+"p": 28.4,
+"fib": 0.0
+},
+"174217": {
+"d": "Mollusks, mussel, blue, cooked, moist heat",
+"p": 23.8,
+"fib": 0.0,
+"f": 4.48,
+"c": 7.39,
+"kcal": 172
+},
+"167755": {
+"d": "Raspberries, raw",
+"c": 11.9,
+"kcal": 52.0,
+"f": 0.65,
+"fib": 6.5,
+"p": 1.2
+},
+"174665": {
+"d": "Figs, dried, uncooked",
+"c": 63.9,
+"kcal": 249,
+"p": 3.3,
+"fib": 9.8,
+"f": 0.93
+},
+"170698": {
+"d": "Fast foods, potato, french fried in vegetable oil",
+"p": 3.43,
+"fib": 3.8,
+"f": 14.7,
+"c": 41.4,
+"kcal": 312
+},
+"174950": {
+"d": "Cookies, butter, commercially prepared, enriched",
+"fib": 0.8,
+"p": 6.1,
+"f": 18.8,
+"c": 68.9,
+"kcal": 467
+},
+"170108": {
+"d": "Peppers, sweet, red, raw",
+"fib": 2.1,
+"kcal": 26.0,
+"c": 6.03,
+"p": 0.99,
+"f": 0.3
+},
+"172446": {
+"d": "Soymilk, original and vanilla, unfortified",
+"f": 1.75,
+"c": 6.28,
+"kcal": 54.0,
+"fib": 0.6,
+"p": 3.27
+},
+"172935": {
+"d": "Salami, cooked, beef",
+"p": 12.6,
+"fib": 0.0,
+"f": 22.2,
+"c": 1.9,
+"kcal": 261
+},
+"169949": {
+"d": "Plums, raw",
+"c": 11.4,
+"kcal": 46.0,
+"p": 0.7,
+"fib": 1.4,
+"f": 0.28
+},
+"174284": {
+"d": "Lentils, pink or red, raw",
+"c": 63.1,
+"kcal": 358,
+"p": 23.9,
+"f": 2.17,
+"fib": 10.8
+},
+"171724": {
+"d": "Currants, zante, dried",
+"p": 3.43,
+"fib": 4.4,
+"f": 0.22,
+"c": 77.0,
+"kcal": 290
+},
+"171496": {
+"d": "Turkey, whole, breast, meat only, cooked, roasted",
+"p": 30.1,
+"f": 2.08,
+"kcal": 147,
+"fib": 0.0,
+"c": 0.0
+},
+"168835": {
+"d": "Syrups, chocolate, fudge-type",
+"f": 8.9,
+"fib": 2.8,
+"p": 4.6,
+"c": 62.9,
+"kcal": 350
+},
+"169850": {
+"d": "Restaurant, Italian, lasagna with meat",
+"f": 10.7,
+"c": 11.4,
+"kcal": 185,
+"fib": 1.5,
+"p": 10.8
+},
+"171209": {
+"d": "Beef, rib eye steak, boneless, lip-on, separable lean only, trimmed to 1/8\" fat, all grades, cooked, grilled",
+"f": 10.6,
+"c": 0.0,
+"kcal": 207,
+"p": 28.0,
+"fib": 0.0
+},
+"168162": {
+"d": "Plums, dried (prunes), uncooked",
+"c": 63.9,
+"kcal": 240,
+"fib": 7.1,
+"p": 2.18,
+"f": 0.38
+},
+"169977": {
+"d": "Cabbage, red, raw",
+"c": 7.37,
+"kcal": 31.0,
+"fib": 2.1,
+"f": 0.16,
+"p": 1.43
+},
+"170567": {
+"d": "Nuts, almonds",
+"p": 21.2,
+"fib": 12.5,
+"f": 49.9,
+"c": 21.6,
+"kcal": 579
+},
+"173210": {
+"d": "Beverages, Energy drink, RED BULL",
+"p": 0.46,
+"f": 0.0,
+"c": 10.2,
+"kcal": 43.0,
+"fib": 0.0
+},
+"172746": {
+"d": "Crackers, saltines (includes oyster, soda, soup)",
+"fib": 2.8,
+"c": 74.0,
+"kcal": 418,
+"p": 9.46,
+"f": 8.64
+},
+"169910": {
+"d": "Mangos, raw",
+"f": 0.38,
+"p": 0.82,
+"fib": 1.6,
+"c": 15.0,
+"kcal": 60.0
 },
 "170859": {
 "d": "Cream, fluid, heavy whipping",
+"f": 36.1,
 "kcal": 340,
 "p": 2.84,
-"f": 36.1,
-"c": 2.84,
+"fib": 0.0,
+"c": 2.84
+},
+"173941": {
+"d": "Apricots, dried, sulfured, uncooked",
+"c": 62.6,
+"kcal": 241,
+"f": 0.51,
+"p": 3.39,
+"fib": 7.3
+},
+"172430": {
+"d": "Peanuts, all types, raw",
+"fib": 8.5,
+"p": 25.8,
+"f": 49.2,
+"c": 16.1,
+"kcal": 567
+},
+"169079": {
+"d": "Cheese, cream, low fat",
+"fib": 0.0,
+"p": 7.85,
+"f": 16.7,
+"c": 6.73,
+"kcal": 208
+},
+"168558": {
+"d": "Pickles, cucumber, dill or kosher dill",
+"f": 0.3,
+"c": 2.41,
+"p": 0.5,
+"fib": 1.0,
+"kcal": 12.0
+},
+"175124": {
+"d": "Fish, mullet, striped, cooked, dry heat",
+"f": 4.86,
+"c": 0.0,
+"kcal": 150,
+"p": 24.8,
 "fib": 0.0
+},
+"169593": {
+"d": "Cocoa, dry powder, unsweetened",
+"c": 57.9,
+"kcal": 228,
+"fib": 37.0,
+"p": 19.6,
+"f": 13.7
+},
+"172941": {
+"d": "Turkey breast, sliced, prepackaged",
+"f": 3.77,
+"c": 2.2,
+"kcal": 106,
+"p": 14.8,
+"fib": 0.0
+},
+"169055": {
+"d": "Salad dressing, caesar dressing, regular",
+"f": 57.8,
+"c": 3.3,
+"kcal": 542,
+"fib": 0.5,
+"p": 2.17
+},
+"171267": {
+"d": "Milk, reduced fat, fluid, 2% milkfat, with added vitamin A and vitamin D",
+"p": 3.3,
+"fib": 0.0,
+"c": 4.8,
+"kcal": 50.0,
+"f": 1.98
+},
+"175012": {
+"d": "Pie, apple, prepared from recipe",
+"f": 12.5,
+"c": 37.1,
+"kcal": 265,
+"p": 2.4,
+"fib": 0.0
+},
+"168820": {
+"d": "Molasses",
+"c": 74.7,
+"kcal": 290,
+"f": 0.1,
+"fib": 0.0,
+"p": 0.0
+},
+"170416": {
+"d": "Parsley, fresh",
+"c": 6.33,
+"kcal": 36.0,
+"f": 0.79,
+"p": 2.97,
+"fib": 3.3
+},
+"173800": {
+"d": "Chickpeas (garbanzo beans, bengal gram), mature seeds, canned, drained solids",
+"p": 7.05,
+"f": 2.77,
+"c": 22.5,
+"kcal": 139,
+"fib": 6.4
+},
+"173180": {
+"d": "Beverages, Protein powder whey based",
+"p": 78.1,
+"fib": 3.1,
+"f": 1.56,
+"c": 6.25,
+"kcal": 352
+},
+"167558": {
+"d": "Snacks, tortilla chips, plain, white corn, salted",
+"f": 20.7,
+"c": 67.8,
+"kcal": 472,
+"p": 7.1,
+"fib": 5.4
+},
+"169999": {
+"d": "Corn, sweet, yellow, cooked, boiled, drained, without salt",
+"f": 1.5,
+"c": 21.0,
+"kcal": 96.0,
+"p": 3.41,
+"fib": 2.4
+},
+"170187": {
+"d": "Nuts, walnuts, english",
+"c": 13.7,
+"kcal": 654,
+"p": 15.2,
+"fib": 6.7,
+"f": 65.2
+},
+"173759": {
+"d": "Cowpeas, common (blackeyes, crowder, southern), mature seeds, cooked, boiled, without salt",
+"c": 20.8,
+"kcal": 116,
+"f": 0.53,
+"p": 7.73,
+"fib": 6.5
+},
+"173410": {
+"d": "Butter, salted",
+"fib": 0.0,
+"kcal": 717,
+"f": 81.1,
+"c": 0.06,
+"p": 0.85
+},
+"169387": {
+"d": "Arugula, raw",
+"c": 3.65,
+"fib": 1.6,
+"p": 2.58,
+"f": 0.66,
+"kcal": 25.0
+},
+"168556": {
+"d": "Catsup",
+"p": 1.04,
+"fib": 0.3,
+"f": 0.1,
+"c": 27.4,
+"kcal": 101
 }
 }

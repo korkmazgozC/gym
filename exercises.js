@@ -5516,6 +5516,53 @@ export const EXERCISES = [
  }
 ];
 
+// Türkçe görünen adlar: arayüzde Türkçe ad önde, uluslararası (İngilizce) ad altta küçük yazılır.
+// Salonlarda yerleşmiş kelimeler (squat, deadlift, lunge, plank, dips) korunur.
+const TR = {
+  'bench': 'Halter Göğüs Presi', 'incline-bench': 'Eğimli Halter Göğüs Presi', 'incline-db': 'Eğimli Dambıl Göğüs Presi', 'db-bench': 'Dambıl Göğüs Presi',
+  'dips': 'Paralel Barda Dips', 'db-fly': 'Dambıl Göğüs Açma', 'cable-crossover': 'Kabloda Göğüs Çaprazı', 'pec-deck': 'Makinede Göğüs Açma',
+  'chest-press': 'Makine Göğüs Presi', 'pullover': 'Dambıl Pullover', 'decline-bench': 'Aşağı Eğimli Halter Presi', 'incline-fly': 'Eğimli Dambıl Açma',
+  'machine-bench': 'Makinede Düz Göğüs Presi', 'low-cable-crossover': 'Alt Makara Göğüs Çaprazı', 'decline-db-press': 'Aşağı Eğimli Dambıl Presi', 'decline-fly': 'Aşağı Eğimli Dambıl Açma',
+  'seated-row': 'Oturarak Kablo Kürek', 'shrug': 'Dambıl Omuz Silkme', 'barbell-shrug': 'Halter Omuz Silkme', 'one-arm-cable-row': 'Tek Kol Kablo Kürek',
+  'assisted-pullup': 'Destekli Barfiks (Makine)', 'chinup': 'Ters Tutuş Barfiks', 'lat-pulldown': 'Önden Lat Çekiş', 'bb-row': 'Halterle Eğilerek Kürek',
+  'db-row': 'Tek Kol Dambıl Kürek', 'straight-arm-pd': 'Düz Kol Kablo Çekiş', 'close-grip-pulldown': 'Dar Tutuş Lat Çekiş', 'vbar-pulldown': 'V Tutacakla Lat Çekiş',
+  'tbar-row': 'T-Bar Kürek', 'inverted-row': 'Ters Kürek (Vücut Ağırlığı)', 'db-bent-row': 'Dambılla Eğilerek Kürek', 'good-morning': 'Halterle Öne Eğilme',
+  'rack-pull': 'Kısmi Deadlift', 'cable-shrug': 'Kabloda Omuz Silkme', 'machine-shrug': 'Makinede Omuz Silkme', 'hyperextension': 'Bel Ekstansiyonu',
+  'front-squat': 'Önde Halterli Squat', 'rdl': 'Romen Deadlift', 'leg-press': 'Bacak Presi', 'leg-curl': 'Yatarak Bacak Bükme',
+  'hip-thrust': 'Halterle Kalça İtme', 'hack-squat': 'Makinede Hack Squat', 'seated-leg-curl': 'Oturarak Bacak Bükme', 'seated-calf': 'Oturarak Baldır Kaldırma',
+  'smith-squat': 'Smith Makinede Squat', 'standing-leg-curl': 'Ayakta Bacak Bükme', 'squat': 'Halterli Squat', 'goblet-squat': 'Dambılla Goblet Squat',
+  'bulgarian': 'Bulgar Split Squat', 'leg-ext': 'Makinede Bacak Açma', 'glute-bridge': 'Kalça Köprüsü', 'box-squat': 'Kutuya Oturarak Squat',
+  'bodyweight-squat': 'Vücut Ağırlığıyla Squat', 'step-up': 'Basamağa Çıkma', 'sldl-db': 'Dambılla Düz Bacak Deadlift', 'glute-kickback': 'Geri Kalça Tekmesi',
+  'kb-swing': 'Kettlebell Salınımı', 'leg-press-calf': 'Bacak Presinde Baldır', 'smith-calf': 'Smith Makinede Baldır', 'barbell-calf': 'Halterle Baldır Kaldırma',
+  'machine-calf': 'Makinede Ayakta Baldır', 'db-shoulder-press': 'Dambıl Omuz Presi', 'lateral-raise': 'Dambılla Yana Açış', 'reverse-fly': 'Arka Omuz Açış',
+  'face-pull': 'Kabloda Yüze Çekiş', 'machine-shoulder-press': 'Makine Omuz Presi', 'ohp': 'Ayakta Halter Omuz Presi', 'arnold-press': 'Arnold Pres',
+  'front-raise': 'Dambılla Öne Kaldırma', 'upright-row': 'Halterle Dik Çekiş', 'seated-bb-press': 'Oturarak Halter Omuz Presi', 'cable-lateral': 'Kabloda Yana Açış',
+  'rear-delt-machine': 'Makinede Arka Omuz Açış', 'plate-raise': 'Plakayla Öne Kaldırma', 'db-upright-row': 'Dambılla Dik Çekiş', 'push-press': 'İtişli Omuz Presi',
+  'cable-rear-delt': 'Kabloda Arka Omuz Açış', 'band-pull-apart': 'Bant Açma', 'biceps-curl': 'Dambılla Pazı Bükme', 'hammer-curl': 'Çekiç Tutuş Pazı Bükme',
+  'barbell-curl': 'Halterle Pazı Bükme', 'preacher-curl': 'Scott Sehpasında Pazı Bükme', 'triceps-pushdown': 'Kabloda Arka Kol İtiş', 'skull-crusher': 'Yatarak Alına İndirme',
+  'triceps-oh': 'Baş Üstü Arka Kol Açma', 'kickback': 'Arka Kol Geri Açış', 'cable-curl': 'Kabloda Pazı Bükme', 'lying-db-ext': 'Yatarak Dambıl Arka Kol Açma',
+  'cable-hammer': 'İple Çekiç Tutuş Pazı', 'concentration-curl': 'Konsantrasyon Pazı Bükme', 'bench-dips': 'Sehpada Arka Kol Dips', 'close-grip-bench': 'Dar Tutuş Göğüs Presi',
+  'incline-curl': 'Eğimli Sehpada Pazı Bükme', 'ez-curl': 'EZ Barla Pazı Bükme', 'alt-curl': 'Dönüşümlü Dambıl Pazı Bükme', 'reverse-curl': 'Ters Tutuş Pazı Bükme',
+  'rope-pushdown': 'İple Arka Kol İtiş', 'dips-triceps': 'Arka Kol Dips', 'cable-oh-ext': 'Kabloda Baş Üstü Arka Kol Açma', 'wrist-curl': 'Bilek Bükme',
+  'reverse-wrist-curl': 'Ters Bilek Bükme', 'db-wrist-curl': 'Dambılla Bilek Bükme', 'farmers-walk': 'Ağırlıkla Yürüme', 'wrist-roller': 'Bilek Silindiri',
+  'plate-pinch': 'Plaka Sıkıştırma', 'crunch': 'Kısa Mekik', 'sit-up': 'Tam Mekik', 'russian-twist': 'Rus Dönüşü', 'bicycle-crunch': 'Bisiklet Mekik',
+  'mountain-climber': 'Dağcı', 'cable-crunch': 'Kabloda Mekik', 'reverse-crunch': 'Ters Mekik', 'oblique-crunch': 'Yan Mekik', 'ab-roller': 'Karın Tekerleği',
+  'decline-crunch': 'Eğimli Sehpada Mekik', 'side-bend': 'Dambılla Yana Eğilme', 'dead-bug': 'Ölü Böcek', 'ab-machine': 'Makinede Mekik', 'pallof-press': 'Pallof Pres',
+  'calf-raise': 'Baldır Kaldırma', 'lunge': 'Lunge (Hamle)', 'walking-lunge': 'Yürüyen Lunge', 'rear-lunge': 'Geri Lunge',
+};
+// İngilizce/uluslararası ad: eski ad Türkçeyse ve ikinci ad İngilizceyse o kullanılır
+const EN = { 'one-arm-cable-row': 'One-Arm Cable Row', 'chest-press': 'Machine Chest Press', 'hyperextension': 'Back Extension', 'hack-squat': 'Hack Squat', 'machine-bench': 'Machine Bench Press' };
+for (const e of EXERCISES) {
+  const tr = TR[e.id];
+  if (!tr) continue;
+  const oldName = e.name, oldAlt = e.alt;
+  const enLike = s => s && !/[çğıöşüÇĞİÖŞÜ]/.test(s) && !/\b(ile|ve|da|de|sehpa|tek|kol|kablo|makine|ters|bilek|geri|oblik|arka|omuz|oturarak|ayakta|yan|plaka|bant|dar|ip|vucut|hamle)\b/i.test(s);
+  e.en = EN[e.id] || (enLike(oldName) ? oldName.replace(/\s*\((Makine|Paralel Bar)\)/, '') : enLike(oldAlt) ? oldAlt : oldName);
+  e.aka = [...new Set([...(e.aka || []), oldName, oldAlt].filter(x => x && x !== tr && x !== e.en))];
+  e.name = tr;
+  e.alt = e.en;
+}
+
 // Bölgelerin alt grupları ve ekipman türleri
 export const SUBS = {"gogus": [["ust", "Üst göğüs"], ["orta", "Orta göğüs"], ["alt", "Alt göğüs"]], "sirt": [["kanat", "Kanat"], ["orta", "Orta sırt"], ["trapez", "Trapez"], ["bel", "Bel"]], "bacak": [["on", "Ön bacak"], ["arka", "Arka bacak"], ["kalca", "Kalça"], ["baldir", "Baldır"], ["patlayici", "Sıçrama & çeviklik"]], "omuz": [["on", "Ön omuz"], ["yan", "Yan omuz"], ["arka", "Arka omuz"], ["rotator", "Rotator cuff"]], "kol": [["biceps", "Biceps"], ["triceps", "Triceps"], ["onkol", "Ön kol"]], "karin": [["ust", "Üst karın"], ["alt", "Alt karın"], ["yan", "Yan karın"], ["core", "Core"]]};
 export const EQUIPMENT = [["barbell", "Halter"], ["dumbbell", "Dambıl"], ["machine", "Makine"], ["cable", "Kablo"], ["body", "Vücut ağırlığı"], ["other", "Diğer"]];

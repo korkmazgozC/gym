@@ -2,11 +2,11 @@
 //  - Uygulama dosyaları, fotoğraflar ve video kapakları ilk açılışta önbelleğe alınır.
 //  - Videolar (vid/*.mp4) uygulama içinden "İnternetsiz kullanım için indir" ile ayrı önbelleğe (gym-media-*) kaydedilir.
 // Dosyaları değiştirdiğinde VERSION'u artır ki telefondaki eski sürüm yenilensin.
-const VERSION = 'gymtakip-v23';
+const VERSION = 'gymtakip-v24';
 const MEDIA = 'gym-media-v1';
 const SHELL = [
   './', './index.html', './styles.css', './app.js', './exercises.js', './nutrition.js', './bodymap.js', './figure.js', './sports.js', './foods.js',
-  './figure3d.js', './vendor/three/three.module.min.js', './vendor/three/GLTFLoader.js', './vendor/three/BufferGeometryUtils.js',
+  './figure3d.js', './gymfigs.js', './vendor/three/three.module.min.js', './vendor/three/GLTFLoader.js', './vendor/three/BufferGeometryUtils.js',
   './models/athlete.gltf', './models/athlete.bin', './models/athlete_normal.jpg',
   './fonts/outfit-latin.woff2', './fonts/outfit-latin-ext.woff2',
   './manifest.webmanifest', './icons/icon-192.png', './icons/icon-512.png', './icons/apple-touch-icon.png',

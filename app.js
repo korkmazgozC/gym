@@ -3,6 +3,7 @@ import { FOODS, DIETS, HEALTH, HEALTH_BY_ID, buildDayMenu } from './nutrition.js
 import { bodyMap } from './bodymap.js';
 import { mountFigure, figureThumb } from './figure.js';
 import { FOOD_DB, FOOD_BY_ID, FOOD_CATS, srcText } from './foods.js';
+import { GYM_FIGS } from './gymfigs.js';
 import { SPORTS, TENNIS_TYPES, SURFACES, INTENSITY, STROKES, TENNIS_PROGRAMS, ROUTINE_MOVES, ROUTINES, PFOCUS, PILATES, PILATES_BY_ID, PILATES_SESSIONS } from './sports.js';
 
 // ═════════════════════════ Yardımcılar
@@ -395,9 +396,9 @@ const routes = {
   today: renderToday, lib: renderLib, pick: renderPick, ex: renderEx, hist: renderHist, profile: renderProfile, new: renderNew,
   workout: renderWorkout, summary: renderSummary, programs: renderPrograms, routine: renderRoutine,
   nutrition: renderNutrition, settings: renderSettings, welcome: renderWelcome,
-  credits: renderCredits, records: renderRecords, report: renderReport, recap: renderRecap, tennis: renderTennis, stroke: renderStroke, pilates: renderPilates, pmove: renderPMove, player: renderPlayer,
+  credits: renderCredits, reminders: renderReminders, records: renderRecords, report: renderReport, recap: renderRecap, tennis: renderTennis, stroke: renderStroke, pilates: renderPilates, pmove: renderPMove, player: renderPlayer,
 };
-const TAB_OF = { recap: 'hist', records: 'hist', report: 'hist', credits: 'profile', workout: 'today', summary: 'today', programs: 'profile', routine: 'profile', settings: 'profile', welcome: 'today', player: 'today', stroke: 'tennis', pmove: 'pilates' };
+const TAB_OF = { reminders: 'profile', recap: 'hist', records: 'hist', report: 'hist', credits: 'profile', workout: 'today', summary: 'today', programs: 'profile', routine: 'profile', settings: 'profile', welcome: 'today', player: 'today', stroke: 'tennis', pmove: 'pilates' };
 function route() {
   const [name = 'today', ...args] = location.hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
   const fn = routes[name] || renderToday;
@@ -486,7 +487,7 @@ function renderWorkout() {
     </div>
     <div style="margin-top:14px">${day.items.map((it, i) => `
       <div class="wex ${i === s.cur ? 'open' : ''} ${it.complete ? 'done' : ''} ${it.ss ? 'ss' : ''} ${it.ss && day.items[i + 1]?.ss === it.ss ? 'ss-next' : ''} ${it.ss && day.items[i - 1]?.ss === it.ss ? 'ss-prev' : ''}" data-i="${i}">
-        <div class="wex-head">${thumb(it.ex)}<div class="grow"><div class="name">${esc(it.ex.name)}</div>
+        <div class="wex-head">${thumb(it.ex)}<div class="grow"><div class="name">${esc(it.ex.name)}${it.ex.en ? `<span class="en">${esc(it.ex.en)}</span>` : ''}</div>
           <div class="meta">${it.ss ? `<b class="ss-tag">Süperset ${ssl[it.ss]}</b> · ` : ''}${schemeText(it, it.ex)} · ${it.done}/${it.sets} set</div>
           <div class="dots">${[...Array(Math.max(it.sets, it.done))].map((_, k) => `<i class="${k < it.done ? 'on' : ''}"></i>`).join('')}</div></div>
           ${it.complete ? `<span class="wex-done">${icon('check')}</span>` : icon(i === s.cur ? 'down' : 'chev', 'chev')}</div>
@@ -748,6 +749,8 @@ function renderToday() {
 
   // 2) Hafta ve günün hedefleri
   html += weekBlock(today) + nutritionSummary(m, st, today);
+  if (!db.settings.reminderHint && db.workouts.length) html += `<div class="slim" id="rm-hint"><div class="ic" style="background:var(--fire-soft);color:var(--fire)">${icon('calendar')}</div>
+    <a class="grow" href="#/reminders"><b>Antrenman günlerini hatırlatayım mı?</b><span>Takvimine bildirimli etkinlik ekle</span></a><button class="ibtn" id="rm-x" aria-label="Kapat">${icon('x')}</button></div>`;
   html += backupReminder();
 
   // 3) Kardiyo
@@ -777,6 +780,7 @@ function renderToday() {
     if (!confirm('Bu kardiyo kaydı silinsin mi?')) return;
     db.cardio = db.cardio.filter(c => c.id !== r.dataset.id); save(); rerender();
   }));
+  $('#rm-x')?.addEventListener('click', () => { db.settings.reminderHint = true; save(); $('#rm-hint').remove(); });
   bindBackupReminder();
   function rerender() { const y = scrollY; renderToday(); scrollTo(0, y); }
 }
@@ -1175,6 +1179,37 @@ function mountMedia(box, anim) {
   $$('.mseg b', photo).forEach(b => b.addEventListener('click', e => { e.stopPropagation(); setPlaying(false); setFrame(+b.dataset.f); }));
   photo.addEventListener('click', () => { setPlaying(false); setFrame(1 - frame); });
   return () => clearTimeout(timer);
+}
+
+// ═════════════════════════ Gym hareketleri: 3D gösterim ↔ video/fotoğraf
+const gymFig = ex => GYM_FIGS[ex?.id] || (ex?.animFrom && GYM_FIGS[ex.animFrom]) || null;
+// three.js ve modeli ilk kullanımda yükleyip 3D figürü kurar; olmazsa onFail
+function mount3D(stage, fig, onFail) {
+  let stop = () => {}, dead = false;
+  (async () => {
+    try { fig3dMod ||= await import('./figure3d.js'); } catch { if (!dead) onFail(); return; }
+    if (!dead) stop = fig3dMod.mountFigure3D(stage, fig, { onFail: () => { if (!dead) onFail(); } });
+  })();
+  return () => { dead = true; stop(); };
+}
+function mountExMedia(box, ex, anim) {
+  const fig = gymFig(ex);
+  if (!fig) return anim ? mountMedia(box, anim) : () => {};
+  let stop = () => {}, speed = 1, mode = anim && db.settings.exView === 'media' ? 'media' : '3d';
+  box.innerHTML = `<div class="exm"><div class="exm-body"></div>
+    <div class="fig-ctl left exm-tabs"><button class="glass" data-m="3d">3D</button>${anim ? `<button class="glass" data-m="media">${anim.videos ? 'Video' : 'Fotoğraf'}</button>` : ''}</div></div>`;
+  const body = $('.exm-body', box);
+  const show = m => {
+    stop(); mode = m;
+    $$('.exm-tabs button', box).forEach(b => b.classList.toggle('on', b.dataset.m === m));
+    if (m === 'media') { stop = mountMedia(body, anim); return; }
+    body.innerHTML = `<div class="fig-card is3d gym3d"><div class="fig-stage"></div><div class="fig-ctl"><button class="glass ${speed === 1 ? 'on' : ''}" data-sp="1">Normal</button><button class="glass ${speed !== 1 ? 'on' : ''}" data-sp="0.5">Yavaş</button></div></div>`;
+    stop = mount3D($('.fig-stage', body), { ...fig, dur: (fig.dur || 1.7) / speed }, () => (anim ? show('media') : (body.innerHTML = '')));
+    $$('[data-sp]', body).forEach(b => b.addEventListener('click', () => { speed = +b.dataset.sp; show('3d'); }));
+  };
+  $$('.exm-tabs button', box).forEach(b => b.addEventListener('click', () => { db.settings.exView = b.dataset.m; save(); show(b.dataset.m); }));
+  show(mode);
+  return () => stop();
 }
 
 // ═════════════════════════ Hareket değiştirme ve notlar
@@ -1645,8 +1680,15 @@ function weekBlock(today) {
 // Günün hedefleri: hareket, protein, su, kalori
 function nutritionSummary(m, st, today) {
   const f = db.food[today] || { kcal: 0, protein: 0, water: 0 };
-  const moved = activeDaySet().has(today);
-  const q = [[moved, sport() === 'pilates' ? 'Bugün bir seans yap' : sport() === 'tennis' ? 'Bugün korta çık ya da kondisyon yap' : 'Bugün antrenman yap', moved ? 1 : 0, moved ? 'Tamam' : 'Bekliyor', sportIcon(), 'var(--grad)', 'rgba(161,132,255,.14)', '#b79cff']];
+  const act = activeDaySet(), moved = act.has(today);
+  // Dinlenme günü: haftalık hedef tamamsa ya da dün spor yapıldı ve hedefe yetişmek için bugün şart değilse
+  const goal = db.profile.days || 3, doneWeek = activeDaysThisWeek();
+  const y = new Date(); y.setDate(y.getDate() - 1);
+  const daysLeft = 7 - ((new Date().getDay() + 6) % 7);
+  const rest = !moved && (doneWeek >= goal || (act.has(dayKey(y)) && goal - doneWeek < daysLeft));
+  const q = [rest
+    ? [true, doneWeek >= goal ? 'Haftalık hedef tamam · dinlenebilirsin' : 'Dinlenme günü · kaslar toparlanıyor', 1, 'Dinlen', 'moon', 'var(--grad)', 'rgba(161,132,255,.14)', '#b79cff', 'moon']
+    : [moved, sport() === 'pilates' ? 'Bugün bir seans yap' : sport() === 'tennis' ? 'Bugün korta çık ya da kondisyon yap' : 'Bugün antrenman yap', moved ? 1 : 0, moved ? 'Tamam' : 'Bekliyor', sportIcon(), 'var(--grad)', 'rgba(161,132,255,.14)', '#b79cff']];
   if (m) {
     const kcalT = m.goalKcal + st.kcal, waterT = (m.water + (st.min > 20 ? 0.5 : 0)) * 1000;
     q.push([f.protein >= m.protein * 0.95, `${fmtInt(m.protein)} g protein al`, f.protein / m.protein, `${fmtInt(f.protein)} g`, 'bolt', 'var(--grad-mint)', 'rgba(62,224,166,.13)', '#3ee0a6']);
@@ -1655,8 +1697,8 @@ function nutritionSummary(m, st, today) {
   }
   const ok = q.filter(x => x[0]).length;
   return `<div class="quests-head"><h2>Günün hedefleri</h2><span class="num">${ok === q.length ? `<span class="qdone">${icon('check')}Hepsi tamam</span>` : `${ok} / ${q.length}`}</span></div>
-    <a class="card quests" href="#/nutrition">${q.map(([done, label, v, val, ic, grad, bg, col]) => `<div class="quest ${done ? 'ok' : ''}">
-      <div class="qi" style="background:${bg};color:${col}">${icon(done ? 'check' : ic)}</div>
+    <a class="card quests" href="#/nutrition">${q.map(([done, label, v, val, ic, grad, bg, col, keep]) => `<div class="quest ${done ? (keep ? 'rest' : 'ok') : ''}">
+      <div class="qi" style="background:${bg};color:${col}">${icon(keep || (done ? 'check' : ic))}</div>
       <div class="g"><b>${esc(label)}<span>${val}</span></b><div class="qb"><i style="width:${clamp(v * 100, 0, 100)}%;background:${grad}"></i></div></div></div>`).join('')}</a>
     ${m ? '' : `<a class="slim" href="#/profile"><div class="ic" style="background:var(--accent-soft);color:var(--accent)">${icon('user')}</div><div class="grow"><b>Beslenme hedeflerini aç</b><span>Profilini tamamla; protein, su ve kalori hedeflerin hesaplansın</span></div>${icon('chev', 'chev')}</a>`}`;
 }
@@ -2700,6 +2742,77 @@ async function shareRecap(year, y) {
   setTimeout(() => URL.revokeObjectURL(a.href), 5000);
 }
 
+// ═════════════════════════ Hatırlatıcılar
+// Sunucusuz PWA bildirim gönderemez; bunun yerine iPhone Takvim'e tekrarlayan etkinlik (alarmlı .ics) eklenir
+// ve günlük su/beslenme bildirimleri için Kestirmeler otomasyonu anlatılır.
+const WD = ['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'];
+const defaultDays = n => ({ 1: [2], 2: [1, 4], 3: [0, 2, 4], 4: [0, 1, 3, 4], 5: [0, 1, 2, 3, 4], 6: [0, 1, 2, 3, 4, 5], 7: [0, 1, 2, 3, 4, 5, 6] }[n] || [0, 2, 4]);
+function reminderICS({ days, time, alert }) {
+  const [hh, mm] = time.split(':').map(Number);
+  const d = new Date();
+  for (let i = 0; i < 7 && !days.includes((d.getDay() + 6) % 7); i++) d.setDate(d.getDate() + 1);
+  d.setHours(hh, mm, 0, 0);
+  const e = new Date(d.getTime() + 60 * 60000);
+  const f = t => `${t.getFullYear()}${pad2(t.getMonth() + 1)}${pad2(t.getDate())}T${pad2(t.getHours())}${pad2(t.getMinutes())}00`;
+  const title = { tennis: 'Tenis zamanı', pilates: 'Pilates zamanı' }[sport()] || 'Antrenman zamanı';
+  const by = days.map(i => ['MO', 'TU', 'WE', 'TH', 'FR', 'SA', 'SU'][i]).join(',');
+  return ['BEGIN:VCALENDAR', 'VERSION:2.0', 'PRODID:-//Gym Takip//TR', 'CALSCALE:GREGORIAN', 'METHOD:PUBLISH', 'BEGIN:VEVENT',
+    `UID:gymtakip-${Date.now()}@gymtakip`, `DTSTAMP:${new Date().toISOString().replace(/[-:]/g, '').slice(0, 15)}Z`,
+    `DTSTART:${f(d)}`, `DTEND:${f(e)}`, `RRULE:FREQ=WEEKLY;BYDAY=${by}`, `SUMMARY:${title} · Gym Takip`,
+    'DESCRIPTION:Gym Takip uygulamasını aç ve bugünkü antrenmanını başlat.', 'BEGIN:VALARM', 'ACTION:DISPLAY', `DESCRIPTION:${title}`,
+    `TRIGGER:${alert ? `-PT${alert}M` : 'PT0M'}`, 'END:VALARM', 'END:VEVENT', 'END:VCALENDAR'].join('\r\n') + '\r\n';
+}
+async function openICS(ics, share) {
+  const file = new File([ics], 'gym-takip-hatirlatici.ics', { type: 'text/calendar' });
+  if (share) {
+    try { if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file] }); return; } } catch (e) { if (e.name === 'AbortError') return; }
+  }
+  const url = URL.createObjectURL(file);
+  const a = document.createElement('a'); a.href = url; a.rel = 'noopener';
+  if (share) a.download = file.name;
+  document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 60000);
+}
+function renderReminders() {
+  setHeader('Hatırlatıcılar', { back: true, always: true });
+  const r = db.settings.reminder || { days: defaultDays(db.profile.days || 3), time: '18:30', alert: 15 };
+  const steps = [
+    ['Kestirmeler uygulamasını aç', 'iPhone\'da hazır gelir. Silindiyse App Store\'dan ücretsiz indir.'],
+    ['Alttan <b>Otomasyon</b> → sağ üstte <b>+</b>', 'Kişisel otomasyon oluştur.'],
+    ['<b>Günün Saati</b>\'ni seç', 'Örneğin 11:00, tekrar: <b>Her Gün</b>. Sonra <b>Hemen Çalıştır</b>\'ı seç.'],
+    ['Eylem olarak <b>Bildirim Göster</b> ekle', 'Metni yaz: "Su içme zamanı" ya da "Proteinini kontrol et".'],
+    ['Bitti\'ye dokun', 'Her gün o saatte bildirim gelir. 15:00 ve 18:00 için de ayrı otomasyon kurabilirsin.'],
+  ];
+  view.innerHTML = pageHead('Unutmamak için', 'Hatırlatıcılar') + `
+    <div class="sec" style="margin-top:4px"><h2>Antrenman günleri</h2></div>
+    <div class="card">
+      <div class="muted small" style="margin-bottom:12px">Seçtiğin günlerde iPhone Takvim'e tekrarlayan bir etkinlik eklenir; zamanı gelince bildirim gelir. İnternet gerekmez.</div>
+      <div class="rm-days">${WD.map((n, i) => `<button data-d="${i}" class="${r.days.includes(i) ? 'on' : ''}">${n}</button>`).join('')}</div>
+      <div class="in-row" style="margin-top:12px">
+        <div class="in-box"><label>Saat</label><input id="rm-time" type="time" value="${r.time}"></div>
+        <div class="in-box"><label>Bildirim</label><select id="rm-alert" class="rm-sel">${[[0, 'Tam zamanında'], [15, '15 dk önce'], [30, '30 dk önce'], [60, '1 saat önce']].map(([v, n]) => `<option value="${v}" ${r.alert === v ? 'selected' : ''}>${n}</option>`).join('')}</select></div>
+      </div>
+      <button class="btn" id="rm-add" style="margin-top:14px">${icon('calendar')} Takvime ekle</button>
+      <button class="alt rm-share" id="rm-share">Açılmazsa: dosya olarak paylaş</button>
+      <div class="faint small" style="margin-top:10px;line-height:1.5">Açılan ekranda <b>Tümünü Ekle</b>'ye dokun. Günleri değiştirmek istersen eski etkinliği Takvim'den silip yeniden ekle.</div>
+    </div>
+    <div class="sec"><h2>Su ve beslenme bildirimi</h2></div>
+    <div class="card">
+      <div class="muted small" style="margin-bottom:6px">Gün içinde su ya da protein hatırlatması için iPhone'un Kestirmeler uygulamasıyla 1 dakikada kurabilirsin:</div>
+      <ol class="steps phase" style="margin-top:12px">${steps.map(([b, s]) => `<li><b>${b}</b><span>${s}</span></li>`).join('')}</ol>
+    </div>`;
+  const read = () => ({ days: $$('.rm-days button.on', view).map(b => +b.dataset.d).sort(), time: $('#rm-time').value || '18:30', alert: +$('#rm-alert').value });
+  $$('.rm-days button', view).forEach(b => b.addEventListener('click', () => b.classList.toggle('on')));
+  const go = share => {
+    const v = read();
+    if (!v.days.length) return toast('En az bir gün seç', 'info');
+    db.settings.reminder = v; db.settings.reminderHint = true; save();
+    openICS(reminderICS(v), share);
+  };
+  $('#rm-add').addEventListener('click', () => go(false));
+  $('#rm-share').addEventListener('click', () => go(true));
+}
+
 // ═════════════════════════ Hareket detayı (bilgi + ilerleme; set girişi antrenman ekranında)
 const LEVELS = { beginner: 'Başlangıç', intermediate: 'Orta', expert: 'İleri' };
 let exTab = 'how';
@@ -2721,7 +2834,7 @@ function renderEx(id) {
   const inSession = db.session?.items.some(i => i.exId === ex.id);
   setHeader(ex.name, { back: true, always: true, action: ex.custom ? `<button class="top-btn danger" id="del-ex">Sil</button>` : '' });
   view.innerHTML = `
-    <div id="media">${anim ? '' : `<div class="card empty" style="margin-top:6px"><div class="ic">${icon('dumbbell')}</div>Bu hareket için görsel seçilmedi.</div>`}</div>
+    <div id="media">${anim || gymFig(ex) ? '' : `<div class="card empty" style="margin-top:6px"><div class="ic">${icon('dumbbell')}</div>Bu hareket için görsel seçilmedi.</div>`}</div>
     <div class="ex-head">
       <h1>${esc(ex.name)}</h1>${ex.alt ? `<div class="muted" style="margin-top:2px">${esc(ex.alt)}</div>` : ''}
       <div class="ex-tags" style="margin-top:10px">
@@ -2736,7 +2849,7 @@ function renderEx(id) {
     ${exNote(ex.id) ? `<div style="margin-top:14px">${noteBox(ex)}</div>` : `<div style="text-align:center;margin-top:10px"><button class="lnk small" id="ex-note-add">${icon('edit')} Not ekle</button></div>`}
     <div class="seg"><button data-t="how">Nasıl yapılır</button><button data-t="chart">İlerleme</button></div>
     <div id="pane"></div>`;
-  const unmount = anim ? mountMedia($('#media'), anim) : () => {};
+  const unmount = mountExMedia($('#media'), ex, anim);
   $('#ex-log').addEventListener('click', () => quickLog(ex.id));
   const reNote = () => { const y = scrollY; route(); scrollTo(0, y); };
   $('#ex-note')?.addEventListener('click', () => noteSheet(ex, reNote));
@@ -3327,6 +3440,7 @@ function renderSettings() {
       <div class="setting"><span>Kilit ekranında dinlenme sayacı<small class="set-note">Ses çalarak sayar, müziği durdurur</small></span>${switchHTML('s-lock', db.settings.lockTimer)}</div>
       <div class="setting"><span>Ağırlık artırma adımı</span><select id="s-step">${opt([0.5, 1, 1.25, 2, 2.5, 5], db.settings.step, v => fmtN(v, 2) + ' kg')}</select></div>
     </div>
+    <div class="list" style="margin-top:10px"><a class="link-row" href="#/reminders"><div class="ic" style="background:var(--fire-soft);color:var(--fire)">${icon('calendar')}</div><div class="grow"><div style="font-weight:600">Hatırlatıcılar</div><div class="faint small">${db.settings.reminder ? `${db.settings.reminder.days.map(i => WD[i]).join(', ')} · ${db.settings.reminder.time}` : 'Antrenman günleri ve su bildirimi'}</div></div>${icon('chev', 'chev')}</a></div>
     <div class="sec"><h2>İnternetsiz kullanım</h2></div>
     <div id="offline-slot"></div>
     <div class="sec"><h2>Yedekleme</h2></div>
