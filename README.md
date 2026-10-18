@@ -49,6 +49,8 @@ iPhone ve Android'de uygulama gibi çalışan, **internet olmadan da kullanılab
 - Vejetaryen veya "et yok, balık var" seçeneği, yemediğin yiyecekleri çıkarma
 - **Sağlık durumuna göre uyarlama:** diyabet, yüksek tansiyon, yüksek kolesterol, çölyak, laktoz intoleransı, gut, reflü, hamilelik ve böbrek hastalığı için menü, kalori/protein hedefi, beslenme ve antrenman önerileri
 - **Yemek kaydı:** 180 yaygın Türk yemeği ve besinde arama (mercimek çorbası, simit, ayran…), ev ölçüleriyle porsiyon (adet, dilim, kase, kepçe, yemek kaşığı), öğünlere göre liste, son yenenler
+- **Kaynağı belli besin değerleri:** tek malzemeli besinler doğrudan USDA FoodData Central'dan (kamu malı); Türk yemekleri USDA malzeme değerleri ve standart ev tarifleriyle hesaplanır (pişirmedeki ağırlık değişimi dahil)
+- **Kendi tarifim:** 70 ham malzemeden kendi yemeğini oluştur; pişmiş ağırlık ve porsiyon sayısına göre değerler hesaplanır
 - **Barkod okuma:** paketli ürünler Open Food Facts'ten bulunur ve telefonda saklanır; okuyucu uygulamayla birlikte gelir
 - Kalori, protein, karbonhidrat, yağ ve su takibi; kardiyo kaydı; kilo ve vücut ölçüsü takibi
 
@@ -56,6 +58,7 @@ iPhone ve Android'de uygulama gibi çalışan, **internet olmadan da kullanılab
 - **Haftalık seri:** her hafta en az bir gün spor yaparsan seri sürer; bir haftayı kaçırırsan ertesi hafta 2 günle kurtarabilirsin
 - **Haftalık ve aylık raporlar:** aktif gün, süre, kalori, set, toplam kaldırılan, tenis ve pilates; önceki dönemle karşılaştırma, kırılan rekorlar, kas gruplarına göre set
 - **Rekorlar sayfası:** her hareket için en ağır, tahmini maksimum, en iyi set ve seans, 1/3/5/8/10 tekrar rekorları
+- **Yıl özeti:** yılın aktif günleri, saatleri, rekorları, en çok güçlendiğin hareketler; paylaşılabilir görsel
 - Antrenman takvimi ve bölgelere göre **kas dengesi**
 
 **Ses ve ekran**
@@ -100,7 +103,8 @@ Framework ve derleme adımı olmadan düz HTML, CSS ve JavaScript (ES modülleri
 | `bodymap.js` | Ön ve arka vücut haritası (SVG) |
 | `sports.js` | Tenis ve pilates içerikleri: vuruşlar, programlar, rutinler, seanslar |
 | `figure.js` | Hareketli çizim motoru (2D figür, reformer) |
-| `foods.js` | Yiyecek veritabanı (180 besin, ev ölçüleri) |
+| `foods.js` | Yiyecek veritabanı (180 besin + 70 malzeme, ev ölçüleri); `tools/build_foods.py` üretir |
+| `tools/build_foods.py` | Besin değerlerini USDA verisinden ve Türk tariflerinden hesaplar (`tools/usda_subset.json`) |
 | `vendor/` | Barkod okuyucu: barcode-detector ve zxing-wasm (MIT) |
 | `sw.js` | Service worker: çevrimdışı önbellek, video indirme |
 | `img/`, `vid/` | Hareket fotoğrafları ve videoları |
@@ -117,5 +121,6 @@ python -m http.server 8765
 
 - **Videolar** (`vid/`): Goulart, [wger.de](https://wger.de) — [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). 12 saniyeye kısaltıldı ve 540p H.264'e dönüştürüldü.
 - **Fotoğraflar** (`img/`): [free-exercise-db](https://github.com/yuhonas/free-exercise-db) — Unlicense (kamu malı). 720 px'e küçültüldü.
+- **Besin değerleri:** [USDA FoodData Central](https://fdc.nal.usda.gov) SR Legacy — kamu malı (CC0). Türk yemekleri bu malzeme değerleriyle tariften hesaplanmıştır.
 - **Barkodlu ürün verileri:** [Open Food Facts](https://world.openfoodfacts.org) — [ODbL](https://opendatacommons.org/licenses/odbl/1-0/). Uygulama içinde çevrimiçi sorgulanır.
 - **Barkod okuyucu** (`vendor/`): [barcode-detector](https://github.com/Sec-ant/barcode-detector) ve zxing-wasm — MIT; ZXing-C++ — Apache 2.0.

@@ -2,7 +2,7 @@ import { REGIONS, EXERCISES, EX_BY_ID, REGION_BY_ID, VIDEO_MB, SUBS, EQUIPMENT }
 import { FOODS, DIETS, HEALTH, HEALTH_BY_ID, buildDayMenu } from './nutrition.js';
 import { bodyMap } from './bodymap.js';
 import { mountFigure, figureThumb } from './figure.js';
-import { FOOD_DB, FOOD_BY_ID, FOOD_CATS } from './foods.js';
+import { FOOD_DB, FOOD_BY_ID, FOOD_CATS, srcText } from './foods.js';
 import { SPORTS, TENNIS_TYPES, SURFACES, INTENSITY, STROKES, TENNIS_PROGRAMS, ROUTINE_MOVES, ROUTINES, PFOCUS, PILATES, PILATES_BY_ID, PILATES_SESSIONS } from './sports.js';
 
 // ═════════════════════════ Yardımcılar
@@ -129,7 +129,7 @@ function normalize(d) {
   return {
     sets: d.sets || [], custom: d.custom || [], weights: d.weights || [],
     routines: d.routines || [], workouts: d.workouts || [], session: d.session || null,
-    measures: d.measures || [], cardio: d.cardio || [], food: d.food || {}, menu: d.menu || {}, notes: d.notes || {}, activities: d.activities || [], opponents: d.opponents || {}, foodLog: d.foodLog || {}, offCache: d.offCache || {},
+    measures: d.measures || [], cardio: d.cardio || [], food: d.food || {}, menu: d.menu || {}, notes: d.notes || {}, activities: d.activities || [], opponents: d.opponents || {}, foodLog: d.foodLog || {}, offCache: d.offCache || {}, recipes: d.recipes || [],
     settings: { ...DEFAULT_SETTINGS, ...d.settings },
     profile: { ...DEFAULT_PROFILE, ...d.profile },
   };
@@ -395,9 +395,9 @@ const routes = {
   today: renderToday, lib: renderLib, pick: renderPick, ex: renderEx, hist: renderHist, profile: renderProfile, new: renderNew,
   workout: renderWorkout, summary: renderSummary, programs: renderPrograms, routine: renderRoutine,
   nutrition: renderNutrition, settings: renderSettings, welcome: renderWelcome,
-  credits: renderCredits, records: renderRecords, report: renderReport, tennis: renderTennis, stroke: renderStroke, pilates: renderPilates, pmove: renderPMove, player: renderPlayer,
+  credits: renderCredits, records: renderRecords, report: renderReport, recap: renderRecap, tennis: renderTennis, stroke: renderStroke, pilates: renderPilates, pmove: renderPMove, player: renderPlayer,
 };
-const TAB_OF = { records: 'hist', report: 'hist', credits: 'profile', workout: 'today', summary: 'today', programs: 'profile', routine: 'profile', settings: 'profile', welcome: 'today', player: 'today', stroke: 'tennis', pmove: 'pilates' };
+const TAB_OF = { recap: 'hist', records: 'hist', report: 'hist', credits: 'profile', workout: 'today', summary: 'today', programs: 'profile', routine: 'profile', settings: 'profile', welcome: 'today', player: 'today', stroke: 'tennis', pmove: 'pilates' };
 function route() {
   const [name = 'today', ...args] = location.hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
   const fn = routes[name] || renderToday;
@@ -2343,7 +2343,7 @@ const foodSearchFn = (list, q) => rankSearch(list, q, f => [f.n, ...f.aka].join(
 function recentFoods() {
   const seen = new Map();
   for (const day of Object.keys(db.foodLog).sort().reverse()) for (const e of [...db.foodLog[day]].reverse()) {
-    if (e.fid && FOOD_BY_ID[e.fid] && !seen.has(e.fid)) seen.set(e.fid, e);
+    if (e.fid && getFood(e.fid) && !seen.has(e.fid)) seen.set(e.fid, e);
     if (e.off && !seen.has('off:' + e.off.code)) seen.set('off:' + e.off.code, e);
     if (seen.size >= 12) return [...seen.values()];
   }
@@ -2379,16 +2379,22 @@ function foodSheet(after, { slot = defaultSlot(), food = null } = {}) {
   };
   const list = () => {
     if (q.trim()) {
-      const res = foodSearchFn(FOOD_DB, q).slice(0, 40);
+      const res = foodSearchFn([...myFoods(), ...FOOD_DB.filter(f => f.cat !== 'malzeme'), ...FOOD_DB.filter(f => f.cat === 'malzeme')], q).slice(0, 40);
       body.innerHTML = res.length ? `<div class="list">${res.map(row).join('')}</div>` : `<div class="faint small" style="text-align:center;margin:18px 0">Bulunamadı. Barkod okutabilir veya elle girebilirsin.</div>`;
     } else {
       const rec = recentFoods();
       body.innerHTML = (rec.length ? `<div class="group-title" style="margin-top:12px">Son yediklerin</div><div class="list">${rec.map(e => e.fid
         ? `<button class="item fs-item" data-fid="${e.fid}" data-qty="${e.qty}" data-unit="${esc(e.unit)}" style="width:100%;text-align:left"><div class="grow"><div class="name">${esc(e.name)}</div><div class="meta num">${esc(e.portion)} · ${fmtInt(e.kcal)} kcal</div></div><span class="fs-again">${icon('plus')}</span></button>`
         : `<button class="item fs-item" data-off="${esc(e.off.code)}" style="width:100%;text-align:left"><div class="grow"><div class="name">${esc(e.name)}</div><div class="meta num">${esc(e.portion)} · ${fmtInt(e.kcal)} kcal</div></div><span class="fs-again">${icon('plus')}</span></button>`).join('')}</div>` : '')
+        + `<details class="fs-cat" ${db.recipes.length ? 'open' : ''}><summary>Tariflerim<span class="faint small">${db.recipes.length}</span></summary><div class="list">${myFoods().map(f => row(f).replace('</button>', `<span class="fs-edit" data-edit="${f.id}">${icon('edit')}</span></button>`)).join('')}
+          <button class="item" id="fs-new-recipe" style="width:100%;text-align:left"><div class="badge">${icon('plus')}</div><div class="grow"><div class="name">Yeni tarif oluştur</div><div class="meta">Malzemeleri gir, porsiyon değerleri hesaplansın</div></div></button></div></details>`
         + Object.entries(FOOD_CATS).map(([k, n]) => `<details class="fs-cat"><summary>${n}<span class="faint small">${FOOD_DB.filter(f => f.cat === k).length}</span></summary><div class="list">${FOOD_DB.filter(f => f.cat === k).map(row).join('')}</div></details>`).join('');
     }
-    $$('[data-fid]', body).forEach(b => b.addEventListener('click', () => portion(FOOD_BY_ID[b.dataset.fid], b.dataset.unit, +b.dataset.qty || 1)));
+    $$('[data-fid]', body).forEach(b => b.addEventListener('click', e => {
+      if (e.target.closest('[data-edit]')) { const r = db.recipes.find(x => x.id === e.target.closest('[data-edit]').dataset.edit); close(); return recipeSheet(() => foodSheet(after, { slot }), r); }
+      portion(getFood(b.dataset.fid), b.dataset.unit, +b.dataset.qty || 1);
+    }));
+    $('#fs-new-recipe', body)?.addEventListener('click', () => { close(); recipeSheet(() => foodSheet(after, { slot })); });
     $$('[data-off]', body).forEach(b => b.addEventListener('click', () => portion(offFood(db.offCache[b.dataset.off]))));
   };
   // Porsiyon seçimi
@@ -2404,7 +2410,7 @@ function foodSheet(after, { slot = defaultSlot(), food = null } = {}) {
         <div class="chip-wrap" id="fs-units">${f.units.map(x => `<button class="chip ${x === u ? 'on' : ''}" data-u="${esc(x[0])}">${esc(x[0])}${x[1] !== 1 ? ` <span class="faint">${x[1]} ${f.liquid ? 'ml' : 'g'}</span>` : ''}</button>`).join('')}</div>
         <div class="fs-qty"><button id="fs-minus">${icon('minus')}</button><input id="fs-n" inputmode="decimal" value="${fmtN(n, 2)}"><span>${esc(u[0])}</span><button id="fs-plus">${icon('plus')}</button></div>
         <div class="fs-macros"><div><b class="num">${fmtInt(m.kcal)}</b><span>kcal</span></div><div><b class="num">${fmtN(m.p, 1)}</b><span>protein</span></div><div><b class="num">${fmtN(m.c, 1)}</b><span>karb.</span></div><div><b class="num">${fmtN(m.f, 1)}</b><span>yağ</span></div></div>
-        <div class="faint small" style="text-align:center;margin-top:6px">${fmtInt(g)} ${f.liquid ? 'ml' : 'g'}</div>
+        <div class="faint small" style="text-align:center;margin-top:6px">${fmtInt(g)} ${f.liquid ? 'ml' : 'g'} · Kaynak: ${esc(foodSrcText(f))}</div>
         <div class="mini-seg" id="fs-slot" style="margin-top:14px">${SLOTS.map(([k, nm]) => `<button data-v="${k}" class="${k === s ? 'on' : ''}">${nm}</button>`).join('')}</div>
         <button class="btn" id="fs-add" style="margin-top:14px">${icon('plus')} Ekle</button></div>`;
       $('#fs-back', body).addEventListener('click', list);
@@ -2507,6 +2513,185 @@ function scanBarcode(onProduct) {
       }, 300);
     } catch { msg('Kameraya erişilemedi. Barkod numarasını aşağıya yazabilirsin.'); }
   })();
+}
+
+// ═════════════════════════ Kendi tarifim: malzemelerden yemek oluşturma
+function recipeFood(r) {
+  const tot = { kcal: 0, p: 0, c: 0, f: 0 };
+  let raw = 0;
+  for (const it of r.items) {
+    const f = getFood(it.fid); if (!f) continue;
+    const m = foodMacros(f, it.g);
+    for (const k in tot) tot[k] += m[k];
+    raw += it.g;
+  }
+  const cooked = r.cooked > 0 ? r.cooked : raw;
+  if (!cooked) return null;
+  const k = 100 / cooked;
+  return { id: r.id, n: r.n, kcal: tot.kcal * k, p: tot.p * k, c: tot.c * k, f: tot.f * k, units: [['porsiyon', cooked / (r.portions || 1)], ['g', 1]],
+    cat: 'tariflerim', aka: [], src: 'my', mine: true, recipe: r, total: tot, cooked };
+}
+const myFoods = () => db.recipes.map(recipeFood).filter(Boolean);
+function getFood(id) {
+  if (!id) return null;
+  if (FOOD_BY_ID[id]) return FOOD_BY_ID[id];
+  if (id.startsWith('off:')) return offFood(db.offCache[id.slice(4)]);
+  const r = db.recipes.find(x => x.id === id);
+  return r ? recipeFood(r) : null;
+}
+const foodSrcText = f => (f.mine ? 'Kendi tarifin' : f.off ? 'Open Food Facts (ODbL)' : srcText(f.src));
+
+function recipeSheet(after, existing = null) {
+  const r = existing ? JSON.parse(JSON.stringify(existing)) : { id: 'my-' + uid(), n: '', items: [], cooked: 0, portions: 4 };
+  let q = '';
+  const { el, close } = openSheet(`
+    <div class="sheet-title">${existing ? 'Tarifi düzenle' : 'Yeni tarif'}</div>
+    <div class="in-box"><label>Yemeğin adı</label><input id="rc-name" maxlength="50" placeholder="Örn. Annemin mercimek köftesi" value="${esc(r.n)}"></div>
+    <div class="card-label" style="margin:16px 4px 8px">Malzemeler</div>
+    <div id="rc-items"></div>
+    <label class="search" style="margin-top:8px">${icon('search')}<input id="rc-q" type="search" placeholder="Malzeme ekle: bulgur, kıyma, soğan…" autocomplete="off"></label>
+    <div id="rc-res"></div>
+    <div class="in-row" style="margin-top:14px">
+      <div class="in-box"><label>Pişmiş ağırlık · g</label><input id="rc-cooked" inputmode="numeric" placeholder="çiğ ağırlık" value="${r.cooked || ''}"></div>
+      <div class="in-box"><label>Porsiyon sayısı</label><input id="rc-portions" inputmode="numeric" value="${r.portions || 4}"></div>
+    </div>
+    <div class="faint small" style="margin:6px 4px 0">Pişmiş ağırlığı bilmiyorsan boş bırak; çiğ malzemelerin toplamı kullanılır. Tencereyi tartmak en doğru sonucu verir.</div>
+    <div id="rc-sum"></div>
+    <div class="sheet-actions sticky">${existing ? '<button class="btn ghost danger" id="rc-del">Sil</button>' : '<button class="btn ghost" id="rc-cancel">Vazgeç</button>'}<button class="btn" id="rc-save">Kaydet</button></div>`);
+  const pool = () => FOOD_DB.filter(f => f.id !== r.id);
+  const draw = () => {
+    $('#rc-items', el).innerHTML = r.items.length ? `<div class="list">${r.items.map((it, i) => {
+      const f = getFood(it.fid);
+      return `<div class="item rc-item"><div class="grow"><div class="name">${esc(f?.n || '?')}</div><div class="meta num">${f ? fmtInt(foodMacros(f, it.g).kcal) : 0} kcal</div></div>
+        <input class="rc-g" data-i="${i}" inputmode="decimal" value="${fmtN(it.g)}"><span class="faint small">g</span><button class="ibtn" data-del="${i}" aria-label="Çıkar">${icon('x')}</button></div>`;
+    }).join('')}</div>` : '<div class="faint small" style="margin:0 4px">Henüz malzeme yok. Aşağıdan ara ve ekle.</div>';
+    $$('.rc-g', el).forEach(inp => inp.addEventListener('change', () => { r.items[+inp.dataset.i].g = Math.max(0, num(inp.value)); draw(); }));
+    $$('[data-del]', el).forEach(b => b.addEventListener('click', () => { r.items.splice(+b.dataset.del, 1); draw(); }));
+    r.cooked = num($('#rc-cooked', el).value); r.portions = Math.max(1, Math.round(num($('#rc-portions', el).value)) || 1);
+    const food = recipeFood(r);
+    $('#rc-sum', el).innerHTML = food ? `<div class="fs-macros" style="margin-top:14px">${[['kcal', 'kcal / porsiyon'], ['p', 'protein'], ['c', 'karb.'], ['f', 'yağ']].map(([k, n]) => `<div><b class="num">${k === 'kcal' ? fmtInt(food.total[k] / r.portions) : fmtN(food.total[k] / r.portions, 1)}</b><span>${n}</span></div>`).join('')}</div>
+      <div class="faint small" style="text-align:center;margin-top:6px">Porsiyon ${fmtInt(food.cooked / r.portions)} g · 100 g'da ${fmtInt(food.kcal)} kcal</div>` : '';
+  };
+  const results = () => {
+    const res = q.trim() ? rankSearch(pool(), q, f => [f.n, ...f.aka].join(' '), f => FOOD_CATS[f.cat] || '', f => f.n)
+      .sort((a, b) => (b.cat === 'malzeme') - (a.cat === 'malzeme')).slice(0, 8) : [];
+    $('#rc-res', el).innerHTML = res.length ? `<div class="list" style="margin-top:6px">${res.map(f => `<button class="item" data-add="${f.id}" style="width:100%;text-align:left"><div class="grow"><div class="name">${esc(f.n)}</div><div class="meta">${FOOD_CATS[f.cat] || ''} · 100 g ${fmtInt(f.kcal)} kcal</div></div>${icon('plus', 'chev')}</button>`).join('')}</div>` : '';
+    $$('[data-add]', el).forEach(b => b.addEventListener('click', () => {
+      const f = FOOD_BY_ID[b.dataset.add];
+      r.items.push({ fid: f.id, g: f.units[0][1] > 1 ? f.units[0][1] : 100 });
+      q = ''; $('#rc-q', el).value = ''; results(); draw();
+    }));
+  };
+  $('#rc-q', el).addEventListener('input', e => { q = e.target.value; results(); });
+  $('#rc-cooked', el).addEventListener('change', draw);
+  $('#rc-portions', el).addEventListener('change', draw);
+  $('#rc-cancel', el)?.addEventListener('click', close);
+  $('#rc-del', el)?.addEventListener('click', () => {
+    if (!confirm(`"${r.n}" tarifi silinsin mi?`)) return;
+    db.recipes = db.recipes.filter(x => x.id !== r.id); save(); close(); after();
+  });
+  $('#rc-save', el).addEventListener('click', () => {
+    r.n = $('#rc-name', el).value.trim();
+    if (!r.n) return toast('Yemeğe bir ad ver', 'info');
+    if (!r.items.length) return toast('En az bir malzeme ekle', 'info');
+    draw();
+    const i = db.recipes.findIndex(x => x.id === r.id);
+    if (i >= 0) db.recipes[i] = r; else db.recipes.push(r);
+    save(); close(); toast('Tarif kaydedildi', 'check'); after();
+  });
+  draw();
+}
+
+// ═════════════════════════ Yıl özeti
+function yearStats(year) {
+  const from = `${year}-01-01`, to = `${year}-12-31`;
+  const st = periodStats(from, to);
+  const inY = d => d >= from && d <= to;
+  const ws = working(db.sets.filter(s => inY(s.date)));
+  const byEx = new Map();
+  for (const s of ws) (byEx.get(s.exId) || byEx.set(s.exId, []).get(s.exId)).push(s);
+  const fav = [...byEx].sort((a, b) => b[1].length - a[1].length)[0];
+  // En çok gelişen ağırlık hareketleri: yılın ilk ve son ayındaki en iyi tahmini maksimum
+  const gains = [...byEx].map(([id, l]) => {
+    const ex = getEx(id); if (!ex || (ex.type && ex.type !== 'weight') || l.length < 6) return null;
+    const sorted = [...l].sort((a, b) => a.ts - b.ts), first = sorted.slice(0, Math.max(3, Math.floor(l.length / 5))), last = sorted.slice(-Math.max(3, Math.floor(l.length / 5)));
+    const best = arr => Math.max(...arr.map(s => (s.r <= 12 ? e1rm(s.w, s.r) : 0)));
+    const a = best(first), b = best(last);
+    return a > 0 && b > a ? { ex, a, b, pct: ((b - a) / a) * 100 } : null;
+  }).filter(Boolean).sort((x, y) => y.pct - x.pct).slice(0, 3);
+  const months = [...Array(12)].map((_, m) => [...activeDaySet()].filter(d => d.startsWith(`${year}-${pad2(m + 1)}`)).length);
+  const bestM = months.indexOf(Math.max(...months));
+  const pil = db.activities.filter(a => a.sport === 'pilates' && inY(a.date));
+  return { ...st, fav: fav ? [getEx(fav[0]), fav[1].length] : null, gains, months, bestM, pilN: pil.length, longest: streakInfo().longest };
+}
+const MONTHS = ['Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran', 'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'];
+function renderRecap(year) {
+  const now = new Date().getFullYear();
+  year = +year || now;
+  setHeader(`${year} özeti`, { back: true, always: true });
+  const y = yearStats(year);
+  const years = [...new Set([...activeDaySet()].map(d => +d.slice(0, 4)))].sort();
+  const maxM = Math.max(1, ...y.months);
+  if (!y.days) { view.innerHTML = pageHead('Yıl özeti', String(year)) + emptyBox('calendar', 'Bu yıl kayıt yok', 'Spor yaptıkça yılın özeti burada oluşur.'); return; }
+  view.innerHTML = `<div class="recap-hero"><div class="eyebrow">${year} yılın</div><h1><b class="num">${y.days}</b> gün spor</h1>
+      <div class="sub">${fmtInt(y.min / 60)} saat · ${fmtInt(y.kcal)} kcal yakıldı</div></div>
+    ${years.length > 1 ? `<div class="chips" style="margin:12px 0">${years.map(v => `<button class="chip ${v === year ? 'on' : ''}" data-y="${v}">${v}</button>`).join('')}</div>` : ''}
+    <div class="metric-grid">
+      ${y.workouts ? `<div class="metric"><div class="lbl">Antrenman</div><b class="num">${y.workouts}</b></div>` : ''}
+      ${y.sets ? `<div class="metric"><div class="lbl">Set</div><b class="num">${fmtInt(y.sets)}</b></div>` : ''}
+      ${y.vol ? `<div class="metric"><div class="lbl">Toplam kaldırılan</div><b class="num">${fmtN(y.vol / 1000, 1)}<small>ton</small></b></div>` : ''}
+      ${y.prs.length ? `<div class="metric"><div class="lbl">Kırılan rekor</div><b class="num">${y.prs.length}</b></div>` : ''}
+      ${y.matches ? `<div class="metric"><div class="lbl">Tenis maçı</div><b class="num">${y.wins}G ${y.matches - y.wins}M</b><div class="note">${fmtN(y.tennisH, 0)} saat kortta</div></div>` : ''}
+      ${y.pilN ? `<div class="metric"><div class="lbl">Pilates</div><b class="num">${y.pilN}<small>seans</small></b><div class="note">${fmtInt(y.pilMin)} dk</div></div>` : ''}
+      <div class="metric"><div class="lbl">En uzun seri</div><b class="num">${y.longest}<small>hafta</small></b></div>
+      <div class="metric"><div class="lbl">En aktif ay</div><b class="num" style="font-size:22px">${MONTHS[y.bestM]}</b><div class="note">${y.months[y.bestM]} gün</div></div>
+    </div>
+    <div class="sec"><h2>Aylara göre</h2></div>
+    <div class="card"><div class="week recap-months">${y.months.map((n, i) => `<div class="d"><div class="b ${n ? 'on' : ''}" style="height:${n ? Math.max(10, (n / maxM) * 80) : 5}px"></div><span>${MONTHS[i].slice(0, 3)}</span></div>`).join('')}</div></div>
+    ${y.fav ? `<div class="sec"><h2>En çok yaptığın hareket</h2></div><a class="item card" href="#/ex/${encodeURIComponent(y.fav[0].id)}" style="display:flex">${thumb(y.fav[0])}<div class="grow"><div class="name">${esc(y.fav[0].name)}</div><div class="meta">${y.fav[1]} set</div></div>${icon('chev', 'chev')}</a>` : ''}
+    ${y.gains.length ? `<div class="sec"><h2>En çok güçlendiğin hareketler</h2></div><div class="list">${y.gains.map(g => `<a class="item" href="#/ex/${encodeURIComponent(g.ex.id)}">${thumb(g.ex)}<div class="grow"><div class="name">${esc(g.ex.name)}</div>
+      <div class="meta num">Tahmini maksimum ${fmtN(g.a, 1)} → ${fmtN(g.b, 1)} kg</div></div><b class="num good">+%${fmtInt(g.pct)}</b></a>`).join('')}</div>` : ''}
+    <button class="btn" id="rc-share" style="margin-top:18px">${icon('download')} Paylaşılabilir görsel oluştur</button>`;
+  $$('[data-y]', view).forEach(b => b.addEventListener('click', () => location.replace(`#/recap/${b.dataset.y}`)));
+  $('#rc-share').addEventListener('click', () => shareRecap(year, y));
+}
+// 1080×1350 paylaşım görseli (telefonda üretilir, hiçbir yere yüklenmez)
+async function shareRecap(year, y) {
+  const c = document.createElement('canvas'); c.width = 1080; c.height = 1350;
+  const x = c.getContext('2d');
+  const g = x.createLinearGradient(0, 0, 0, 1350); g.addColorStop(0, '#1d2108'); g.addColorStop(0.5, '#0d0d0f'); g.addColorStop(1, '#0a0a0b');
+  x.fillStyle = g; x.fillRect(0, 0, 1080, 1350);
+  const font = (w, s) => `${w} ${s}px -apple-system, "SF Pro Display", "Segoe UI", Roboto, sans-serif`;
+  x.fillStyle = '#d4f53c'; x.font = font(800, 44); x.fillText(`${year} · YILIN ÖZETİ`, 80, 140);
+  x.fillStyle = '#ffffff'; x.font = font(800, 200); x.fillText(String(y.days), 72, 360);
+  x.font = font(700, 64); x.fillText('gün spor', 80, 450);
+  x.fillStyle = '#a5a5ad'; x.font = font(600, 40); x.fillText(`${fmtInt(y.min / 60)} saat · ${fmtInt(y.kcal)} kcal`, 80, 520);
+  const tiles = [
+    y.workouts && ['Antrenman', String(y.workouts)], y.vol && ['Toplam kaldırılan', `${fmtN(y.vol / 1000, 1)} ton`], y.prs.length && ['Rekor', String(y.prs.length)],
+    y.matches && ['Tenis maçı', `${y.wins}G ${y.matches - y.wins}M`], y.pilN && ['Pilates', `${y.pilN} seans`], ['En uzun seri', `${y.longest} hafta`], ['En aktif ay', MONTHS[y.bestM]],
+  ].filter(Boolean).slice(0, 6);
+  tiles.forEach(([l, v], i) => {
+    const cx = 80 + (i % 2) * 470, cy = 600 + Math.floor(i / 2) * 200;
+    x.fillStyle = 'rgba(255,255,255,0.06)'; x.beginPath(); x.roundRect(cx, cy, 440, 170, 36); x.fill();
+    x.fillStyle = '#8b8b94'; x.font = font(700, 30); x.fillText(l.toLocaleUpperCase('tr-TR'), cx + 36, cy + 60);
+    x.fillStyle = '#ffffff'; x.font = font(800, 58); x.fillText(v, cx + 36, cy + 130);
+  });
+  // Aylık aktif gün çubukları
+  const top = 600 + Math.ceil(tiles.length / 2) * 200 + 10, h = 1190 - top, mx = Math.max(1, ...y.months);
+  if (h > 80) {
+    y.months.forEach((n, i) => {
+      const bw = 58, gap = (920 - bw * 12) / 11, bx = 80 + i * (bw + gap), bh = n ? Math.max(10, (n / mx) * (h - 46)) : 6;
+      x.fillStyle = n ? (i === y.bestM ? '#d4f53c' : 'rgba(212,245,60,0.45)') : 'rgba(255,255,255,0.08)';
+      x.beginPath(); x.roundRect(bx, top + (h - 46) - bh, bw, bh, 10); x.fill();
+      x.fillStyle = '#6f6f78'; x.font = font(700, 22); x.textAlign = 'center'; x.fillText(MONTHS[i].slice(0, 3), bx + bw / 2, top + h - 10); x.textAlign = 'left';
+    });
+  }
+  x.fillStyle = '#d4f53c'; x.font = font(800, 34); x.fillText('Gym Takip', 80, 1270);
+  const blob = await new Promise(r => c.toBlob(r, 'image/png'));
+  const file = new File([blob], `yil-ozeti-${year}.png`, { type: 'image/png' });
+  try { if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file], title: `${year} özeti` }); return; } } catch (e) { if (e.name === 'AbortError') return; }
+  const a = document.createElement('a'); a.href = URL.createObjectURL(file); a.download = file.name; document.body.appendChild(a); a.click(); a.remove();
+  setTimeout(() => URL.revokeObjectURL(a.href), 5000);
 }
 
 // ═════════════════════════ Hareket detayı (bilgi + ilerleme; set girişi antrenman ekranında)
@@ -2704,7 +2889,7 @@ function renderHist() {
     ${low.length ? `<div class="tip" style="margin-top:14px">${icon('bulb')}<span class="small muted">${esc(low.join(', '))} bu hafta az çalıştı. Dengeli gelişim için bölge başına haftada 10–20 set önerilir.</span></div>` : ''}</div>` : '';
 
   view.innerHTML = pageHead(`${dates.length} gün`, 'Geçmiş') + `
-    <div class="hist-links"><a href="#/report/week/0">${icon('bars')}<b>Haftalık rapor</b></a><a href="#/report/month/0">${icon('calendar')}<b>Aylık rapor</b></a><a href="#/records">${icon('trophy')}<b>Rekorlar</b></a></div>
+    <div class="hist-links"><a href="#/report/week/0">${icon('bars')}<b>Haftalık rapor</b></a><a href="#/report/month/0">${icon('calendar')}<b>Aylık rapor</b></a><a href="#/records">${icon('trophy')}<b>Rekorlar</b></a><a href="#/recap">${icon('bolt')}<b>Yıl özeti</b></a></div>
     <div class="stats3">
       <div class="card"><b class="num">${thisWeek}</b><span>Bu hafta</span></div>
       <div class="card"><b class="num">${db.workouts.length || dates.length}</b><span>Antrenman</span></div>
@@ -3108,7 +3293,7 @@ function renderCredits() {
       ${row('Egzersiz videoları', `${videoCount()} video, ${EXERCISES.filter(e => e.videos).length} hareket. Yazar: Goulart, ${L('https://wger.de', 'wger.de')}. Lisans: ${L('https://creativecommons.org/licenses/by-sa/4.0/deed.tr', 'CC BY-SA 4.0')}. Değişiklikler: 12 saniyeye kısaltıldı, 540p H.264'e dönüştürüldü, kapak görseli eklendi. Değiştirilmiş videolar da aynı lisansla paylaşılır.`)}
       ${row('Egzersiz ve esneme fotoğrafları', `${L('https://github.com/yuhonas/free-exercise-db', 'free-exercise-db')} (yuhonas). Lisans: ${L('https://unlicense.org', 'Unlicense')} (kamu malı). 720 piksele küçültüldü.`)}
       ${row('Hareket çizimleri ve vücut haritası', 'Bu uygulama için çizildi (tenis vuruşları, pilates hareketleri, reformer, ön/arka vücut haritası).')}
-      ${row('Beslenme değerleri', `${FOOD_DB.length} yiyecek ve menü değerleri, yaygın besin kaynaklarındaki tipik ortalamalardan derlenmiş yaklaşık değerlerdir. Diyetisyen planı yerine geçmez.`)}
+      ${row('Besin değerleri', `${FOOD_DB.length} kayıttan ${FOOD_DB.filter(f => f.src.startsWith('u:')).length} tanesi doğrudan ${L('https://fdc.nal.usda.gov', 'USDA FoodData Central')} (SR Legacy, kamu malı) verisidir. ${FOOD_DB.filter(f => f.src === 'r').length} Türk yemeği, USDA malzeme değerleri ve standart ev tarifleriyle hesaplanmıştır (pişirmedeki ağırlık değişimi dahil). ${FOOD_DB.filter(f => f.src === 'm').length} ürün tipik değerdir. Değerler yaklaşıktır ve diyetisyen planı yerine geçmez.`)}
       ${row('Barkodlu ürünler', `Ürün bilgileri ${L('https://world.openfoodfacts.org', 'Open Food Facts')} katkıcılarından gelir. Veritabanı lisansı: ${L('https://opendatacommons.org/licenses/odbl/1-0/', 'ODbL')}.`)}
       ${row('Barkod okuyucu', `${L('https://github.com/Sec-ant/barcode-detector', 'barcode-detector')} ve zxing-wasm (MIT), ZXing-C++ (Apache 2.0).`)}
       ${row('Hesaplamalar', 'Bazal metabolizma: Mifflin-St Jeor. Yakılan kalori: MET değerleri (Compendium of Physical Activities). Tahmini maksimum: Epley formülü. Yağ oranı: Deurenberg tahmini.')}
