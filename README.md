@@ -67,10 +67,10 @@ iPhone ve Android'de uygulama gibi çalışan, **internet olmadan da kullanılab
 
 | | | | |
 |:-:|:-:|:-:|:-:|
-| ![Bugün](docs/today.jpg) | ![Antrenman](docs/workout.jpg) | ![Hareketler](docs/lib.jpg) | ![Vücut haritası](docs/map.jpg) |
-| Bugün | Antrenman | Hareketler | Vücut haritası |
-| ![Hareket](docs/ex.jpg) | ![Beslenme](docs/nutrition.jpg) | ![Geçmiş](docs/hist.jpg) | ![Profil](docs/profile.jpg) |
-| Hareket detayı | Beslenme | Geçmiş | Profil |
+| ![Bugün](docs/today.jpg) | ![Antrenman](docs/workout.jpg) | ![Hareketler](docs/lib.jpg) | ![3D hareket](docs/figure.jpg) |
+| Bugün | Antrenman | Hareketler | 3D hareket (tenis servisi) |
+| ![Günün hedefleri](docs/goals.jpg) | ![Beslenme](docs/nutrition.jpg) | ![Geçmiş](docs/hist.jpg) | ![Pilates](docs/pilates.jpg) |
+| Hafta ve günün hedefleri | Beslenme | Geçmiş | Pilates modu |
 
 ## Telefona kurulum
 
@@ -107,6 +107,7 @@ Framework ve derleme adımı olmadan düz HTML, CSS ve JavaScript (ES modülleri
 | `models/` | 3D insan modeli (Quaternius, CC0) |
 | `foods.js` | Yiyecek veritabanı (180 besin + 70 malzeme, ev ölçüleri); `tools/build_foods.py` üretir |
 | `tools/build_foods.py` | Besin değerlerini USDA verisinden ve Türk tariflerinden hesaplar (`tools/usda_subset.json`) |
+| `tools/screenshots.py` | README ekran görüntülerini örnek verilerle üretir (`tools/shot.html`, headless Chrome) |
 | `vendor/` | Barkod okuyucu: barcode-detector ve zxing-wasm (MIT); three.js (MIT) |
 | `sw.js` | Service worker: çevrimdışı önbellek, video indirme |
 | `img/`, `vid/` | Hareket fotoğrafları ve videoları |

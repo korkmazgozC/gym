@@ -1,0 +1,51 @@
+<!doctype html>
+<!-- README ekran görüntüleri için: uygulamayı 390×844 çerçevede örnek verilerle açar.
+     Kullanım: tools/shot.html?r=<hash rotası>&y=<kaydırma>  (bkz. tools/screenshots.py) -->
+<meta charset="utf-8">
+<style>html,body{margin:0;background:#0a0b12;overflow:hidden}iframe{width:390px;height:844px;border:0;display:block}</style>
+<script>
+const P = new URLSearchParams(location.search);
+const day = n => { const d = new Date(); d.setHours(12, 0, 0, 0); d.setDate(d.getDate() - n); return d; };
+const key = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+let id = 0; const uid = () => 's' + (++id);
+const A = [['bench', 60, 8], ['incline-db', 22, 10], ['ohp', 40, 8], ['lateral-raise', 9, 14], ['triceps-pushdown', 25, 12]];
+const B = [['lat-pulldown', 55, 10], ['bb-row', 55, 8], ['face-pull', 20, 15], ['biceps-curl', 12, 10], ['hammer-curl', 12, 12]];
+const C = [['squat', 80, 6], ['rdl', 70, 8], ['leg-press', 140, 10], ['leg-curl', 40, 12], ['calf-raise', 60, 15]];
+const sets = [], workouts = [];
+// Son 6 hafta: haftada 3 gün, hafif ilerlemeyle (bugün antrenman yok, ama dün ve önceki günler var)
+const plan = [];
+for (let w = 6; w >= 0; w--) for (const [off, d] of [[6, A], [4, B], [2, C]]) { const n = w * 7 + off - 5; if (n >= 1) plan.push([n, d, 6 - w]); }
+plan.forEach(([n, ex, wk], i) => {
+  const d = day(n), start = d.getTime() - 3600e3;
+  ex.forEach(([e, w0, r], j) => {
+    const w = Math.round((w0 * (1 + wk * 0.025)) / 2.5) * 2.5;
+    for (let k = 0; k < 3; k++) sets.push({ id: uid(), exId: e, date: key(d), ts: start + j * 600e3 + k * 150e3, w, r: r + (k === 0 ? 1 : 0) });
+  });
+  workouts.push({ id: 'w' + i, date: key(d), start, end: start + 52 * 60e3, key: 'free', name: ex === A ? 'İtme günü' : ex === B ? 'Çekme günü' : 'Bacak günü' });
+});
+const weights = [...Array(8)].map((_, i) => ({ date: key(day(49 - i * 7)), kg: +(84.6 - i * 0.55).toFixed(1) }));
+const today = key(day(0));
+const db = {
+  sets, workouts, weights, custom: [], routines: [], cardio: [{ id: 'c1', type: 'walk', min: 35, kcal: 160, date: key(day(1)) }],
+  food: { [today]: { kcal: 1640, protein: 104, water: 1750 } }, foodLog: {}, menu: {}, notes: {}, activities: [], opponents: {}, offCache: {}, recipes: [], measures: [],
+  settings: { onboarded: true, sport: P.get('sport') || 'gym', tipSport: true, lastBackup: Date.now(), libView: 'regions' },
+  profile: { sex: 'm', age: 29, height: 180, activity: 1.55, goal: 'lose', days: 3, level: 2, place: 'gym', diet: 'all' },
+};
+if (P.get('session')) {
+  const start = Date.now() - 24 * 60e3;
+  db.session = { id: 'ses', start, key: 'free', name: 'İtme günü', items: A.map(([e]) => ({ exId: e, sets: 3, min: 8, max: 12 })), cur: 0 };
+  [[62.5, 9], [65, 8]].forEach(([w, r], k) => sets.push({ id: uid(), exId: 'bench', date: today, ts: start + 120e3 + k * 180e3, w, r }));
+}
+localStorage.setItem('gymtakip.v1', JSON.stringify(db));
+addEventListener('DOMContentLoaded', () => {
+  const f = document.createElement('iframe');
+  f.src = '../index.html#/' + (P.get('r') || 'today');
+  f.onload = () => setTimeout(() => {
+    const w = f.contentWindow;
+    w.document.querySelector('#chip-tip button')?.click();
+    if (P.get('y')) w.scrollTo(0, +P.get('y'));
+  }, 1500);
+  document.body.appendChild(f);
+});
+</script>
+<body></body>
