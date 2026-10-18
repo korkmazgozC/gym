@@ -2,6 +2,7 @@ import { REGIONS, EXERCISES, EX_BY_ID, REGION_BY_ID, VIDEO_MB, SUBS, EQUIPMENT }
 import { FOODS, DIETS, HEALTH, HEALTH_BY_ID, buildDayMenu } from './nutrition.js';
 import { bodyMap } from './bodymap.js';
 import { mountFigure, figureThumb } from './figure.js';
+import { FOOD_DB, FOOD_BY_ID, FOOD_CATS } from './foods.js';
 import { SPORTS, TENNIS_TYPES, SURFACES, INTENSITY, STROKES, TENNIS_PROGRAMS, ROUTINE_MOVES, ROUTINES, PFOCUS, PILATES, PILATES_BY_ID, PILATES_SESSIONS } from './sports.js';
 
 // ═════════════════════════ Yardımcılar
@@ -74,6 +75,7 @@ function weekStart(d = new Date()) {
 const P = {
   home: '<path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9v11.5h13V9"/><path d="M10 20.5v-6h4v6"/>',
   swap: '<path d="M7 4 3.5 7.5 7 11"/><path d="M3.5 7.5h13"/><path d="M17 13l3.5 3.5L17 20"/><path d="M20.5 16.5h-13"/>',
+  barcode: '<path d="M4 6v12M7 6v12M10.5 6v12M13 6v12M16.5 6v12M20 6v12" stroke-width="1.6"/>',
   volume: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>',
   mute: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>',
   tennis: '<circle cx="12" cy="12" r="8.5"/><path d="M5.2 7.2c2.6 1.4 4 3 4 4.8s-1.4 3.4-4 4.8M18.8 7.2c-2.6 1.4-4 3-4 4.8s1.4 3.4 4 4.8"/>',
@@ -127,7 +129,7 @@ function normalize(d) {
   return {
     sets: d.sets || [], custom: d.custom || [], weights: d.weights || [],
     routines: d.routines || [], workouts: d.workouts || [], session: d.session || null,
-    measures: d.measures || [], cardio: d.cardio || [], food: d.food || {}, menu: d.menu || {}, notes: d.notes || {}, activities: d.activities || [], opponents: d.opponents || {},
+    measures: d.measures || [], cardio: d.cardio || [], food: d.food || {}, menu: d.menu || {}, notes: d.notes || {}, activities: d.activities || [], opponents: d.opponents || {}, foodLog: d.foodLog || {}, offCache: d.offCache || {},
     settings: { ...DEFAULT_SETTINGS, ...d.settings },
     profile: { ...DEFAULT_PROFILE, ...d.profile },
   };
@@ -374,15 +376,17 @@ const emptyBox = (ic, title, text) => `<div class="card empty"><div class="ic">$
 
 // Alttan açılan panel
 const sheetEl = $('#sheet');
-function openSheet(html) {
+let sheetOnClose = null;
+function openSheet(html, onClose) {
   const panel = $('.sheet-panel', sheetEl);
+  sheetOnClose?.(); sheetOnClose = onClose || null;
   panel.innerHTML = html;
   sheetEl.hidden = false;
-  const close = () => { sheetEl.hidden = true; panel.innerHTML = ''; };
+  const close = () => { sheetEl.hidden = true; panel.innerHTML = ''; const f = sheetOnClose; sheetOnClose = null; f?.(); };
   $('.sheet-bg', sheetEl).onclick = close;
   return { el: panel, close };
 }
-const closeSheet = () => { sheetEl.hidden = true; };
+const closeSheet = () => { sheetEl.hidden = true; const f = sheetOnClose; sheetOnClose = null; f?.(); };
 const switchHTML = (id, on) => `<button class="switch ${on ? 'on' : ''}" id="${id}" role="switch" aria-checked="${on}"></button>`;
 
 // ═════════════════════════ Yönlendirme
@@ -814,17 +818,18 @@ function renderToday() {
   function rerender() { const y = scrollY; renderToday(); scrollTo(0, y); }
 }
 
-function addFood(kcal, protein, water) {
+function addFood(kcal, protein, water, carbs = 0, fat = 0) {
   const k = dayKey();
   const f = db.food[k] || { kcal: 0, protein: 0, water: 0 };
   f.kcal = Math.max(0, f.kcal + kcal); f.protein = Math.max(0, f.protein + protein); f.water = Math.max(0, f.water + water);
+  f.c = Math.max(0, (f.c || 0) + carbs); f.f = Math.max(0, (f.f || 0) + fat);
   db.food[k] = f;
   save();
 }
 function mealSheet(after) {
   const presets = [['Kahvaltı', 450, 25], ['Ana öğün', 700, 40], ['Ara öğün', 250, 10], ['Protein shake', 150, 25]];
   const { el, close } = openSheet(`
-    <div class="sheet-title">Yediğini ekle</div>
+    <div class="sheet-title">Hızlı ekle</div>
     <div class="opt-grid">${presets.map(([n, k, p]) => `<button class="opt" data-k="${k}" data-p="${p}">${n}<span class="faint small"> · ${k} kcal</span></button>`).join('')}</div>
     <div class="in-row" style="margin-top:10px">
       <div class="in-box"><label>Kalori · kcal</label><input id="m-k" inputmode="numeric" placeholder="0"></div>
@@ -836,11 +841,11 @@ function mealSheet(after) {
   $('#m-add', el).addEventListener('click', () => {
     const k = num($('#m-k', el).value), p = num($('#m-p', el).value);
     if (!k && !p) return toast('Kalori veya protein gir', 'info');
-    addFood(k, p, 0); close(); toast('Eklendi', 'fork'); after();
+    logFood({ name: 'Hızlı ekleme', portion: '', kcal: k, p, c: 0, f: 0 }); close(); toast('Eklendi', 'fork'); after();
   });
   $('#m-reset', el).addEventListener('click', () => {
     if (!confirm('Bugünkü kalori, protein ve su kayıtları sıfırlansın mı?')) return;
-    delete db.food[dayKey()];
+    delete db.food[dayKey()]; delete db.foodLog[dayKey()];
     if (db.menu[dayKey()]) db.menu[dayKey()].eaten = {};
     save(); close(); after();
   });
@@ -2317,6 +2322,193 @@ function restAudioStop() {
   if (restAudioUrl) { URL.revokeObjectURL(restAudioUrl); restAudioUrl = null; }
 }
 
+// ═════════════════════════ Yemek kaydı: arama, porsiyon, öğün
+const SLOTS = [['breakfast', 'Kahvaltı'], ['lunch', 'Öğle'], ['snack', 'Ara öğün'], ['dinner', 'Akşam']];
+const defaultSlot = () => { const h = new Date().getHours(); return h < 11 ? 'breakfast' : h < 15 ? 'lunch' : h < 18 ? 'snack' : 'dinner'; };
+const foodMacros = (f, grams) => ({ kcal: (f.kcal * grams) / 100, p: (f.p * grams) / 100, c: (f.c * grams) / 100, f: (f.f * grams) / 100 });
+function logFood(entry, day = dayKey()) {
+  const e = { id: uid(), ts: Date.now(), slot: entry.slot || defaultSlot(), ...entry };
+  (db.foodLog[day] ||= []).push(e);
+  addFood(e.kcal, e.p, 0, e.c || 0, e.f || 0);
+  return e;
+}
+function unlogFood(id, day = dayKey()) {
+  const list = db.foodLog[day] || [], e = list.find(x => x.id === id);
+  if (!e) return;
+  db.foodLog[day] = list.filter(x => x !== e);
+  addFood(-e.kcal, -e.p, 0, -(e.c || 0), -(e.f || 0));
+  if (e.menu && db.menu[day]?.eaten) delete db.menu[day].eaten[e.menu];
+}
+const foodSearchFn = (list, q) => rankSearch(list, q, f => [f.n, ...f.aka].join(' '), f => FOOD_CATS[f.cat] || '', f => f.n);
+function recentFoods() {
+  const seen = new Map();
+  for (const day of Object.keys(db.foodLog).sort().reverse()) for (const e of [...db.foodLog[day]].reverse()) {
+    if (e.fid && FOOD_BY_ID[e.fid] && !seen.has(e.fid)) seen.set(e.fid, e);
+    if (e.off && !seen.has('off:' + e.off.code)) seen.set('off:' + e.off.code, e);
+    if (seen.size >= 12) return [...seen.values()];
+  }
+  return [...seen.values()];
+}
+function foodLogHTML(day) {
+  const list = db.foodLog[day] || [];
+  if (!list.length) return '';
+  return `<div class="sec"><h2>Bugün yediklerin</h2><span class="faint small num">${list.length} kayıt</span></div>
+    <div class="card food-log">${SLOTS.map(([k, n]) => {
+      const items = list.filter(e => e.slot === k);
+      if (!items.length) return '';
+      const sum = items.reduce((t, e) => t + e.kcal, 0);
+      return `<div class="fl-slot"><div class="fl-head"><b>${n}</b><span class="num">${fmtInt(sum)} kcal</span></div>
+        ${items.map(e => `<div class="fl-row"><div class="grow"><div>${esc(e.name)}</div><div class="faint small num">${esc(e.portion || '')}${e.portion ? ' · ' : ''}${fmtInt(e.p)} g protein</div></div>
+          <span class="num">${fmtInt(e.kcal)}</span><button class="ibtn" data-unlog="${e.id}" aria-label="Sil">${icon('x')}</button></div>`).join('')}</div>`;
+    }).join('')}</div>`;
+}
+// Yiyecek ekleme paneli: arama → porsiyon → öğün
+function foodSheet(after, { slot = defaultSlot(), food = null } = {}) {
+  let q = '';
+  const { el, close } = openSheet(`
+    <div class="sheet-title">Yiyecek ekle</div>
+    <div class="row" style="gap:8px"><label class="search grow" style="margin:0">${icon('search')}<input id="fs-q" type="search" placeholder="Ara: mercimek çorbası, simit, ayran…" autocomplete="off"></label>
+      <button class="top-btn fs-scan" id="fs-scan" aria-label="Barkod okut">${icon('barcode')}</button></div>
+    <div id="fs-body" class="fs-body"></div>
+    <button class="alt" id="fs-quick" style="margin-top:10px">Kalori ve proteini elle gir</button>`);
+  const body = $('#fs-body', el);
+  const row = f => {
+    const u = f.units[0], m = foodMacros(f, u[1]);
+    return `<button class="item fs-item" data-fid="${f.id}" style="width:100%;text-align:left"><div class="grow"><div class="name">${esc(f.n)}</div>
+      <div class="meta num">1 ${esc(u[0])} · ${fmtInt(m.kcal)} kcal · ${fmtN(m.p, 1)} g protein</div></div>${icon('plus', 'chev')}</button>`;
+  };
+  const list = () => {
+    if (q.trim()) {
+      const res = foodSearchFn(FOOD_DB, q).slice(0, 40);
+      body.innerHTML = res.length ? `<div class="list">${res.map(row).join('')}</div>` : `<div class="faint small" style="text-align:center;margin:18px 0">Bulunamadı. Barkod okutabilir veya elle girebilirsin.</div>`;
+    } else {
+      const rec = recentFoods();
+      body.innerHTML = (rec.length ? `<div class="group-title" style="margin-top:12px">Son yediklerin</div><div class="list">${rec.map(e => e.fid
+        ? `<button class="item fs-item" data-fid="${e.fid}" data-qty="${e.qty}" data-unit="${esc(e.unit)}" style="width:100%;text-align:left"><div class="grow"><div class="name">${esc(e.name)}</div><div class="meta num">${esc(e.portion)} · ${fmtInt(e.kcal)} kcal</div></div><span class="fs-again">${icon('plus')}</span></button>`
+        : `<button class="item fs-item" data-off="${esc(e.off.code)}" style="width:100%;text-align:left"><div class="grow"><div class="name">${esc(e.name)}</div><div class="meta num">${esc(e.portion)} · ${fmtInt(e.kcal)} kcal</div></div><span class="fs-again">${icon('plus')}</span></button>`).join('')}</div>` : '')
+        + Object.entries(FOOD_CATS).map(([k, n]) => `<details class="fs-cat"><summary>${n}<span class="faint small">${FOOD_DB.filter(f => f.cat === k).length}</span></summary><div class="list">${FOOD_DB.filter(f => f.cat === k).map(row).join('')}</div></details>`).join('');
+    }
+    $$('[data-fid]', body).forEach(b => b.addEventListener('click', () => portion(FOOD_BY_ID[b.dataset.fid], b.dataset.unit, +b.dataset.qty || 1)));
+    $$('[data-off]', body).forEach(b => b.addEventListener('click', () => portion(offFood(db.offCache[b.dataset.off]))));
+  };
+  // Porsiyon seçimi
+  const portion = (f, unit, qty = 1) => {
+    if (!f) return;
+    let u = f.units.find(x => x[0] === unit) || f.units[0], n = qty, s = slot;
+    if (u[1] === 1 && n === 1) n = 100;
+    const draw = () => {
+      const g = u[1] * n, m = foodMacros(f, g);
+      body.innerHTML = `<div class="fs-portion">
+        <button class="lnk small" id="fs-back">${icon('back')} Geri</button>
+        <h3>${esc(f.n)}</h3>
+        <div class="chip-wrap" id="fs-units">${f.units.map(x => `<button class="chip ${x === u ? 'on' : ''}" data-u="${esc(x[0])}">${esc(x[0])}${x[1] !== 1 ? ` <span class="faint">${x[1]} ${f.liquid ? 'ml' : 'g'}</span>` : ''}</button>`).join('')}</div>
+        <div class="fs-qty"><button id="fs-minus">${icon('minus')}</button><input id="fs-n" inputmode="decimal" value="${fmtN(n, 2)}"><span>${esc(u[0])}</span><button id="fs-plus">${icon('plus')}</button></div>
+        <div class="fs-macros"><div><b class="num">${fmtInt(m.kcal)}</b><span>kcal</span></div><div><b class="num">${fmtN(m.p, 1)}</b><span>protein</span></div><div><b class="num">${fmtN(m.c, 1)}</b><span>karb.</span></div><div><b class="num">${fmtN(m.f, 1)}</b><span>yağ</span></div></div>
+        <div class="faint small" style="text-align:center;margin-top:6px">${fmtInt(g)} ${f.liquid ? 'ml' : 'g'}</div>
+        <div class="mini-seg" id="fs-slot" style="margin-top:14px">${SLOTS.map(([k, nm]) => `<button data-v="${k}" class="${k === s ? 'on' : ''}">${nm}</button>`).join('')}</div>
+        <button class="btn" id="fs-add" style="margin-top:14px">${icon('plus')} Ekle</button></div>`;
+      $('#fs-back', body).addEventListener('click', list);
+      $$('#fs-units .chip', body).forEach(b => b.addEventListener('click', () => {
+        const nu = f.units.find(x => x[0] === b.dataset.u);
+        if (nu[1] === 1 && u[1] !== 1) n = Math.round(u[1] * n); else if (nu[1] !== 1 && u[1] === 1) n = 1;
+        u = nu; draw();
+      }));
+      const stepQ = d => { const st = u[1] === 1 ? (f.liquid ? 50 : 10) : 0.5; n = Math.max(st, Math.round((n + d * st) / st) * st); draw(); };
+      $('#fs-minus', body).addEventListener('click', () => stepQ(-1));
+      $('#fs-plus', body).addEventListener('click', () => stepQ(1));
+      $('#fs-n', body).addEventListener('change', e => { n = Math.max(0.1, num(e.target.value)); draw(); });
+      $$('#fs-slot button', body).forEach(b => b.addEventListener('click', () => { s = b.dataset.v; $$('#fs-slot button', body).forEach(x => x.classList.toggle('on', x === b)); }));
+      $('#fs-add', body).addEventListener('click', () => {
+        const g = u[1] * n, m = foodMacros(f, g);
+        logFood({ fid: f.off ? undefined : f.id, off: f.off, name: f.n, unit: u[0], qty: n, grams: g, portion: `${fmtN(n, 2)} ${u[0]}`, slot: s, ...m });
+        close(); toast(`${f.n} eklendi`, 'fork'); after();
+      });
+    };
+    draw();
+  };
+  $('#fs-q', el).addEventListener('input', e => { q = e.target.value; list(); });
+  if (!food) setTimeout(() => $('#fs-q', el)?.focus(), 300);
+  $('#fs-quick', el).addEventListener('click', () => { close(); mealSheet(after); });
+  $('#fs-scan', el).addEventListener('click', () => scanBarcode(prod => foodSheet(after, { slot, food: offFood(prod) })));
+  if (food) portion(food); else list();
+}
+
+// ═════════════════════════ Barkod okuma (paketli ürünler, Open Food Facts)
+// iPhone'da yerleşik BarcodeDetector kapalı; MIT lisanslı barcode-detector (ZXing wasm) uygulamayla birlikte gelir.
+async function getDetector() {
+  const formats = ['ean_13', 'ean_8', 'upc_a', 'upc_e'];
+  try {
+    if ('BarcodeDetector' in window && (await BarcodeDetector.getSupportedFormats()).includes('ean_13')) return new BarcodeDetector({ formats });
+  } catch { /* yerleşik yok */ }
+  if (!window.BarcodeDetectionAPI) {
+    await new Promise((ok, fail) => { const s = document.createElement('script'); s.src = 'vendor/barcode-detector.js'; s.onload = ok; s.onerror = fail; document.head.appendChild(s); });
+    BarcodeDetectionAPI.setZXingModuleOverrides({ locateFile: p => (p.endsWith('.wasm') ? new URL('vendor/zxing_reader.wasm', location.href).href : p) });
+  }
+  return new BarcodeDetectionAPI.BarcodeDetector({ formats });
+}
+// Open Food Facts ürününü yiyecek nesnesine çevir (100 g değerleri)
+function offFood(p) {
+  if (!p) return null;
+  const units = [];
+  if (p.serving > 0) units.push(['porsiyon', p.serving]);
+  units.push([p.liquid ? 'ml' : 'g', 1]);
+  if (p.pack > 0 && p.pack !== p.serving) units.push(['paket', p.pack]);
+  return { id: 'off:' + p.code, n: p.name, kcal: p.kcal, p: p.p, c: p.c, f: p.f, units, liquid: p.liquid, off: { code: p.code }, aka: [] };
+}
+async function lookupOFF(code) {
+  if (db.offCache[code]) return db.offCache[code];
+  const r = await fetch(`https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(code)}.json?fields=code,product_name,product_name_tr,brands,nutriments,serving_quantity,product_quantity,quantity`);
+  if (!r.ok) throw new Error('net');
+  const d = await r.json();
+  if (d.status !== 1 || !d.product) return null;
+  const pr = d.product, n = pr.nutriments || {};
+  const kcal = n['energy-kcal_100g'] ?? (n.energy_100g ? n.energy_100g / 4.184 : null);
+  if (kcal == null) return { code, name: pr.product_name_tr || pr.product_name || code, missing: true };
+  const prod = {
+    code, name: (() => { const nm = pr.product_name_tr || pr.product_name || '', br = pr.brands?.split(',')[0]?.trim() || '';
+      return (br && !norm(nm).includes(norm(br)) ? `${nm} · ${br}` : nm) || `Ürün ${code}`; })(),
+    kcal: +kcal, p: +(n.proteins_100g || 0), c: +(n.carbohydrates_100g || 0), f: +(n.fat_100g || 0),
+    serving: +pr.serving_quantity || 0, pack: +pr.product_quantity || 0, liquid: /ml|l\b|lt/i.test(pr.quantity || ''),
+  };
+  db.offCache[code] = prod; save();
+  return prod;
+}
+function scanBarcode(onProduct) {
+  let stream = null, timer = 0, busy = false, done = false;
+  const stop = () => { done = true; clearInterval(timer); stream?.getTracks().forEach(t => t.stop()); stream = null; };
+  const { el, close } = openSheet(`
+    <div class="sheet-title">Barkod okut</div>
+    <div class="scan-box"><video id="sc-v" playsinline muted autoplay></video><div class="scan-frame"></div><div class="scan-msg" id="sc-msg">Kamera açılıyor…</div></div>
+    <div class="row" style="gap:8px;margin-top:12px"><div class="in-box grow"><label>Ya da barkod numarasını yaz</label><input id="sc-code" inputmode="numeric" placeholder="8690000000000"></div>
+      <button class="btn" id="sc-go" style="width:auto;margin:0;padding:0 18px;align-self:stretch">Ara</button></div>
+    <div class="faint small" style="margin-top:10px;text-align:center">Ürün bilgileri Open Food Facts'ten gelir (internet gerekir). Bulunan ürünler telefonda saklanır.</div>`, stop);
+  const msg = t => { const m = $('#sc-msg', el); if (m) m.textContent = t; };
+  const found = async code => {
+    if (busy || done) return; busy = true;
+    navigator.vibrate?.(60); msg(`${code} aranıyor…`);
+    try {
+      const prod = await lookupOFF(code);
+      if (!prod) { msg('Ürün bulunamadı. Elle ekleyebilirsin.'); toast('Ürün Open Food Facts\'te yok', 'info'); busy = false; return; }
+      if (prod.missing) { msg('Üründe besin değeri yok. Elle ekleyebilirsin.'); busy = false; return; }
+      stop(); close(); onProduct(prod);
+    } catch { msg('İnternet bağlantısı gerekiyor.'); busy = false; }
+  };
+  $('#sc-go', el).addEventListener('click', () => { const c = $('#sc-code', el).value.replace(/\D/g, ''); if (c.length >= 8) found(c); else toast('Barkod en az 8 haneli olmalı', 'info'); });
+  (async () => {
+    try {
+      stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment', width: { ideal: 1280 } }, audio: false });
+      if (done) return stop();
+      const v = $('#sc-v', el); v.srcObject = stream; await v.play().catch(() => {});
+      msg('Barkodu çerçevenin içine getir');
+      const det = await getDetector();
+      timer = setInterval(async () => {
+        if (busy || done || v.readyState < 2) return;
+        try { const r = await det.detect(v); if (r[0]?.rawValue) found(r[0].rawValue); } catch { /* sonraki kare */ }
+      }, 300);
+    } catch { msg('Kameraya erişilemedi. Barkod numarasını aşağıya yazabilirsin.'); }
+  })();
+}
+
 // ═════════════════════════ Hareket detayı (bilgi + ilerleme; set girişi antrenman ekranında)
 const LEVELS = { beginner: 'Başlangıç', intermediate: 'Orta', expert: 'İleri' };
 let exTab = 'how';
@@ -2751,12 +2943,16 @@ function renderNutrition() {
       <div class="kcal-big" style="margin-top:4px"><b>${fmtInt(f.kcal)}</b><span>/ ${fmtInt(kcalT)} kcal</span></div>
       ${bar(f.kcal, kcalT, 'var(--fire)')}
       ${st.kcal > 5 ? `<div class="faint small" style="margin-top:8px">Bugün sporla yaktığın ~${fmtInt(st.kcal)} kcal hedefine eklendi.</div>` : ''}
-      <div class="targets" style="grid-template-columns:1fr 1fr;margin-top:14px">
-        <div><div class="card-label">Protein</div><b class="num" style="font-size:16px">${fmtInt(f.protein)} / ${fmtInt(m.protein)} g</b>${bar(f.protein, m.protein, 'var(--accent)')}</div>
-        <div><div class="card-label">Su</div><b class="num" style="font-size:16px">${fmtN(f.water / 1000)} / ${fmtN(waterT / 1000)} L</b>${bar(f.water, waterT, 'var(--blue)')}</div>
+      <div class="targets macro4" style="margin-top:14px">
+        <div><div class="card-label">Protein</div><b class="num">${fmtInt(f.protein)}<small>/${fmtInt(m.protein)} g</small></b>${bar(f.protein, m.protein, 'var(--accent)')}</div>
+        <div><div class="card-label">Karb.</div><b class="num">${fmtInt(f.c || 0)}<small>/${fmtInt(m.carbs)} g</small></b>${bar(f.c || 0, m.carbs, 'var(--blue)')}</div>
+        <div><div class="card-label">Yağ</div><b class="num">${fmtInt(f.f || 0)}<small>/${fmtInt(m.fat)} g</small></b>${bar(f.f || 0, m.fat, 'var(--fire)')}</div>
+        <div><div class="card-label">Su</div><b class="num">${fmtN(f.water / 1000)}<small>/${fmtN(waterT / 1000)} L</small></b>${bar(f.water, waterT, 'var(--violet)')}</div>
       </div>
-      <div class="quick"><button id="q-meal">${icon('plus')} Başka bir şey yedim</button><button id="q-water">${icon('drop')} +250 ml su</button></div>
+      <button class="btn" id="q-food" style="margin-top:14px">${icon('plus')} Yiyecek ekle</button>
+      <div class="quick"><button id="q-scan">${icon('barcode')} Barkod</button><button id="q-meal">${icon('edit')} Hızlı ekle</button><button id="q-water">${icon('drop')} +250 ml</button></div>
     </div>
+    ${foodLogHTML(today)}
 
     ${m.health.length ? healthCard(m.health) : ''}
     <div class="sec"><h2>Bugünün menüsü</h2>${noMenu ? '' : '<button id="menu-shuffle">Yenile</button>'}</div>
@@ -2801,16 +2997,29 @@ function renderNutrition() {
   const rerender = () => { const y = scrollY; renderNutrition(); scrollTo(0, y); };
   const store = () => { db.menu[today] = md; save(); };
   $('#q-meal').addEventListener('click', () => mealSheet(rerender));
+  $('#q-food').addEventListener('click', () => foodSheet(rerender));
+  $('#q-scan').addEventListener('click', () => scanBarcode(prod => foodSheet(rerender, { food: offFood(prod) })));
+  $$('[data-unlog]', view).forEach(b => b.addEventListener('click', () => { unlogFood(b.dataset.unlog); save(); rerender(); }));
   $('#q-water').addEventListener('click', () => { addFood(0, 0, 250); toast('+250 ml su', 'drop'); rerender(); });
   $$('[data-eat]', view).forEach(b => b.addEventListener('click', () => {
     const ml = menu.meals.find(x => x.id === b.dataset.eat);
-    if (md.eaten[ml.id]) { addFood(-md.eaten[ml.id].kcal, -md.eaten[ml.id].p, 0); delete md.eaten[ml.id]; }
-    else { addFood(ml.kcal, ml.p, 0); md.eaten[ml.id] = { kcal: ml.kcal, p: ml.p }; toast(`${ml.name} eklendi`, 'fork'); }
+    if (md.eaten[ml.id]) {
+      const e = (db.foodLog[today] || []).find(x => x.menu === ml.id);
+      if (e) unlogFood(e.id); else addFood(-md.eaten[ml.id].kcal, -md.eaten[ml.id].p, 0);
+      delete md.eaten[ml.id];
+    } else {
+      logFood({ name: `${ml.name}: ${ml.optName}`, portion: 'menüden', menu: ml.id, slot: ml.id, kcal: ml.kcal, p: ml.p, c: ml.c, f: ml.f });
+      md.eaten[ml.id] = { kcal: ml.kcal, p: ml.p }; toast(`${ml.name} eklendi`, 'fork');
+    }
     store(); rerender();
   }));
   $$('[data-swap]', view).forEach(b => b.addEventListener('click', () => {
     const ml = menu.meals.find(x => x.id === b.dataset.swap);
-    if (md.eaten[ml.id]) { addFood(-md.eaten[ml.id].kcal, -md.eaten[ml.id].p, 0); delete md.eaten[ml.id]; }
+    if (md.eaten[ml.id]) {
+      const e = (db.foodLog[today] || []).find(x => x.menu === ml.id);
+      if (e) unlogFood(e.id); else addFood(-md.eaten[ml.id].kcal, -md.eaten[ml.id].p, 0);
+      delete md.eaten[ml.id];
+    }
     md.picks[ml.id] = (ml.optIndex + 1) % ml.n;
     store(); rerender();
   }));
@@ -2899,7 +3108,9 @@ function renderCredits() {
       ${row('Egzersiz videoları', `${videoCount()} video, ${EXERCISES.filter(e => e.videos).length} hareket. Yazar: Goulart, ${L('https://wger.de', 'wger.de')}. Lisans: ${L('https://creativecommons.org/licenses/by-sa/4.0/deed.tr', 'CC BY-SA 4.0')}. Değişiklikler: 12 saniyeye kısaltıldı, 540p H.264'e dönüştürüldü, kapak görseli eklendi. Değiştirilmiş videolar da aynı lisansla paylaşılır.`)}
       ${row('Egzersiz ve esneme fotoğrafları', `${L('https://github.com/yuhonas/free-exercise-db', 'free-exercise-db')} (yuhonas). Lisans: ${L('https://unlicense.org', 'Unlicense')} (kamu malı). 720 piksele küçültüldü.`)}
       ${row('Hareket çizimleri ve vücut haritası', 'Bu uygulama için çizildi (tenis vuruşları, pilates hareketleri, reformer, ön/arka vücut haritası).')}
-      ${row('Beslenme değerleri', 'Yaygın besin kaynaklarındaki tipik ortalama değerlerden derlenmiş yaklaşık değerlerdir. Diyetisyen planı yerine geçmez.')}
+      ${row('Beslenme değerleri', `${FOOD_DB.length} yiyecek ve menü değerleri, yaygın besin kaynaklarındaki tipik ortalamalardan derlenmiş yaklaşık değerlerdir. Diyetisyen planı yerine geçmez.`)}
+      ${row('Barkodlu ürünler', `Ürün bilgileri ${L('https://world.openfoodfacts.org', 'Open Food Facts')} katkıcılarından gelir. Veritabanı lisansı: ${L('https://opendatacommons.org/licenses/odbl/1-0/', 'ODbL')}.`)}
+      ${row('Barkod okuyucu', `${L('https://github.com/Sec-ant/barcode-detector', 'barcode-detector')} ve zxing-wasm (MIT), ZXing-C++ (Apache 2.0).`)}
       ${row('Hesaplamalar', 'Bazal metabolizma: Mifflin-St Jeor. Yakılan kalori: MET değerleri (Compendium of Physical Activities). Tahmini maksimum: Epley formülü. Yağ oranı: Deurenberg tahmini.')}
     </div>
     <div class="faint small" style="text-align:center;margin-top:14px;line-height:1.5">Bu uygulama ücretsizdir ve kişisel kullanım içindir.<br>Tüm verilerin yalnızca senin telefonunda saklanır.</div>`;

@@ -12,7 +12,8 @@ iPhone ve Android'de uygulama gibi çalışan, **internet olmadan da kullanılab
 İlk açılışta sporunu seçersin (**Gym**, **Tenis** veya **Pilates**); uygulama seçtiğin spora göre şekillenir. Sporu istediğin zaman sol üstteki spor düğmesinden tek dokunuşla değiştirebilirsin.
 
 **Tenis**
-- Maç ve antrenman kaydı: tür (tekli, çiftli, antrenman, top atma), süre, yoğunluk, skor, sonuç, kort zemini; galibiyet oranı, saat ve zemin istatistikleri
+- Maç kaydı: set set skor (tie-break ve süper tie-break), rakip ve seviyesi, isteğe bağlı ace / çift hata / winner / unforced error
+- İstatistikler: galibiyet ve oyun kazanma oranı, tie-break ve 3 setlik maçlar, son 5 maç formu, rakiplere karşı geçmiş, zemine göre sonuçlar ve **kişisel seviye tahmini**
 - 9 vuruş tekniği (forehand, backhand, servis, vole, smaç…) hareketli çizim, adım adım anlatım, sık yapılan hatalar ve alıştırmalarla
 - Tenise özel 3 kondisyon programı: alt vücut ve çeviklik, omuz koruma (rotator cuff), core ve rotasyon
 - Rehberli maç öncesi ısınma ve maç sonrası esneme rutinleri (süreli, sesli uyarılı)
@@ -47,7 +48,9 @@ iPhone ve Android'de uygulama gibi çalışan, **internet olmadan da kullanılab
 - Hedefe göre (yağ yakma, formu koruma, kas kazanma) **günlük örnek menü**; porsiyonlar kalori ve protein hedefine göre ayarlanır
 - Vejetaryen veya "et yok, balık var" seçeneği, yemediğin yiyecekleri çıkarma
 - **Sağlık durumuna göre uyarlama:** diyabet, yüksek tansiyon, yüksek kolesterol, çölyak, laktoz intoleransı, gut, reflü, hamilelik ve böbrek hastalığı için menü, kalori/protein hedefi, beslenme ve antrenman önerileri
-- Kalori, protein ve su takibi; kardiyo kaydı; kilo ve vücut ölçüsü takibi
+- **Yemek kaydı:** 180 yaygın Türk yemeği ve besinde arama (mercimek çorbası, simit, ayran…), ev ölçüleriyle porsiyon (adet, dilim, kase, kepçe, yemek kaşığı), öğünlere göre liste, son yenenler
+- **Barkod okuma:** paketli ürünler Open Food Facts'ten bulunur ve telefonda saklanır; okuyucu uygulamayla birlikte gelir
+- Kalori, protein, karbonhidrat, yağ ve su takibi; kardiyo kaydı; kilo ve vücut ölçüsü takibi
 
 **Geçmiş ve motivasyon**
 - **Haftalık seri:** her hafta en az bir gün spor yaparsan seri sürer; bir haftayı kaçırırsan ertesi hafta 2 günle kurtarabilirsin
@@ -97,6 +100,8 @@ Framework ve derleme adımı olmadan düz HTML, CSS ve JavaScript (ES modülleri
 | `bodymap.js` | Ön ve arka vücut haritası (SVG) |
 | `sports.js` | Tenis ve pilates içerikleri: vuruşlar, programlar, rutinler, seanslar |
 | `figure.js` | Hareketli çizim motoru (2D figür, reformer) |
+| `foods.js` | Yiyecek veritabanı (180 besin, ev ölçüleri) |
+| `vendor/` | Barkod okuyucu: barcode-detector ve zxing-wasm (MIT) |
 | `sw.js` | Service worker: çevrimdışı önbellek, video indirme |
 | `img/`, `vid/` | Hareket fotoğrafları ve videoları |
 
@@ -112,3 +117,5 @@ python -m http.server 8765
 
 - **Videolar** (`vid/`): Goulart, [wger.de](https://wger.de) — [CC BY-SA 4.0](https://creativecommons.org/licenses/by-sa/4.0/). 12 saniyeye kısaltıldı ve 540p H.264'e dönüştürüldü.
 - **Fotoğraflar** (`img/`): [free-exercise-db](https://github.com/yuhonas/free-exercise-db) — Unlicense (kamu malı). 720 px'e küçültüldü.
+- **Barkodlu ürün verileri:** [Open Food Facts](https://world.openfoodfacts.org) — [ODbL](https://opendatacommons.org/licenses/odbl/1-0/). Uygulama içinde çevrimiçi sorgulanır.
+- **Barkod okuyucu** (`vendor/`): [barcode-detector](https://github.com/Sec-ant/barcode-detector) ve zxing-wasm — MIT; ZXing-C++ — Apache 2.0.
