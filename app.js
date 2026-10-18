@@ -1777,18 +1777,37 @@ function routineCard(r) {
     <a class="btn" href="#/player/routine/${r.id}" style="margin-top:12px">${icon('play')} Rutini başlat</a></div>`;
 }
 
-// Hareket çizimi kartı: oynat/durdur ve yavaş çekim
+// Hareket çizimi kartı: 3D model (parmakla döndürülür) veya 2D çizim, normal/yavaş hız
+// three.js ve model yalnızca ilk 3D gösterimde yüklenir; WebGL yoksa veya yükleme başarısızsa 2D'ye düşer.
+let fig3dMod = null;
+const fig3dOn = () => db.settings.fig3d !== false;
 function figurePlayer(box, fig) {
-  let speed = 1, stop = () => {};
-  box.innerHTML = `<div class="fig-stage"></div><div class="fig-ctl"><button class="glass" data-sp="1">Normal</button><button class="glass" data-sp="0.5">Yavaş</button></div>`;
+  let speed = 1, stop = () => {}, token = 0, failed = false;
+  box.innerHTML = `<div class="fig-stage"></div><div class="fig-ctl"><button class="glass" data-sp="1">Normal</button><button class="glass" data-sp="0.5">Yavaş</button></div>
+    <div class="fig-ctl left"><button class="glass" data-dim="3">3D</button><button class="glass" data-dim="2">2D</button></div>`;
   const stage = $('.fig-stage', box);
-  const play = () => { stop(); stop = mountFigure(stage, { ...fig, dur: (fig.dur || 2) / speed }); };
-  $$('[data-sp]', box).forEach(b => {
-    b.classList.toggle('on', +b.dataset.sp === speed);
-    b.addEventListener('click', () => { speed = +b.dataset.sp; $$('[data-sp]', box).forEach(x => x.classList.toggle('on', x === b)); play(); });
-  });
+  const mark = () => {
+    $$('[data-sp]', box).forEach(x => x.classList.toggle('on', +x.dataset.sp === speed));
+    $$('[data-dim]', box).forEach(x => x.classList.toggle('on', (x.dataset.dim === '3') === (fig3dOn() && !failed)));
+  };
+  const play2d = f => { stop = mountFigure(stage, f); };
+  const play = async () => {
+    stop(); stop = () => {};
+    const my = ++token, f = { ...fig, dur: (fig.dur || 2) / speed };
+    box.classList.toggle('is3d', fig3dOn() && !failed);
+    mark();
+    if (!fig3dOn() || failed) return play2d(f);
+    try { fig3dMod ||= await import('./figure3d.js'); } catch { failed = true; mark(); box.classList.remove('is3d'); return play2d(f); }
+    if (my !== token) return;
+    stop = fig3dMod.mountFigure3D(stage, f, { onFail: () => { if (my !== token) return; failed = true; mark(); box.classList.remove('is3d'); play2d(f); } });
+  };
+  $$('[data-sp]', box).forEach(b => b.addEventListener('click', () => { speed = +b.dataset.sp; play(); }));
+  $$('[data-dim]', box).forEach(b => b.addEventListener('click', () => {
+    if (failed && b.dataset.dim === '3') return toast('Bu cihazda 3D gösterim açılamadı', 'info');
+    db.settings.fig3d = b.dataset.dim === '3'; save(); play();
+  }));
   play();
-  return () => stop();
+  return () => { token++; stop(); };
 }
 
 function renderStroke(id) {
@@ -3293,6 +3312,8 @@ function renderCredits() {
       ${row('Egzersiz videoları', `${videoCount()} video, ${EXERCISES.filter(e => e.videos).length} hareket. Yazar: Goulart, ${L('https://wger.de', 'wger.de')}. Lisans: ${L('https://creativecommons.org/licenses/by-sa/4.0/deed.tr', 'CC BY-SA 4.0')}. Değişiklikler: 12 saniyeye kısaltıldı, 540p H.264'e dönüştürüldü, kapak görseli eklendi. Değiştirilmiş videolar da aynı lisansla paylaşılır.`)}
       ${row('Egzersiz ve esneme fotoğrafları', `${L('https://github.com/yuhonas/free-exercise-db', 'free-exercise-db')} (yuhonas). Lisans: ${L('https://unlicense.org', 'Unlicense')} (kamu malı). 720 piksele küçültüldü.`)}
       ${row('Hareket çizimleri ve vücut haritası', 'Bu uygulama için çizildi (tenis vuruşları, pilates hareketleri, reformer, ön/arka vücut haritası).')}
+      ${row('3D insan modeli', `${L('https://quaternius.com', 'Quaternius')} · Universal Base Characters. Lisans: ${L('https://creativecommons.org/publicdomain/zero/1.0/', 'CC0')} (kamu malı). Hareket pozları ve kas vurguları bu uygulama için hazırlandı.`)}
+      ${row('3D görüntüleme', `${L('https://threejs.org', 'three.js')} (MIT).`)}
       ${row('Besin değerleri', `${FOOD_DB.length} kayıttan ${FOOD_DB.filter(f => f.src.startsWith('u:')).length} tanesi doğrudan ${L('https://fdc.nal.usda.gov', 'USDA FoodData Central')} (SR Legacy, kamu malı) verisidir. ${FOOD_DB.filter(f => f.src === 'r').length} Türk yemeği, USDA malzeme değerleri ve standart ev tarifleriyle hesaplanmıştır (pişirmedeki ağırlık değişimi dahil). ${FOOD_DB.filter(f => f.src === 'm').length} ürün tipik değerdir. Değerler yaklaşıktır ve diyetisyen planı yerine geçmez.`)}
       ${row('Barkodlu ürünler', `Ürün bilgileri ${L('https://world.openfoodfacts.org', 'Open Food Facts')} katkıcılarından gelir. Veritabanı lisansı: ${L('https://opendatacommons.org/licenses/odbl/1-0/', 'ODbL')}.`)}
       ${row('Barkod okuyucu', `${L('https://github.com/Sec-ant/barcode-detector', 'barcode-detector')} ve zxing-wasm (MIT), ZXing-C++ (Apache 2.0).`)}

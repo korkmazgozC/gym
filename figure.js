@@ -79,17 +79,18 @@ function draw(p, j) {
   return s;
 }
 const lerpAng = (a, b, t) => a + (((b - a + 540) % 360) - 180) * t;
-function mix(a, b, t) {
-  const o = { hl: a.hl || b.hl, face: a.face ?? b.face, ab: a.ab || b.ab };
+export function mix(a, b, t) {
+  const o = { hl: a.hl || b.hl, face: a.face ?? b.face, ab: a.ab || b.ab, kneel: a.kneel || b.kneel };
   for (const k of new Set([...Object.keys(a), ...Object.keys(b)])) {
-    if (k === 'hl' || k === 'face' || k === 'ab') continue;
+    if (k === 'hl' || k === 'face' || k === 'ab' || k === 'kneel') continue;
     const va = a[k] ?? b[k], vb = b[k] ?? a[k];
+    if (typeof va !== 'number') { o[k] = va; continue; }
     o[k] = k === 'x' ? va + (vb - va) * t : lerpAng(va, vb, t);
   }
   return o;
 }
 const ease = t => (t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2);
-function frameAt(move, now) {
+export function frameAt(move, now) {
   const poses = move.poses, n = poses.length;
   if (n === 1) return poses[0];
   const dur = (move.dur || 2.5) * 1000, hold = 0.2;

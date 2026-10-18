@@ -1,6 +1,6 @@
 # Gym Takip
 
-**Gym, tenis ve pilates için kişisel takip · gerçek egzersiz videoları · hareketli çizimler · kişisel program ve beslenme planı.**
+**Gym, tenis ve pilates için kişisel takip · gerçek egzersiz videoları · parmakla döndürülebilen 3D hareket gösterimi · kişisel program ve beslenme planı.**
 iPhone ve Android'de uygulama gibi çalışan, **internet olmadan da kullanılabilen** ücretsiz bir web uygulaması (PWA).
 
 **▶ Uygulamayı aç: [korkmazgozc.github.io/gym](https://korkmazgozc.github.io/gym/)**
@@ -14,12 +14,12 @@ iPhone ve Android'de uygulama gibi çalışan, **internet olmadan da kullanılab
 **Tenis**
 - Maç kaydı: set set skor (tie-break ve süper tie-break), rakip ve seviyesi, isteğe bağlı ace / çift hata / winner / unforced error
 - İstatistikler: galibiyet ve oyun kazanma oranı, tie-break ve 3 setlik maçlar, son 5 maç formu, rakiplere karşı geçmiş, zemine göre sonuçlar ve **kişisel seviye tahmini**
-- 9 vuruş tekniği (forehand, backhand, servis, vole, smaç…) hareketli çizim, adım adım anlatım, sık yapılan hatalar ve alıştırmalarla
+- 9 vuruş tekniği (forehand, backhand, servis, vole, smaç…) 360° döndürülebilen 3D gösterim, adım adım anlatım, sık yapılan hatalar ve alıştırmalarla
 - Tenise özel 3 kondisyon programı: alt vücut ve çeviklik, omuz koruma (rotator cuff), core ve rotasyon
 - Rehberli maç öncesi ısınma ve maç sonrası esneme rutinleri (süreli, sesli uyarılı)
 
 **Pilates**
-- 29 mat ve 9 reformer hareketi hareketli çizimlerle; nefes, ipuçları, kolaylaştırma ve zorlaştırma
+- 29 mat ve 9 reformer hareketi 3D gösterimle (reformer aleti dahil, istersen 2D çizim); nefes, ipuçları, kolaylaştırma ve zorlaştırma
 - Seviyeye göre hazır seanslar ve rehberli akış: hareketler sırayla, süreli ve sesli uyarıyla ekrana gelir
 - Stüdyo (reformer) seanslarını kaydetme
 
@@ -103,9 +103,11 @@ Framework ve derleme adımı olmadan düz HTML, CSS ve JavaScript (ES modülleri
 | `bodymap.js` | Ön ve arka vücut haritası (SVG) |
 | `sports.js` | Tenis ve pilates içerikleri: vuruşlar, programlar, rutinler, seanslar |
 | `figure.js` | Hareketli çizim motoru (2D figür, reformer) |
+| `figure3d.js` | 3D gösterim: 2D pozları insan modelinin iskeletine uygular, kas vurgusu, 360° döndürme |
+| `models/` | 3D insan modeli (Quaternius, CC0) |
 | `foods.js` | Yiyecek veritabanı (180 besin + 70 malzeme, ev ölçüleri); `tools/build_foods.py` üretir |
 | `tools/build_foods.py` | Besin değerlerini USDA verisinden ve Türk tariflerinden hesaplar (`tools/usda_subset.json`) |
-| `vendor/` | Barkod okuyucu: barcode-detector ve zxing-wasm (MIT) |
+| `vendor/` | Barkod okuyucu: barcode-detector ve zxing-wasm (MIT); three.js (MIT) |
 | `sw.js` | Service worker: çevrimdışı önbellek, video indirme |
 | `img/`, `vid/` | Hareket fotoğrafları ve videoları |
 
@@ -123,4 +125,6 @@ python -m http.server 8765
 - **Fotoğraflar** (`img/`): [free-exercise-db](https://github.com/yuhonas/free-exercise-db) — Unlicense (kamu malı). 720 px'e küçültüldü.
 - **Besin değerleri:** [USDA FoodData Central](https://fdc.nal.usda.gov) SR Legacy — kamu malı (CC0). Türk yemekleri bu malzeme değerleriyle tariften hesaplanmıştır.
 - **Barkodlu ürün verileri:** [Open Food Facts](https://world.openfoodfacts.org) — [ODbL](https://opendatacommons.org/licenses/odbl/1-0/). Uygulama içinde çevrimiçi sorgulanır.
+- **3D insan modeli** (`models/`): [Quaternius](https://quaternius.com) Universal Base Characters — CC0 (kamu malı).
+- **3D görüntüleme** (`vendor/three/`): [three.js](https://threejs.org) — MIT.
 - **Barkod okuyucu** (`vendor/`): [barcode-detector](https://github.com/Sec-ant/barcode-detector) ve zxing-wasm — MIT; ZXing-C++ — Apache 2.0.

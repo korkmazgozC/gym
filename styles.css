@@ -776,6 +776,13 @@ body.bare #view { padding: 0; max-width: none; }
 .fig-ctl { position: absolute; right: 12px; top: 12px; display: flex; gap: 6px; }
 .fig-ctl button { height: 30px; padding: 0 12px; border-radius: 999px; font-size: 12.5px; font-weight: 700; color: #fff; }
 .fig-ctl button.on { background: var(--accent); color: var(--accent-ink); }
+.fig-ctl.left { right: auto; left: 12px; }
+.fig-card.is3d .fig-stage { inset: 0; }
+.f3d-canvas { display: block; width: 100%; height: 100%; touch-action: none; cursor: grab; }
+.f3d-hint { position: absolute; bottom: 10px; left: 0; right: 0; text-align: center; font-size: 12px; color: #8b8b94; pointer-events: none; }
+.f3d-load { display: grid; place-items: center; height: 100%; }
+.spinner { width: 26px; height: 26px; border-radius: 50%; border: 3px solid rgba(255,255,255,.12); border-top-color: var(--accent); animation: spin .8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
 .fig-thumb { width: 64px; height: 50px; border-radius: 12px; background: #17171a; flex: none; padding: 3px; overflow: hidden; }
 .thumb.fig-thumb { padding: 3px; background: #17171a; }
 .item .fig-thumb { width: 60px; height: 46px; }
