@@ -126,5 +126,6 @@ python -m http.server 8765
 - **Besin değerleri:** [USDA FoodData Central](https://fdc.nal.usda.gov) SR Legacy — kamu malı (CC0). Türk yemekleri bu malzeme değerleriyle tariften hesaplanmıştır.
 - **Barkodlu ürün verileri:** [Open Food Facts](https://world.openfoodfacts.org) — [ODbL](https://opendatacommons.org/licenses/odbl/1-0/). Uygulama içinde çevrimiçi sorgulanır.
 - **3D insan modeli** (`models/`): [Quaternius](https://quaternius.com) Universal Base Characters — CC0 (kamu malı).
+- **Yazı tipi** (`fonts/`): [Outfit](https://github.com/Outfitio/Outfit-Fonts) — SIL Open Font License 1.1.
 - **3D görüntüleme** (`vendor/three/`): [three.js](https://threejs.org) — MIT.
 - **Barkod okuyucu** (`vendor/`): [barcode-detector](https://github.com/Sec-ant/barcode-detector) ve zxing-wasm — MIT; ZXing-C++ — Apache 2.0.

@@ -709,79 +709,48 @@ function renderToday() {
   setHeader('Bugün', { chip: true });
   const st = dayStats(today);
   const m = metrics();
-  const hour = new Date().getHours();
-  const hello = hour < 6 ? 'İyi geceler' : hour < 12 ? 'Günaydın' : hour < 18 ? 'İyi günler' : 'İyi akşamlar';
-  const ws = weekStart();
-  const weekDays = [...Array(7)].map((_, i) => { const d = new Date(ws); d.setDate(ws.getDate() + i); return dayKey(d); });
-  const weekKcal = weekDays.map(d => dayStats(d).kcal);
-  const trained = weekDays.filter(d => setsOn(d).length).length;
-  const goalDays = db.profile.days || 3;
-  const maxK = Math.max(...weekKcal, 1);
   const doneToday = db.workouts.filter(w => w.date === today).sort((a, b) => b.end - a.end);
 
-  let html = pageHead(fmtDay(today), hello);
+  let html = todayHead(today) + ringsCard(today);
 
   // 1) Ana eylem: antrenman
   if (db.session) {
     const d = withProgress(db.session, db.session.start);
     const done = d.items.filter(i => i.complete).length;
-    html += `<div class="next"><div class="eyebrow">Devam eden antrenman</div><h2>${esc(db.session.name)}</h2>
+    html += `<div class="next" style="margin-top:12px"><div class="eyebrow">Devam eden antrenman</div><h2>${esc(db.session.name)}</h2>
       <div class="meta"><span class="pill accent num">${icon('pulse')}${fmtDur(Date.now() - db.session.start)}</span><span class="pill">${done}/${d.items.length} hareket tamam</span></div>
       <a class="btn" href="#/workout">Antrenmana devam et</a></div>`;
   } else {
     if (doneToday.length) {
       const w = doneToday[0];
-      html += `<a class="slim" href="#/summary/${w.id}" style="margin:0 0 10px"><div class="ic" style="background:var(--accent-soft);color:var(--accent)">${icon('check')}</div>
+      html += `<a class="slim" href="#/summary/${w.id}" style="margin:12px 0 0"><div class="ic" style="background:rgba(62,224,166,.14);color:var(--good)">${icon('check')}</div>
         <div class="grow"><b>Bugünkü antrenman tamamlandı</b><span>${esc(w.name)} · ${fmtInt((w.end - w.start) / 60000)} dk · özeti gör</span></div>${icon('chev', 'chev')}</a>`;
     }
     const plan = nextPlanDay();
     if (plan) {
       const items = plan.items.filter(i => getEx(i.exId));
       const estMin = Math.round(items.reduce((a, i) => a + i.sets, 0) * 2.5);
-      html += `<div class="next"><div class="eyebrow">${doneToday.length ? 'Sıradaki antrenman' : 'Bugünün antrenmanı'}</div><h2>${esc(plan.name)}</h2>
-        <div class="meta"><span class="pill">${items.length} hareket</span><span class="pill">~${estMin} dk</span><span class="pill">${esc(programName())}</span></div>
-        <div class="ex-strip">${items.slice(0, 5).map(i => thumb(getEx(i.exId))).join('')}${items.length > 5 ? `<div class="more">+${items.length - 5}</div>` : ''}</div>
+      const a = items.map(i => animOf(getEx(i.exId))).find(Boolean);
+      const img = a ? a.img?.[1] || a.videos?.[0]?.poster : '';
+      html += `<div class="next ${img ? 'photo' : ''}" style="margin-top:12px">${img ? `<img class="bgimg" src="${img}" alt="">` : ''}<div class="in">
+        <div class="eyebrow">${icon('dumbbell')}${doneToday.length ? 'Sıradaki antrenman' : 'Bugünün antrenmanı'}</div><h2>${esc(plan.name)}</h2>
+        <div class="meta-line">${items.length} hareket · yaklaşık ${estMin} dk · ${esc(programName())}</div>
         <button class="btn" id="start-plan">${icon('play')} Antrenmana başla</button>
         <div class="row" style="justify-content:center;gap:22px;margin-top:12px">
           <button class="alt" id="plan-see" style="width:auto;margin:0">Hareketleri gör</button>
-          <button class="alt" id="start-free" style="width:auto;margin:0">Serbest antrenman</button></div></div>`;
+          <button class="alt" id="start-free" style="width:auto;margin:0">Serbest antrenman</button></div></div></div>`;
     } else {
-      html += `<div class="next"><div class="eyebrow">Program</div><h2>Programında gün yok</h2>
+      html += `<div class="next" style="margin-top:12px"><div class="eyebrow">Program</div><h2>Programında gün yok</h2>
         <div class="muted small" style="margin:10px 0 16px">Programlar bölümünden gün ekle ya da serbest antrenman yap.</div>
         <button class="btn" id="start-free">${icon('play')} Serbest antrenman</button></div>`;
     }
   }
 
-  // 2) Özet sayılar
-  html += `<div class="mini-stats">
-      <div><span>${icon('flame')} Yakılan</span><b>${fmtInt(st.kcal)}<small>kcal</small></b></div>
-      <div><span>${icon('pulse')} Süre</span><b>${fmtInt(st.min)}<small>dk</small></b></div>
-      <a href="#/hist"><span>${icon('calendar')} Bu hafta</span><b>${trained}/${goalDays}<small>gün</small></b></a>
-    </div>`;
-
-  html += `<div style="margin-top:10px">${streakCard()}</div>`;
-  if (!profileReady()) {
-    html += `<a class="slim" href="#/profile"><div class="ic" style="background:var(--blue-soft);color:var(--blue)">${icon('user')}</div>
-      <div class="grow"><b>Profilini tamamla</b><span>Kalori ihtiyacın ve beslenme planın hesaplansın</span></div>${icon('chev', 'chev')}</a>`;
-  }
+  // 2) Hafta ve günün hedefleri
+  html += weekBlock(today) + nutritionSummary(m, st, today);
   html += backupReminder();
 
-  // 3) Beslenme özeti
-  if (m) {
-    const f = db.food[today] || { kcal: 0, protein: 0, water: 0 };
-    const kcalT = m.goalKcal + st.kcal, waterT = (m.water + (setsOn(today).length ? 0.5 : 0)) * 1000;
-    const bar = (v, t, c) => `<div class="bar" style="margin-top:6px"><i style="width:${clamp((v / t) * 100, 0, 100)}%;background:${c}"></i></div>`;
-    html += `<div class="sec"><h2>Beslenme</h2><a href="#/nutrition">Menüyü gör</a></div>
-      <a class="card" href="#/nutrition" style="display:block">
-        <div class="row"><div class="grow"><div class="card-label">Kalori</div><div class="kcal-big" style="margin-top:4px"><b>${fmtInt(f.kcal)}</b><span>/ ${fmtInt(kcalT)} kcal</span></div></div>${icon('chev', 'chev')}</div>
-        ${bar(f.kcal, kcalT, 'var(--fire)')}
-        <div class="targets" style="grid-template-columns:1fr 1fr;margin-top:14px">
-          <div><div class="card-label">Protein</div><b class="num" style="font-size:16px">${fmtInt(f.protein)} / ${fmtInt(m.protein)} g</b>${bar(f.protein, m.protein, 'var(--accent)')}</div>
-          <div><div class="card-label">Su</div><b class="num" style="font-size:16px">${fmtN(f.water / 1000)} / ${fmtN(waterT / 1000)} L</b>${bar(f.water, waterT, 'var(--blue)')}</div>
-        </div></a>`;
-  }
-
-  // 4) Kardiyo
+  // 3) Kardiyo
   const cardio = cardioOn(today);
   html += `<div class="sec"><h2>Kardiyo</h2><button id="add-cardio">${icon('plus')} Ekle</button></div>`;
   html += cardio.length ? `<div class="card">${cardio.map(c => `<div class="cardio-row" data-id="${c.id}">
@@ -790,12 +759,6 @@ function renderToday() {
       <span class="pill fire num">${icon('flame')}${fmtInt(c.kcal)}</span></div>`).join('')}</div>`
     : `<button class="slim" id="add-cardio2" style="margin-top:0"><div class="ic" style="background:var(--blue-soft);color:var(--blue)">${icon('run')}</div>
         <div class="grow"><b>Koşu, bisiklet, yürüyüş…</b><span>Süreyi gir, kalorisi günlük toplama eklensin</span></div>${icon('plus', 'chev')}</button>`;
-
-  // 5) Hafta
-  html += `<div class="sec"><h2>Bu hafta</h2><span class="faint small num">${fmtInt(weekKcal.reduce((a, b) => a + b, 0))} kcal</span></div>
-    <div class="card"><div class="week">${weekDays.map((d, i) => `<div class="d ${d === today ? 'today' : ''}">
-      <div class="b ${weekKcal[i] ? 'on' : ''}" style="height:${weekKcal[i] ? Math.max(14, (weekKcal[i] / maxK) * 70) : 6}px"></div>
-      <span>${['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'][i]}</span></div>`).join('')}</div></div>`;
   view.innerHTML = html;
 
   $('#start-plan')?.addEventListener('click', () => startSession(nextPlanDay()));
@@ -1646,28 +1609,56 @@ function pilatesLogSheet(after) {
 }
 
 // Bugün ekranının ortak parçaları
-function nutritionSummary(m, st, today) {
-  if (!m) return '';
-  const f = db.food[today] || { kcal: 0, protein: 0, water: 0 };
-  const kcalT = m.goalKcal + st.kcal, waterT = (m.water + (st.min > 20 ? 0.5 : 0)) * 1000;
-  const bar = (v, t, c) => `<div class="bar" style="margin-top:6px"><i style="width:${clamp((v / t) * 100, 0, 100)}%;background:${c}"></i></div>`;
-  return `<div class="sec"><h2>Beslenme</h2><a href="#/nutrition">Menüyü gör</a></div>
-    <a class="card" href="#/nutrition" style="display:block">
-      <div class="row"><div class="grow"><div class="card-label">Kalori</div><div class="kcal-big" style="margin-top:4px"><b>${fmtInt(f.kcal)}</b><span>/ ${fmtInt(kcalT)} kcal</span></div></div>${icon('chev', 'chev')}</div>
-      ${bar(f.kcal, kcalT, 'var(--fire)')}
-      <div class="targets" style="grid-template-columns:1fr 1fr;margin-top:14px">
-        <div><div class="card-label">Protein</div><b class="num" style="font-size:16px">${fmtInt(f.protein)} / ${fmtInt(m.protein)} g</b>${bar(f.protein, m.protein, 'var(--accent)')}</div>
-        <div><div class="card-label">Su</div><b class="num" style="font-size:16px">${fmtN(f.water / 1000)} / ${fmtN(waterT / 1000)} L</b>${bar(f.water, waterT, 'var(--blue)')}</div>
-      </div></a>`;
+const sportIcon = () => (sport() === 'tennis' ? 'tennis' : sport() === 'pilates' ? 'pilates' : 'dumbbell');
+// Selam + haftalık seri çipi
+function todayHead(today) {
+  const s = streakInfo();
+  return `<div class="today-head">${pageHead(fmtDay(today), helloText())}<a class="streak-chip ${s.cur ? '' : 'off'}" href="#/report/week/0" aria-label="Haftalık seri: ${s.cur} hafta">${icon('flame')}<span class="num">${s.cur}</span></a></div>`;
 }
+// Üç halka: bu hafta aktif gün, protein, kalori (profil yoksa hareket süresi ve yakılan kalori)
+function ringsCard(today) {
+  const m = metrics(), st = dayStats(today), f = db.food[today] || { kcal: 0, protein: 0 };
+  const goal = db.profile.days || 3, act = activeDaysThisWeek();
+  const rows = [
+    ['Bu hafta', act, goal, 'gün', ['#7c5cff', '#ff5ca8'], '#a87bff'],
+    m ? ['Protein', f.protein, m.protein, 'g', ['#3ee0a6', '#3ec6e0'], '#3ee0b8'] : ['Hareket', st.min, 30, 'dk', ['#3ee0a6', '#3ec6e0'], '#3ee0b8'],
+    m ? ['Kalori', f.kcal, m.goalKcal + st.kcal, 'kcal', ['#ffb547', '#ff7a5c'], '#ff9a50'] : ['Yakılan', st.kcal, 300, 'kcal', ['#ffb547', '#ff7a5c'], '#ff9a50'],
+  ];
+  const R = [60, 45, 30];
+  const svg = `<svg class="rings" viewBox="0 0 136 136" aria-hidden="true"><defs>${rows.map((r, i) => `<linearGradient id="rg${i}" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="${r[4][0]}"/><stop offset="1" stop-color="${r[4][1]}"/></linearGradient>`).join('')}</defs>
+    <g transform="rotate(-90 68 68)">${rows.map((r, i) => {
+      const C = 2 * Math.PI * R[i], v = clamp(r[2] ? r[1] / r[2] : 0, 0, 1);
+      return `<circle cx="68" cy="68" r="${R[i]}" stroke="${r[5]}" stroke-opacity=".16"/><circle class="rv" cx="68" cy="68" r="${R[i]}" stroke="url(#rg${i})" stroke-dasharray="${Math.max(0.01, v * C).toFixed(1)} ${C.toFixed(1)}"/>`;
+    }).join('')}</g></svg>`;
+  return `<a class="card rings-card" href="#/report/week/0">${svg}<div class="rings-legend">${rows.map(r => `<div><div class="k"><i style="background:${r[5]}"></i>${r[0]}</div>
+    <b>${fmtInt(r[1])}<small>/ ${fmtInt(r[2])} ${r[3]}</small></b></div>`).join('')}</div></a>`;
+}
+// Hafta şeridi: aktif günler tikli, bugün halkalı
 function weekBlock(today) {
-  const ws = weekStart();
+  const ws = weekStart(), act = activeDaySet(), goal = db.profile.days || 3;
   const days = [...Array(7)].map((_, i) => { const d = new Date(ws); d.setDate(ws.getDate() + i); return dayKey(d); });
-  const kc = days.map(d => dayStats(d).kcal), maxK = Math.max(...kc, 1);
-  return `<div class="sec"><h2>Bu hafta</h2><span class="faint small num">${fmtInt(kc.reduce((a, b) => a + b, 0))} kcal</span></div>
-    <div class="card"><div class="week">${days.map((d, i) => `<div class="d ${d === today ? 'today' : ''}">
-      <div class="b ${kc[i] ? 'on' : ''}" style="height:${kc[i] ? Math.max(14, (kc[i] / maxK) * 70) : 6}px"></div>
-      <span>${['Pt', 'Sa', 'Ça', 'Pe', 'Cu', 'Ct', 'Pz'][i]}</span></div>`).join('')}</div></div>`;
+  const n = days.filter(d => act.has(d)).length;
+  return `<a class="card wstrip" href="#/hist" style="margin-top:12px"><div class="wstrip-top"><b>Bu hafta</b><span class="num">${n} / ${goal} gün</span></div>
+    <div class="wdays">${days.map((d, i) => `<div class="wday ${act.has(d) ? 'done' : ''} ${d === today ? 'now' : ''}"><div class="c">${act.has(d) ? icon('check') : d === today ? icon(sportIcon()) : ''}</div>${['Pzt', 'Sal', 'Çar', 'Per', 'Cum', 'Cmt', 'Paz'][i]}</div>`).join('')}</div>
+    <div class="wstrip-hint">${icon('flame')}<span>${esc(streakInfo().hint)}</span></div></a>`;
+}
+// Günün hedefleri: hareket, protein, su, kalori
+function nutritionSummary(m, st, today) {
+  const f = db.food[today] || { kcal: 0, protein: 0, water: 0 };
+  const moved = activeDaySet().has(today);
+  const q = [[moved, sport() === 'pilates' ? 'Bugün bir seans yap' : sport() === 'tennis' ? 'Bugün korta çık ya da kondisyon yap' : 'Bugün antrenman yap', moved ? 1 : 0, moved ? 'Tamam' : 'Bekliyor', sportIcon(), 'var(--grad)', 'rgba(161,132,255,.14)', '#b79cff']];
+  if (m) {
+    const kcalT = m.goalKcal + st.kcal, waterT = (m.water + (st.min > 20 ? 0.5 : 0)) * 1000;
+    q.push([f.protein >= m.protein * 0.95, `${fmtInt(m.protein)} g protein al`, f.protein / m.protein, `${fmtInt(f.protein)} g`, 'bolt', 'var(--grad-mint)', 'rgba(62,224,166,.13)', '#3ee0a6']);
+    q.push([f.water >= waterT * 0.95, `${fmtN(waterT / 1000)} L su iç`, f.water / waterT, `${fmtN(f.water / 1000)} L`, 'drop', 'linear-gradient(90deg,#4fb6ff,#7cd4ff)', 'rgba(79,182,255,.13)', '#4fb6ff']);
+    q.push([f.kcal >= kcalT * 0.9 && f.kcal <= kcalT * 1.1, `Kalori hedefi · ${fmtInt(kcalT)} kcal`, f.kcal / kcalT, `${fmtInt(f.kcal)} kcal`, 'fork', 'var(--grad-sun)', 'rgba(255,154,80,.13)', '#ff9a50']);
+  }
+  const ok = q.filter(x => x[0]).length;
+  return `<div class="quests-head"><h2>Günün hedefleri</h2><span class="num">${ok === q.length ? `<span class="qdone">${icon('check')}Hepsi tamam</span>` : `${ok} / ${q.length}`}</span></div>
+    <a class="card quests" href="#/nutrition">${q.map(([done, label, v, val, ic, grad, bg, col]) => `<div class="quest ${done ? 'ok' : ''}">
+      <div class="qi" style="background:${bg};color:${col}">${icon(done ? 'check' : ic)}</div>
+      <div class="g"><b>${esc(label)}<span>${val}</span></b><div class="qb"><i style="width:${clamp(v * 100, 0, 100)}%;background:${grad}"></i></div></div></div>`).join('')}</a>
+    ${m ? '' : `<a class="slim" href="#/profile"><div class="ic" style="background:var(--accent-soft);color:var(--accent)">${icon('user')}</div><div class="grow"><b>Beslenme hedeflerini aç</b><span>Profilini tamamla; protein, su ve kalori hedeflerin hesaplansın</span></div>${icon('chev', 'chev')}</a>`}`;
 }
 function activeDaysThisWeek() {
   const ws = dayKey(weekStart());
@@ -1700,8 +1691,8 @@ function renderTodayTennis() {
   const matches = tennis.filter(a => a.result);
   const recent = matches.slice(-20), wins = recent.filter(a => a.result === 'win').length;
   const prog = nextTennisProgram();
-  let html = pageHead(fmtDay(today), helloText());
-  html += `<div class="next tennis-hero"><div class="eyebrow">Tenis · bu hafta</div>
+  let html = todayHead(today) + ringsCard(today);
+  html += `<div class="next tennis-hero" style="margin-top:12px"><div class="eyebrow">Tenis · bu hafta</div>
     <h2>${week.length ? `${fmtN(hours, 1)} saat · ${week.length} seans` : 'Korta çıkmaya hazır mısın?'}</h2>
     <div class="meta">${recent.length ? `<span class="pill accent">${icon('trophy')}Galibiyet %${fmtInt((wins / recent.length) * 100)}</span>` : ''}<span class="pill">${matches.length} maç</span>
       <a class="pill" href="#/tennis/istatistik">Seviye ${fmtN(tennisLevel().level, 1)}</a></div>
@@ -1709,16 +1700,14 @@ function renderTodayTennis() {
     <div class="row" style="justify-content:center;gap:22px;margin-top:12px">
       <a class="alt" href="#/player/routine/tennis-warmup" style="width:auto;margin:0">Maç öncesi ısınma</a>
       <a class="alt" href="#/player/routine/tennis-stretch" style="width:auto;margin:0">Maç sonrası esneme</a></div></div>`;
-  html += miniStats(st) + `<div style="margin-top:10px">${streakCard()}</div>`;
+  html += weekBlock(today) + nutritionSummary(m, st, today);
   html += `<div class="sec"><h2>Kondisyon</h2><a href="#/tennis/kondisyon">Programlar</a></div>
     <div class="card prog-card"><div class="row"><div class="grow"><div class="card-label">Sıradaki program</div><div class="card-title" style="margin-top:4px">${esc(prog.name)}</div><div class="faint small">${esc(prog.desc)} · ${prog.items.length} hareket</div></div></div>
       <div class="ex-strip" style="margin-top:12px">${prog.items.slice(0, 5).map(i => thumb(getEx(i.exId))).join('')}</div>
       <button class="btn ghost" id="t-prog" style="margin-top:12px">${icon('play')} Başla</button></div>`;
-  if (!profileReady()) html += `<a class="slim" href="#/profile"><div class="ic" style="background:var(--blue-soft);color:var(--blue)">${icon('user')}</div><div class="grow"><b>Profilini tamamla</b><span>Kalori ihtiyacın ve beslenme planın hesaplansın</span></div>${icon('chev', 'chev')}</a>`;
   html += backupReminder();
   const last = [...db.activities].filter(a => a.sport === 'tennis').slice(-5).reverse();
   if (last.length) html += `<div class="sec"><h2>Son kayıtlar</h2><a href="#/hist">Tümü</a></div><div class="card">${last.map(a => activityRow(a, { del: true })).join('')}</div>`;
-  html += nutritionSummary(m, st, today) + weekBlock(today);
   view.innerHTML = html;
   const rerender = () => { const y = scrollY; renderTodayTennis(); scrollTo(0, y); };
   $('#t-log').addEventListener('click', () => tennisLogSheet(rerender));
@@ -1852,23 +1841,21 @@ function renderTodayPilates() {
   const moves = ses.items.map(i => PILATES_BY_ID[i.p]);
   const ws = dayKey(weekStart());
   const weekMin = db.activities.filter(a => a.sport === 'pilates' && a.date >= ws).reduce((s, a) => s + a.min, 0);
-  let html = pageHead(fmtDay(today), helloText());
-  html += `<div class="next"><div class="eyebrow">Bugünün seansı</div><h2>${esc(ses.name)}</h2>
+  let html = todayHead(today) + ringsCard(today);
+  html += `<div class="next" style="margin-top:12px"><div class="eyebrow">Bugünün seansı</div><h2>${esc(ses.name)}</h2>
     <div class="meta"><span class="pill">${moves.length} hareket</span><span class="pill">~${ses.min} dk</span><span class="pill">${esc(LEVEL_NAMES.pilates[ses.level - 1])}</span>${ses.kind === 'reformer' ? '<span class="pill blue">Reformer</span>' : ''}</div>
     <div class="ex-strip">${moves.slice(0, 4).map(p => `<div class="thumb fig-thumb">${figureThumb(p.fig)}</div>`).join('')}${moves.length > 4 ? `<div class="more">+${moves.length - 4}</div>` : ''}</div>
     <a class="btn" href="#/player/pilates/${ses.id}">${icon('play')} Seansa başla</a>
     <div class="row" style="justify-content:center;gap:22px;margin-top:12px">
       <a class="alt" href="#/pilates/seanslar" style="width:auto;margin:0">Diğer seanslar</a>
       <button class="alt" id="p-log" style="width:auto;margin:0">Stüdyo seansı kaydet</button></div></div>`;
-  html += miniStats(st) + `<div style="margin-top:10px">${streakCard()}</div>`;
-  html += `<div class="card" style="margin-top:10px"><div class="row"><div class="grow"><div class="card-label">Bu hafta pilates</div><div class="kcal-big" style="margin-top:4px"><b>${fmtInt(weekMin)}</b><span>/ 150 dk</span></div></div></div>
+  html += weekBlock(today) + nutritionSummary(m, st, today);
+  html += `<div class="card" style="margin-top:12px"><div class="row"><div class="grow"><div class="card-label">Bu hafta pilates</div><div class="kcal-big" style="margin-top:4px"><b>${fmtInt(weekMin)}</b><span>/ 150 dk</span></div></div></div>
     <div class="bar" style="margin-top:8px"><i style="width:${clamp((weekMin / 150) * 100, 0, 100)}%;background:var(--violet)"></i></div>
     <div class="faint small" style="margin-top:8px">Haftada 2–3 seans (toplam 120–150 dk) core gücü ve duruşta belirgin fark yaratır.</div></div>`;
-  if (!profileReady()) html += `<a class="slim" href="#/profile"><div class="ic" style="background:var(--blue-soft);color:var(--blue)">${icon('user')}</div><div class="grow"><b>Profilini tamamla</b><span>Kalori ihtiyacın ve beslenme planın hesaplansın</span></div>${icon('chev', 'chev')}</a>`;
   html += backupReminder();
   const last = db.activities.filter(a => a.sport === 'pilates').slice(-5).reverse();
   if (last.length) html += `<div class="sec"><h2>Son seanslar</h2><a href="#/hist">Tümü</a></div><div class="card">${last.map(a => activityRow(a, { del: true })).join('')}</div>`;
-  html += nutritionSummary(m, st, today) + weekBlock(today);
   view.innerHTML = html;
   const rerender = () => { const y = scrollY; renderTodayPilates(); scrollTo(0, y); };
   $('#p-log').addEventListener('click', () => pilatesLogSheet(rerender));
@@ -2678,10 +2665,10 @@ function renderRecap(year) {
 async function shareRecap(year, y) {
   const c = document.createElement('canvas'); c.width = 1080; c.height = 1350;
   const x = c.getContext('2d');
-  const g = x.createLinearGradient(0, 0, 0, 1350); g.addColorStop(0, '#1d2108'); g.addColorStop(0.5, '#0d0d0f'); g.addColorStop(1, '#0a0a0b');
+  const g = x.createLinearGradient(0, 0, 0, 1350); g.addColorStop(0, '#2a1a55'); g.addColorStop(0.5, '#0f1020'); g.addColorStop(1, '#0a0b12');
   x.fillStyle = g; x.fillRect(0, 0, 1080, 1350);
   const font = (w, s) => `${w} ${s}px -apple-system, "SF Pro Display", "Segoe UI", Roboto, sans-serif`;
-  x.fillStyle = '#d4f53c'; x.font = font(800, 44); x.fillText(`${year} · YILIN ÖZETİ`, 80, 140);
+  x.fillStyle = '#c9b6ff'; x.font = font(800, 44); x.fillText(`${year} · YILIN ÖZETİ`, 80, 140);
   x.fillStyle = '#ffffff'; x.font = font(800, 200); x.fillText(String(y.days), 72, 360);
   x.font = font(700, 64); x.fillText('gün spor', 80, 450);
   x.fillStyle = '#a5a5ad'; x.font = font(600, 40); x.fillText(`${fmtInt(y.min / 60)} saat · ${fmtInt(y.kcal)} kcal`, 80, 520);
@@ -2700,12 +2687,12 @@ async function shareRecap(year, y) {
   if (h > 80) {
     y.months.forEach((n, i) => {
       const bw = 58, gap = (920 - bw * 12) / 11, bx = 80 + i * (bw + gap), bh = n ? Math.max(10, (n / mx) * (h - 46)) : 6;
-      x.fillStyle = n ? (i === y.bestM ? '#d4f53c' : 'rgba(212,245,60,0.45)') : 'rgba(255,255,255,0.08)';
+      x.fillStyle = n ? (i === y.bestM ? '#ff5ca8' : 'rgba(161,132,255,0.6)') : 'rgba(255,255,255,0.08)';
       x.beginPath(); x.roundRect(bx, top + (h - 46) - bh, bw, bh, 10); x.fill();
       x.fillStyle = '#6f6f78'; x.font = font(700, 22); x.textAlign = 'center'; x.fillText(MONTHS[i].slice(0, 3), bx + bw / 2, top + h - 10); x.textAlign = 'left';
     });
   }
-  x.fillStyle = '#d4f53c'; x.font = font(800, 34); x.fillText('Gym Takip', 80, 1270);
+  x.fillStyle = '#c9b6ff'; x.font = font(800, 34); x.fillText('Gym Takip', 80, 1270);
   const blob = await new Promise(r => c.toBlob(r, 'image/png'));
   const file = new File([blob], `yil-ozeti-${year}.png`, { type: 'image/png' });
   try { if (navigator.canShare?.({ files: [file] })) { await navigator.share({ files: [file], title: `${year} özeti` }); return; } } catch (e) { if (e.name === 'AbortError') return; }
@@ -3182,7 +3169,7 @@ function renderNutrition() {
     <div class="sec"><h2>Günlük hedeflerin</h2></div>
     <div class="metric-grid">
       <div class="metric"><div class="lbl">Günlük harcama ${helpBtn('tdee')}</div><b class="num">${fmtInt(m.tdee)}<small>kcal</small></b><div class="note">Kilonu korumak için</div></div>
-      <div class="metric" style="border-color:rgba(212,245,60,.28)"><div class="lbl">Alman gereken</div><b class="num" style="color:var(--accent)">${fmtInt(m.goalKcal)}<small>kcal</small></b>
+      <div class="metric" style="border-color:rgba(161,132,255,.35)"><div class="lbl">Alman gereken</div><b class="num" style="color:var(--accent)">${fmtInt(m.goalKcal)}<small>kcal</small></b>
         <div class="note">${noLoss ? 'Kilonu korursun' : db.profile.goal === 'lose' ? '~0,5 kg/hafta yağ kaybı' : db.profile.goal === 'gain' ? '~0,25 kg/hafta kontrollü artış' : 'Kilonu korursun'}</div></div>
       <div class="metric wide"><div class="lbl">Protein / yağ / karbonhidrat</div>
         <div class="macro-bar" style="margin-top:12px"><i style="width:${(kP / tot) * 100}%;background:var(--accent)"></i><i style="width:${(kF / tot) * 100}%;background:var(--fire)"></i><i style="width:${(kC / tot) * 100}%;background:var(--blue)"></i></div>
@@ -3314,6 +3301,7 @@ function renderCredits() {
       ${row('Hareket çizimleri ve vücut haritası', 'Bu uygulama için çizildi (tenis vuruşları, pilates hareketleri, reformer, ön/arka vücut haritası).')}
       ${row('3D insan modeli', `${L('https://quaternius.com', 'Quaternius')} · Universal Base Characters. Lisans: ${L('https://creativecommons.org/publicdomain/zero/1.0/', 'CC0')} (kamu malı). Hareket pozları ve kas vurguları bu uygulama için hazırlandı.`)}
       ${row('3D görüntüleme', `${L('https://threejs.org', 'three.js')} (MIT).`)}
+      ${row('Yazı tipi', `${L('https://github.com/Outfitio/Outfit-Fonts', 'Outfit')} (Outfit Project Authors). Lisans: ${L('https://openfontlicense.org', 'SIL Open Font License 1.1')}.`)}
       ${row('Besin değerleri', `${FOOD_DB.length} kayıttan ${FOOD_DB.filter(f => f.src.startsWith('u:')).length} tanesi doğrudan ${L('https://fdc.nal.usda.gov', 'USDA FoodData Central')} (SR Legacy, kamu malı) verisidir. ${FOOD_DB.filter(f => f.src === 'r').length} Türk yemeği, USDA malzeme değerleri ve standart ev tarifleriyle hesaplanmıştır (pişirmedeki ağırlık değişimi dahil). ${FOOD_DB.filter(f => f.src === 'm').length} ürün tipik değerdir. Değerler yaklaşıktır ve diyetisyen planı yerine geçmez.`)}
       ${row('Barkodlu ürünler', `Ürün bilgileri ${L('https://world.openfoodfacts.org', 'Open Food Facts')} katkıcılarından gelir. Veritabanı lisansı: ${L('https://opendatacommons.org/licenses/odbl/1-0/', 'ODbL')}.`)}
       ${row('Barkod okuyucu', `${L('https://github.com/Sec-ant/barcode-detector', 'barcode-detector')} ve zxing-wasm (MIT), ZXing-C++ (Apache 2.0).`)}

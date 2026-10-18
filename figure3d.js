@@ -4,7 +4,7 @@ import * as THREE from './vendor/three/three.module.min.js';
 import { GLTFLoader } from './vendor/three/GLTFLoader.js';
 import { frameAt } from './figure.js';
 
-const ACCENT = new THREE.Color('#d4f53c');
+const ACCENT = new THREE.Color('#b38cff');
 const BASE = new THREE.Color('#d9dbe0');
 // Vurgu bölgeleri → kemikler
 const HL_BONES = {
@@ -123,7 +123,7 @@ function keyBounds(rig) {
   return box;
 }
 function makeRacket() {
-  const g = new THREE.Group(), mat = new THREE.MeshStandardMaterial({ color: 0x2b2d33, roughness: 0.5 }), str = new THREE.MeshStandardMaterial({ color: 0xd4f53c, roughness: 0.6, transparent: true, opacity: 0.35, side: THREE.DoubleSide });
+  const g = new THREE.Group(), mat = new THREE.MeshStandardMaterial({ color: 0x2b2d33, roughness: 0.5 }), str = new THREE.MeshStandardMaterial({ color: 0xb38cff, roughness: 0.6, transparent: true, opacity: 0.35, side: THREE.DoubleSide });
   const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.014, 0.016, 0.3, 12), mat); handle.position.y = 0.15; g.add(handle);
   const head = new THREE.Mesh(new THREE.TorusGeometry(0.13, 0.012, 8, 32), mat); head.scale.set(0.82, 1.05, 1); head.position.y = 0.42; g.add(head);
   const face = new THREE.Mesh(new THREE.CircleGeometry(0.125, 32), str); face.scale.set(0.82, 1.05, 1); face.position.y = 0.42; g.add(face);
@@ -187,7 +187,7 @@ export function mountFigure3D(el, move, { onFail } = {}) {
     const scene = new THREE.Scene();
     scene.add(new THREE.HemisphereLight(0xffffff, 0x30323a, 1.25));
     const key = new THREE.DirectionalLight(0xffffff, 2.1); key.position.set(-2, 4, 3); scene.add(key);
-    const rim = new THREE.DirectionalLight(0xd4f53c, 0.9); rim.position.set(2, 2.5, -3); scene.add(rim);
+    const rim = new THREE.DirectionalLight(0xa070ff, 1.1); rim.position.set(2, 2.5, -3); scene.add(rim);
     const pivot = new THREE.Group(); scene.add(pivot); pivot.add(rig.root);
     const reformer = move.prop === 'reformer' ? makeReformer() : null;
     if (reformer) pivot.add(reformer.g);
