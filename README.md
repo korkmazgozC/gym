@@ -49,8 +49,15 @@ iPhone ve Android'de uygulama gibi çalışan, **internet olmadan da kullanılab
 - **Sağlık durumuna göre uyarlama:** diyabet, yüksek tansiyon, yüksek kolesterol, çölyak, laktoz intoleransı, gut, reflü, hamilelik ve böbrek hastalığı için menü, kalori/protein hedefi, beslenme ve antrenman önerileri
 - Kalori, protein ve su takibi; kardiyo kaydı; kilo ve vücut ölçüsü takibi
 
-**Geçmiş**
-- Antrenman takvimi, haftalık özet, bölgelere göre **kas dengesi**
+**Geçmiş ve motivasyon**
+- **Haftalık seri:** her hafta en az bir gün spor yaparsan seri sürer; bir haftayı kaçırırsan ertesi hafta 2 günle kurtarabilirsin
+- **Haftalık ve aylık raporlar:** aktif gün, süre, kalori, set, toplam kaldırılan, tenis ve pilates; önceki dönemle karşılaştırma, kırılan rekorlar, kas gruplarına göre set
+- **Rekorlar sayfası:** her hareket için en ağır, tahmini maksimum, en iyi set ve seans, 1/3/5/8/10 tekrar rekorları
+- Antrenman takvimi ve bölgelere göre **kas dengesi**
+
+**Ses ve ekran**
+- Rehberli seanslarda **Türkçe sesli rehber** ("Sıradaki: …", "Başla", "Yarısı bitti")
+- İsteğe bağlı **kilit ekranında dinlenme sayacı** (ses çalarak sayar) ve antrenmanda ekranın açık kalması
 
 | | | | |
 |:-:|:-:|:-:|:-:|

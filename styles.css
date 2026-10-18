@@ -861,3 +861,49 @@ body.playing { overscroll-behavior: none; }
 .credit-row + .credit-row { border-top: 1px solid var(--line); margin-top: 12px; padding-top: 12px; }
 .credit-row b { font-size: 15px; }
 .credit-row p { margin: 4px 0 0; color: var(--text-2); font-size: 14px; line-height: 1.5; }
+
+/* Haftalık seri kartı */
+.streak-card { display: flex; align-items: center; gap: 14px; }
+.st-flame { width: 46px; height: 46px; border-radius: 15px; display: grid; place-items: center; background: var(--surface-2); color: var(--text-3); flex: none; }
+.st-flame.on { background: var(--fire-soft); color: var(--fire); }
+.st-flame svg.i { width: 24px; height: 24px; }
+.st-top { display: flex; align-items: baseline; gap: 6px; flex-wrap: wrap; }
+.st-top b { font: 800 24px var(--font-d); }
+.st-top span { font-weight: 700; color: var(--text-2); }
+.st-top em { font-style: normal; font-size: 12px; color: var(--text-3); margin-left: auto; }
+.st-hint { font-size: 13px; color: var(--text-2); margin-top: 2px; line-height: 1.4; }
+.st-dots { display: flex; gap: 5px; margin-top: 8px; }
+.st-dots i { width: 22px; height: 6px; border-radius: 3px; background: var(--surface-3); }
+.st-dots i.on { background: var(--fire); }
+
+/* Geçmiş kısayolları ve rapor */
+.hist-links { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-bottom: 10px; }
+.hist-links a { padding: 12px 6px; border-radius: 16px; background: var(--surface); border: 1px solid var(--line); display: grid; justify-items: center; gap: 6px; text-align: center; }
+.hist-links svg.i { width: 22px; height: 22px; color: var(--accent); }
+.hist-links b { font-size: 12.5px; }
+.period-nav { display: flex; align-items: center; justify-content: space-between; margin: -4px 2px 14px; font-size: 13.5px; color: var(--text-2); font-weight: 600; }
+.period-nav a { display: inline-flex; align-items: center; gap: 4px; color: var(--accent); width: 70px; }
+.period-nav a:last-child { justify-content: flex-end; }
+.period-nav svg.i { width: 15px; height: 15px; }
+
+/* Rekorlar */
+.rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.rec-cell { background: var(--surface-2); border-radius: 14px; padding: 10px 12px; }
+.rec-cell span { display: block; font-size: 11.5px; font-weight: 700; letter-spacing: .04em; text-transform: uppercase; color: var(--text-3); }
+.rec-cell b { display: block; font: 800 19px var(--font-d); margin-top: 4px; }
+.rec-cell i { display: block; font-style: normal; font-size: 12px; color: var(--text-3); margin-top: 2px; }
+.rep-recs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; margin-top: 8px; }
+.rep-recs div { background: var(--surface-2); border-radius: 12px; padding: 8px 4px; text-align: center; }
+.rep-recs span { display: block; font-size: 11px; color: var(--text-3); font-weight: 600; }
+.rep-recs b { display: block; font-size: 13.5px; margin-top: 3px; }
+.rec-card { margin-bottom: 8px; padding: 12px 14px; }
+.rec-card summary { list-style: none; cursor: pointer; }
+.rec-card summary::-webkit-details-marker { display: none; }
+.rec-card summary .name { font-weight: 700; }
+.rec-card[open] summary { margin-bottom: 12px; }
+.rec-card[open] summary svg.chev { transform: rotate(180deg); }
+
+/* Oynatıcı ses düğmesi, ayar notu */
+.pl-voice { color: var(--text-3); }
+.pl-voice.on { color: var(--accent); }
+.set-note { display: block; font-size: 12px; color: var(--text-3); font-weight: 500; margin-top: 2px; }

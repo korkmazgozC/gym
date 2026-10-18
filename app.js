@@ -74,6 +74,8 @@ function weekStart(d = new Date()) {
 const P = {
   home: '<path d="M3.5 10.5 12 3.5l8.5 7"/><path d="M5.5 9v11.5h13V9"/><path d="M10 20.5v-6h4v6"/>',
   swap: '<path d="M7 4 3.5 7.5 7 11"/><path d="M3.5 7.5h13"/><path d="M17 13l3.5 3.5L17 20"/><path d="M20.5 16.5h-13"/>',
+  volume: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M15.5 9a4 4 0 0 1 0 6M18 6.5a7.5 7.5 0 0 1 0 11"/>',
+  mute: '<path d="M4 9.5h3.5L12 5.5v13l-4.5-4H4z"/><path d="M16 9.5l5 5M21 9.5l-5 5"/>',
   tennis: '<circle cx="12" cy="12" r="8.5"/><path d="M5.2 7.2c2.6 1.4 4 3 4 4.8s-1.4 3.4-4 4.8M18.8 7.2c-2.6 1.4-4 3-4 4.8s1.4 3.4 4 4.8"/>',
   pilates: '<circle cx="12" cy="5" r="2.2"/><path d="M3.5 11.5c3 .8 5.6 1.2 8.5 1.2s5.5-.4 8.5-1.2M12 12.7V16l-3.5 4.5M12 16l3.5 4.5"/>',
   dumbbell: '<path d="M6.5 6v12M17.5 6v12M3.5 9v6M20.5 9v6M6.5 12h11"/>',
@@ -116,7 +118,7 @@ const icon = (n, cls = '') => `<svg class="i ${cls}" viewBox="0 0 24 24">${P[n]}
 
 // ═════════════════════════ Veri
 const KEY = 'gymtakip.v1';
-const DEFAULT_SETTINGS = { rest: 90, step: 2.5, useRoutines: true, lastBackup: 0, backupSnooze: 0, onboarded: false, awake: true };
+const DEFAULT_SETTINGS = { rest: 90, step: 2.5, useRoutines: true, lastBackup: 0, backupSnooze: 0, onboarded: false, awake: true, voice: true, lockTimer: false };
 const DEFAULT_PROFILE = { sex: null, age: null, height: null, activity: 1.55, goal: 'maintain', days: 3, target: null };
 let db = load();
 
@@ -389,9 +391,9 @@ const routes = {
   today: renderToday, lib: renderLib, pick: renderPick, ex: renderEx, hist: renderHist, profile: renderProfile, new: renderNew,
   workout: renderWorkout, summary: renderSummary, programs: renderPrograms, routine: renderRoutine,
   nutrition: renderNutrition, settings: renderSettings, welcome: renderWelcome,
-  credits: renderCredits, tennis: renderTennis, stroke: renderStroke, pilates: renderPilates, pmove: renderPMove, player: renderPlayer,
+  credits: renderCredits, records: renderRecords, report: renderReport, tennis: renderTennis, stroke: renderStroke, pilates: renderPilates, pmove: renderPMove, player: renderPlayer,
 };
-const TAB_OF = { credits: 'profile', workout: 'today', summary: 'today', programs: 'profile', routine: 'profile', settings: 'profile', welcome: 'today', player: 'today', stroke: 'tennis', pmove: 'pilates' };
+const TAB_OF = { records: 'hist', report: 'hist', credits: 'profile', workout: 'today', summary: 'today', programs: 'profile', routine: 'profile', settings: 'profile', welcome: 'today', player: 'today', stroke: 'tennis', pmove: 'pilates' };
 function route() {
   const [name = 'today', ...args] = location.hash.replace(/^#\/?/, '').split('/').map(decodeURIComponent);
   const fn = routes[name] || renderToday;
@@ -659,7 +661,7 @@ function renderSetEditor(box, ex, { target = null, since = null, onSaved = null 
     save();
     if (isPR(ex, s)) celebratePR(ex, s);
     else if (!onSaved) toast(s.warm ? 'Isınma seti kaydedildi' : 'Set kaydedildi');
-    unlockAudio();
+    unlockAudio(); unlockSpeech();
     startRest(s.warm ? Math.min(db.settings.rest, 60) : db.settings.rest);
     d.warm = false;
     onSaved ? onSaved(s) : redraw();
@@ -753,6 +755,7 @@ function renderToday() {
       <a href="#/hist"><span>${icon('calendar')} Bu hafta</span><b>${trained}/${goalDays}<small>gün</small></b></a>
     </div>`;
 
+  html += `<div style="margin-top:10px">${streakCard()}</div>`;
   if (!profileReady()) {
     html += `<a class="slim" href="#/profile"><div class="ic" style="background:var(--blue-soft);color:var(--blue)">${icon('user')}</div>
       <div class="grow"><b>Profilini tamamla</b><span>Kalori ihtiyacın ve beslenme planın hesaplansın</span></div>${icon('chev', 'chev')}</a>`;
@@ -1546,7 +1549,7 @@ function renderTodayTennis() {
     <div class="row" style="justify-content:center;gap:22px;margin-top:12px">
       <a class="alt" href="#/player/routine/tennis-warmup" style="width:auto;margin:0">Maç öncesi ısınma</a>
       <a class="alt" href="#/player/routine/tennis-stretch" style="width:auto;margin:0">Maç sonrası esneme</a></div></div>`;
-  html += miniStats(st);
+  html += miniStats(st) + `<div style="margin-top:10px">${streakCard()}</div>`;
   html += `<div class="sec"><h2>Kondisyon</h2><a href="#/tennis/kondisyon">Programlar</a></div>
     <div class="card prog-card"><div class="row"><div class="grow"><div class="card-label">Sıradaki program</div><div class="card-title" style="margin-top:4px">${esc(prog.name)}</div><div class="faint small">${esc(prog.desc)} · ${prog.items.length} hareket</div></div></div>
       <div class="ex-strip" style="margin-top:12px">${prog.items.slice(0, 5).map(i => thumb(getEx(i.exId))).join('')}</div>
@@ -1671,7 +1674,7 @@ function renderTodayPilates() {
     <div class="row" style="justify-content:center;gap:22px;margin-top:12px">
       <a class="alt" href="#/pilates/seanslar" style="width:auto;margin:0">Diğer seanslar</a>
       <button class="alt" id="p-log" style="width:auto;margin:0">Stüdyo seansı kaydet</button></div></div>`;
-  html += miniStats(st);
+  html += miniStats(st) + `<div style="margin-top:10px">${streakCard()}</div>`;
   html += `<div class="card" style="margin-top:10px"><div class="row"><div class="grow"><div class="card-label">Bu hafta pilates</div><div class="kcal-big" style="margin-top:4px"><b>${fmtInt(weekMin)}</b><span>/ 150 dk</span></div></div></div>
     <div class="bar" style="margin-top:8px"><i style="width:${clamp((weekMin / 150) * 100, 0, 100)}%;background:var(--violet)"></i></div>
     <div class="faint small" style="margin-top:8px">Haftada 2–3 seans (toplam 120–150 dk) core gücü ve duruşta belirgin fark yaratır.</div></div>`;
@@ -1799,6 +1802,7 @@ function renderPlayer(kind, id) {
   const total = plan.steps.reduce((s, x) => s + x.sec + READY, 0);
   view.innerHTML = `<div class="player">
     <div class="pl-top"><button class="pl-x" id="pl-x" aria-label="Kapat">${icon('x')}</button>
+      <button class="pl-x pl-voice ${voiceOn() ? 'on' : ''}" id="pl-voice" aria-label="Sesli rehber">${icon(voiceOn() ? 'volume' : 'mute')}</button>
       <div class="pl-prog"><i id="pl-bar"></i></div><span class="pl-count num" id="pl-count"></span></div>
     <div class="pl-media" id="pl-media"></div>
     <div class="pl-info"><div class="pl-phase" id="pl-phase"></div><h1 id="pl-name"></h1><div class="pl-sub" id="pl-sub"></div><p class="pl-cue" id="pl-cue"></p></div>
@@ -1837,7 +1841,9 @@ function renderPlayer(kind, id) {
     if (n >= plan.steps.length) return finish();
     i = clamp(n, 0, plan.steps.length - 1); phase = ph;
     left = ph === 'ready' ? READY : plan.steps[i].sec;
-    media(plan.steps[i]); paint();
+    const st = plan.steps[i];
+    if (ph === 'ready') speak(`${i === 0 ? '' : 'Sıradaki: '}${st.name}${st.side ? ', ' + st.side : ''}${st.reps ? ', ' + st.reps : ''}`);
+    media(st); paint();
   };
   const loop = () => {
     const now = Date.now();
@@ -1846,9 +1852,10 @@ function renderPlayer(kind, id) {
       left -= (now - lastTick) / 1000;
       const sec = Math.ceil(left);
       if (sec <= 3 && sec >= 1 && sec !== loop.last) { tick(phase === 'ready' ? 520 : 660); loop.last = sec; }
+      if (phase === 'work' && plan.steps[i].sec >= 40 && sec === Math.round(plan.steps[i].sec / 2) && loop.half !== i) { loop.half = i; speak('Yarısı bitti', { interrupt: false }); }
       if (left <= 0) {
         loop.last = null;
-        if (phase === 'ready') { phase = 'work'; left = plan.steps[i].sec; beep(); paint(); }
+        if (phase === 'ready') { phase = 'work'; left = plan.steps[i].sec; if (!speak('Başla')) beep(); else tick(880); paint(); }
         else go(i + 1);
       } else paint();
     }
@@ -1856,6 +1863,7 @@ function renderPlayer(kind, id) {
   };
   const finish = () => {
     phase = 'done'; stopMedia(); keepAwake(false);
+    speak('Tebrikler, tamamladın.');
     const min = Math.max(1, Math.round(activeMs / 60000));
     const kcal = actKcal(plan.met, min);
     $p('#pl-bar').style.width = '100%';
@@ -1872,13 +1880,19 @@ function renderPlayer(kind, id) {
     });
     $p('#pl-skip').addEventListener('click', () => (location.hash = '#/today'));
   };
-  const start = () => { unlockAudio(); keepAwake(true); startedAt = Date.now(); lastTick = Date.now(); paused = false; go(0); };
+  const start = () => { unlockAudio(); unlockSpeech(); keepAwake(true); startedAt = Date.now(); lastTick = Date.now(); paused = false; go(0); };
   $p('#pl-play').addEventListener('click', () => {
     if (phase === 'intro') return start();
     paused = !paused; lastTick = Date.now(); paint();
   });
   $p('#pl-next').addEventListener('click', () => { if (phase === 'intro') return start(); go(i + 1); });
   $p('#pl-prev').addEventListener('click', () => { if (phase !== 'intro') go(phase === 'work' && left < plan.steps[i].sec - 3 ? i : i - 1); });
+  $p('#pl-voice').addEventListener('click', e => {
+    db.settings.voice = !voiceOn(); save();
+    if (!db.settings.voice) { try { speechSynthesis.cancel(); } catch { /* yok */ } }
+    else { unlockSpeech(); if (!trVoice && !pickVoice()) toast('Telefonda Türkçe ses bulunamadı; Ayarlar > Erişilebilirlik > Seslendirme\'den indirilebilir', 'info'); }
+    e.currentTarget.classList.toggle('on', voiceOn()); e.currentTarget.innerHTML = icon(voiceOn() ? 'volume' : 'mute');
+  });
   $p('#pl-x').addEventListener('click', () => {
     if (phase !== 'intro' && phase !== 'done' && activeMs > 60000 && confirm('Seansı bitirmek ister misin? Yaptığın kısım kaydedilebilir.')) return finish();
     history.length > 1 ? history.back() : (location.hash = '#/today');
@@ -1887,9 +1901,259 @@ function renderPlayer(kind, id) {
   timer = setInterval(loop, 200);
   const onVis = () => { if (!document.hidden && phase !== 'done' && phase !== 'intro') keepAwake(true); };
   document.addEventListener('visibilitychange', onVis);
-  return () => { clearInterval(timer); stopMedia(); keepAwake(false); document.removeEventListener('visibilitychange', onVis); document.body.classList.remove('bare', 'playing'); };
+  return () => { clearInterval(timer); stopMedia(); keepAwake(false); try { speechSynthesis.cancel(); } catch { /* yok */ } document.removeEventListener('visibilitychange', onVis); document.body.classList.remove('bare', 'playing'); };
 }
 const fmtClock = s => { s = Math.max(0, Math.ceil(s)); return `${Math.floor(s / 60)}:${pad2(s % 60)}`; };
+
+// ═════════════════════════ Rekorlar
+const REP_RECORDS = [1, 3, 5, 8, 10];
+// Hareketin tüm rekorları (ağırlıklı: en ağır, tahmini maksimum, en yüksek set ve seans hacmi, tekrar rekorları)
+function exerciseRecords(ex) {
+  const ss = working(setsOf(ex.id));
+  if (!ss.length) return null;
+  const type = ex.type || 'weight';
+  const best = (fn, list = ss) => list.reduce((a, s) => (!a || fn(s) > fn(a) ? s : a), null);
+  if (type !== 'weight') {
+    const top = best(s => s.r + s.w / 100);
+    const byDay = groupByDay(ss).map(([d, l]) => [d, l.reduce((t, s) => t + s.r, 0)]);
+    const day = byDay.reduce((a, x) => (!a || x[1] > a[1] ? x : a), null);
+    return { type, top, sessionTotal: day };
+  }
+  const heaviest = best(s => s.w + s.r / 1000);
+  const e1 = best(s => (s.r <= 12 ? e1rm(s.w, s.r) : 0));
+  const setVol = best(s => s.w * s.r);
+  const byDay = groupByDay(ss).map(([d, l]) => [d, l.reduce((t, s) => t + s.w * s.r, 0)]);
+  const sessionVol = byDay.reduce((a, x) => (!a || x[1] > a[1] ? x : a), null);
+  const reps = REP_RECORDS.map(n => [n, best(s => (s.r >= n ? s.w + s.r / 1000 : -1))]).map(([n, s]) => [n, s && s.r >= n ? s : null]);
+  return { type, heaviest, e1, setVol, sessionVol, reps };
+}
+// Rekor olayları: setleri zaman sırasıyla gezip her harekette önceki en iyiyi aşan setleri bulur
+function prEvents() {
+  const bestBy = {}, out = [];
+  for (const s of [...db.sets].filter(x => !x.warm).sort((a, b) => a.ts - b.ts)) {
+    const ex = getEx(s.exId); if (!ex) continue;
+    const sc = setScore(ex, s), prev = bestBy[s.exId];
+    if (prev != null && sc > prev) out.push(s);
+    if (prev == null || sc > prev) bestBy[s.exId] = sc;
+  }
+  return out;
+}
+function recordTable(ex, rec) {
+  if (!rec) return '';
+  const cell = (label, val, sub) => `<div class="rec-cell"><span>${label}</span><b class="num">${val}</b>${sub ? `<i>${sub}</i>` : ''}</div>`;
+  if (rec.type !== 'weight') {
+    return `<div class="rec-grid">${cell(rec.type === 'time' ? 'En uzun' : 'En çok tekrar', esc(fmtSet(ex, rec.top)), daysAgo(rec.top.date))}
+      ${cell(rec.type === 'time' ? 'En uzun seans' : 'Seansta toplam', `${fmtInt(rec.sessionTotal[1])}${rec.type === 'time' ? ' sn' : ''}`, daysAgo(rec.sessionTotal[0]))}</div>`;
+  }
+  return `<div class="rec-grid">
+      ${cell('En ağır', `${fmtN(rec.heaviest.w)} kg`, `× ${rec.heaviest.r} · ${daysAgo(rec.heaviest.date)}`)}
+      ${rec.e1 ? cell('Tahmini maksimum', `${fmtN(e1rm(rec.e1.w, rec.e1.r), 1)} kg`, `${esc(fmtSet(ex, rec.e1))}`) : ''}
+      ${cell('En iyi set', `${fmtInt(rec.setVol.w * rec.setVol.r)} kg`, esc(fmtSet(ex, rec.setVol)))}
+      ${cell('En iyi seans', `${fmtInt(rec.sessionVol[1])} kg`, daysAgo(rec.sessionVol[0]))}</div>
+    <div class="rep-recs">${rec.reps.map(([n, s]) => `<div><span>${n} tekrar</span><b class="num">${s ? fmtN(s.w) + ' kg' : '—'}</b></div>`).join('')}</div>`;
+}
+function renderRecords() {
+  setHeader('Rekorlar', { back: true, always: true });
+  const ids = [...new Set(db.sets.filter(s => !s.warm).sort((a, b) => b.ts - a.ts).map(s => s.exId))].filter(id => getEx(id));
+  const events = prEvents().slice(-12).reverse();
+  if (!ids.length) { view.innerHTML = pageHead('Kişisel rekorların', 'Rekorlar') + emptyBox('trophy', 'Henüz rekor yok', 'Set kaydettikçe her hareketteki en iyilerin burada toplanır.'); return; }
+  view.innerHTML = pageHead(`${ids.length} hareket · ${prEvents().length} rekor kırıldı`, 'Rekorlar') + `
+    ${events.length ? `<div class="sec"><h2>Son kırılan rekorlar</h2></div><div class="list">${events.map(s => { const ex = getEx(s.exId); return `<a class="item" href="#/ex/${encodeURIComponent(s.exId)}">${thumb(ex)}
+      <div class="grow"><div class="name">${esc(ex.name)}</div><div class="meta num">${esc(fmtSet(ex, s))} · ${daysAgo(s.date)}</div></div>${icon('trophy', 'chev')}</a>`; }).join('')}</div>` : ''}
+    <div class="sec"><h2>Hareket bazında</h2></div>
+    ${ids.map(id => { const ex = getEx(id); return `<details class="card rec-card"><summary><div class="row">${thumb(ex)}<div class="grow"><div class="name">${esc(ex.name)}</div>
+      <div class="faint small num">${esc(recSummary(ex))}</div></div>${icon('down', 'chev')}</div></summary>${recordTable(ex, exerciseRecords(ex))}
+      <a class="lnk small" href="#/ex/${encodeURIComponent(id)}" style="display:inline-block;margin-top:10px">Grafiği gör ›</a></details>`; }).join('')}`;
+}
+function recSummary(ex) {
+  const r = exerciseRecords(ex);
+  if (!r) return '';
+  return r.type === 'weight' ? `En ağır ${fmtN(r.heaviest.w)} kg${r.e1 ? ` · tahmini maks. ${fmtN(e1rm(r.e1.w, r.e1.r), 1)} kg` : ''}` : `En iyi ${fmtSet(ex, r.top)}`;
+}
+
+// ═════════════════════════ Haftalık seri (kırılınca bir sonraki hafta 2 günle kurtarılabilir)
+function activeDaySet() {
+  return new Set([...db.sets.map(s => s.date), ...db.cardio.map(c => c.date), ...db.activities.map(a => a.date)]);
+}
+function streakInfo() {
+  const days = activeDaySet(), perWeek = new Map();
+  for (const d of days) { const w = dayKey(weekStart(parseDay(d))); perWeek.set(w, (perWeek.get(w) || 0) + 1); }
+  const wk = off => { const d = weekStart(); d.setDate(d.getDate() - 7 * off); return dayKey(d); };
+  const n = off => perWeek.get(wk(off)) || 0;
+  // Geriye doğru say: bu hafta henüz boşsa seriyi bozmaz; tek boş hafta, ardından gelen hafta 2+ günse kurtarılmış sayılır
+  let cur = 0, off = n(0) ? 0 : 1, repaired = false;
+  while (off < 520) {
+    if (n(off)) { cur++; off++; continue; }
+    if (!n(off + 1)) break;
+    if (off >= 1 && n(off - 1) >= 2) { repaired = true; off++; continue; }
+    break;
+  }
+  // En uzun seri (tüm geçmiş)
+  const weeks = [...perWeek.keys()].sort();
+  let longest = 0;
+  if (weeks.length) {
+    let run = 0, d = parseDay(weeks[0]);
+    const end = weekStart();
+    let gapOk = false;
+    while (d <= end) {
+      const k = dayKey(d), c = perWeek.get(k) || 0;
+      if (c) { run++; gapOk = false; } else {
+        const nx = new Date(d); nx.setDate(nx.getDate() + 7);
+        if (!gapOk && (perWeek.get(dayKey(nx)) || 0) >= 2 && run) gapOk = true; else run = 0;
+      }
+      longest = Math.max(longest, run);
+      d.setDate(d.getDate() + 7);
+    }
+  }
+  longest = Math.max(longest, cur);
+  const lastMissed = !n(1) && n(2) > 0;
+  let hint;
+  if (!cur && !n(0)) hint = 'Bu hafta bir antrenmanla yeni bir seri başlat.';
+  else if (!n(0)) hint = `Bu hafta bir gün spor yaparsan serin ${cur + 1} haftaya çıkar.`;
+  else if (lastMissed && n(0) < 2) hint = 'Geçen haftayı kaçırdın: bu hafta 1 gün daha yaparsan serin kurtulur.';
+  else hint = n(0) >= (db.profile.days || 3) ? 'Bu haftanın hedefi tamam. Harika gidiyorsun!' : `Bu hafta ${n(0)}/${db.profile.days || 3} gün. Seri güvende.`;
+  return { cur, longest, thisWeek: n(0), hint, repaired };
+}
+function streakCard() {
+  const s = streakInfo();
+  const goal = db.profile.days || 3;
+  return `<a class="card streak-card" href="#/report/week/0">
+    <div class="st-flame ${s.cur ? 'on' : ''}">${icon('flame')}</div>
+    <div class="grow"><div class="st-top"><b class="num">${s.cur}</b><span>haftalık seri</span>${s.longest > s.cur ? `<em>en uzun ${s.longest}</em>` : ''}</div>
+      <div class="st-hint">${esc(s.hint)}</div>
+      <div class="st-dots">${[...Array(goal)].map((_, i) => `<i class="${i < s.thisWeek ? 'on' : ''}"></i>`).join('')}</div></div>
+    ${icon('chev', 'chev')}</a>`;
+}
+
+// ═════════════════════════ Haftalık / aylık rapor
+function periodRange(kind, off) {
+  const now = new Date();
+  let a, b;
+  if (kind === 'month') { a = new Date(now.getFullYear(), now.getMonth() - off, 1); b = new Date(a.getFullYear(), a.getMonth() + 1, 0); }
+  else { a = weekStart(); a.setDate(a.getDate() - 7 * off); b = new Date(a); b.setDate(a.getDate() + 6); }
+  return [dayKey(a), dayKey(b), a, b];
+}
+function periodStats(from, to) {
+  const inR = d => d >= from && d <= to;
+  const sets = db.sets.filter(s => inR(s.date)), ws = working(sets);
+  const days = [...activeDaySet()].filter(inR);
+  let kcal = 0, min = 0;
+  for (const d of days) { const st = dayStats(d); kcal += st.kcal; min += st.min; }
+  const acts = db.activities.filter(a => inR(a.date));
+  const tennis = acts.filter(a => a.sport === 'tennis' && a.kind !== 'routine'), pil = acts.filter(a => a.sport === 'pilates');
+  const prs = prEvents().filter(s => inR(s.date));
+  const vol = ws.reduce((t, s) => { const ex = getEx(s.exId); return t + (!ex?.type || ex.type === 'weight' ? s.w * s.r : 0); }, 0);
+  const perRegion = REGIONS.map(r => [r, ws.filter(s => getEx(s.exId)?.region === r.id).length]);
+  const topEx = [...ws.reduce((m, s) => m.set(s.exId, (m.get(s.exId) || 0) + 1), new Map())].sort((a, b) => b[1] - a[1]).slice(0, 5);
+  return { days: days.length, workouts: db.workouts.filter(w => inR(w.date)).length, kcal, min, sets: ws.length, vol, prs, perRegion, topEx,
+    tennisH: tennis.reduce((t, a) => t + a.min, 0) / 60, matches: tennis.filter(a => a.result).length, wins: tennis.filter(a => a.result === 'win').length, pilMin: pil.reduce((t, a) => t + a.min, 0) };
+}
+function renderReport(kind = 'week', off = '0') {
+  if (kind !== 'month') kind = 'week';
+  off = Math.max(0, +off || 0);
+  setHeader('Rapor', { back: true, always: true });
+  const [from, to, a, b] = periodRange(kind, off), [pf, pt] = periodRange(kind, off + 1);
+  const st = periodStats(from, to), pv = periodStats(pf, pt);
+  const title = kind === 'month' ? a.toLocaleDateString('tr-TR', { month: 'long', year: 'numeric' })
+    : `${a.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })} – ${b.toLocaleDateString('tr-TR', { day: 'numeric', month: 'short' })}`;
+  const delta = (x, y) => { if (!y) return x ? '<span class="delta up">yeni</span>' : ''; const d = ((x - y) / y) * 100; return Math.abs(d) < 1 ? '<span class="delta">=</span>' : `<span class="delta ${d > 0 ? 'up' : 'down'}">${d > 0 ? '▲' : '▼'} %${fmtInt(Math.abs(d))}</span>`; };
+  const m = (lbl, val, unit, x, y) => `<div class="metric"><div class="lbl">${lbl}</div><b class="num">${val}${unit ? `<small>${unit}</small>` : ''}</b><div class="note">${delta(x, y)}</div></div>`;
+  const maxR = Math.max(1, ...st.perRegion.map(x => x[1]));
+  const s = streakInfo();
+  view.innerHTML = pageHead(kind === 'month' ? 'Aylık rapor' : 'Haftalık rapor', title) + `
+    <div class="seg"><button data-k="week" class="${kind === 'week' ? 'on' : ''}">Hafta</button><button data-k="month" class="${kind === 'month' ? 'on' : ''}">Ay</button></div>
+    <div class="period-nav"><a href="#/report/${kind}/${off + 1}">${icon('back')} Önceki</a><span>${off ? `${off} ${kind === 'month' ? 'ay' : 'hafta'} önce` : kind === 'month' ? 'Bu ay' : 'Bu hafta'}</span>${off ? `<a href="#/report/${kind}/${off - 1}">Sonraki ${icon('chev')}</a>` : '<span style="width:70px"></span>'}</div>
+    ${!st.days ? emptyBox('calendar', 'Bu dönemde kayıt yok', 'Antrenman, maç veya seans kaydettiğinde raporun burada oluşur.') : `
+    <div class="metric-grid">
+      ${m('Aktif gün', st.days, '', st.days, pv.days)}
+      ${m('Süre', fmtInt(st.min), 'dk', st.min, pv.min)}
+      ${m('Kalori', fmtInt(st.kcal), 'kcal', st.kcal, pv.kcal)}
+      ${st.sets || pv.sets ? m('Set', st.sets, '', st.sets, pv.sets) : ''}
+      ${st.vol || pv.vol ? m('Toplam kaldırılan', st.vol >= 10000 ? fmtN(st.vol / 1000, 1) : fmtInt(st.vol), st.vol >= 10000 ? 't' : 'kg', st.vol, pv.vol) : ''}
+      ${st.tennisH || pv.tennisH ? m('Tenis', fmtN(st.tennisH, 1), 'saat', st.tennisH, pv.tennisH) : ''}
+      ${st.matches ? `<div class="metric"><div class="lbl">Maç</div><b class="num">${st.wins}G ${st.matches - st.wins}M</b><div class="note">%${fmtInt((st.wins / st.matches) * 100)} galibiyet</div></div>` : ''}
+      ${st.pilMin || pv.pilMin ? m('Pilates', fmtInt(st.pilMin), 'dk', st.pilMin, pv.pilMin) : ''}
+    </div>
+    ${kind === 'week' && !off ? `<div style="margin-top:10px">${streakCard()}</div>` : ''}
+    ${st.prs.length ? `<div class="sec"><h2>Kırılan rekorlar</h2><span class="pill accent">${icon('trophy')}${st.prs.length}</span></div>
+      <div class="list">${st.prs.slice(-8).reverse().map(x => { const ex = getEx(x.exId); return `<a class="item" href="#/ex/${encodeURIComponent(x.exId)}">${thumb(ex)}<div class="grow"><div class="name">${esc(ex.name)}</div><div class="meta num">${esc(fmtSet(ex, x))}</div></div>${icon('trophy', 'chev')}</a>`; }).join('')}</div>` : ''}
+    ${st.sets ? `<div class="sec"><h2>Kas gruplarına göre set</h2></div><div class="card">${st.perRegion.map(([r, n]) => `<div class="track-row"><div class="top"><b>${r.name}</b><span class="num">${n} set</span></div>
+      <div class="bar"><i style="width:${(n / maxR) * 100}%;background:var(--accent)"></i></div></div>`).join('')}</div>
+    <div class="sec"><h2>En çok yaptığın hareketler</h2></div><div class="list">${st.topEx.map(([id, n]) => { const ex = getEx(id); return ex ? `<a class="item" href="#/ex/${encodeURIComponent(id)}">${thumb(ex)}<div class="grow"><div class="name">${esc(ex.name)}</div><div class="meta">${n} set</div></div>${icon('chev', 'chev')}</a>` : ''; }).join('')}</div>` : ''}`}
+    <div class="faint small" style="text-align:center;margin-top:14px">Seri: ${s.cur} hafta · en uzun ${s.longest} hafta</div>`;
+  $$('.seg button', view).forEach(btn => btn.addEventListener('click', () => location.replace(`#/report/${btn.dataset.k}/0`)));
+}
+
+// ═════════════════════════ Sesli rehber (Türkçe)
+let trVoice = null;
+function pickVoice() {
+  try {
+    const vs = speechSynthesis.getVoices();
+    trVoice = vs.find(v => /^tr/i.test(v.lang) && /yelda|enhanced|premium/i.test(v.name)) || vs.find(v => /^tr/i.test(v.lang)) || null;
+  } catch { trVoice = null; }
+  return trVoice;
+}
+if ('speechSynthesis' in window) { pickVoice(); speechSynthesis.addEventListener?.('voiceschanged', pickVoice); }
+const voiceOn = () => db.settings.voice !== false && 'speechSynthesis' in window;
+function speak(text, { interrupt = true } = {}) {
+  if (!voiceOn()) return false;
+  try {
+    if (!trVoice) pickVoice();
+    if (interrupt) speechSynthesis.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.lang = 'tr-TR'; if (trVoice) u.voice = trVoice;
+    u.rate = 1.02; u.pitch = 1;
+    speechSynthesis.speak(u);
+    return true;
+  } catch { return false; }
+}
+// iOS sesi ilk dokunuşla açar
+function unlockSpeech() { if (voiceOn()) { try { const u = new SpeechSynthesisUtterance(' '); u.volume = 0; speechSynthesis.speak(u); } catch { /* yok */ } } }
+
+// ═════════════════════════ Kilit ekranında dinlenme sayacı (ses dosyası + Media Session)
+// Dinlenme süresi kadar sessiz bir WAV üretilir; son 3 saniyede kısa bipler, sonunda uzun bip çalar.
+// Ses çaldığı için iPhone ekran kilitliyken de sayar ve kilit ekranında görünür. Müziği durdurur, bu yüzden isteğe bağlı.
+let restAudio = null, restAudioUrl = null;
+function makeRestWav(sec) {
+  const rate = 8000, n = Math.max(1, Math.round(sec * rate)) + rate, data = new Uint8Array(44 + n);
+  const v = new DataView(data.buffer);
+  const str = (o, s) => [...s].forEach((c, i) => v.setUint8(o + i, c.charCodeAt(0)));
+  str(0, 'RIFF'); v.setUint32(4, 36 + n, true); str(8, 'WAVE'); str(12, 'fmt ');
+  v.setUint32(16, 16, true); v.setUint16(20, 1, true); v.setUint16(22, 1, true); v.setUint32(24, rate, true); v.setUint32(28, rate, true);
+  v.setUint16(32, 1, true); v.setUint16(34, 8, true); str(36, 'data'); v.setUint32(40, n, true);
+  data.fill(128, 44);
+  // Çok kısık bir taban sinyal: tamamen sessiz dosyayı iOS'un durdurmasını önler
+  for (let i = 0; i < n; i += 400) data[44 + i] = 129;
+  const tone = (start, dur, freq, amp) => {
+    for (let i = 0; i < dur * rate; i++) {
+      const k = Math.round(start * rate) + i; if (k >= n) break;
+      const env = Math.min(1, i / 80, (dur * rate - i) / 80);
+      data[44 + k] = 128 + Math.round(Math.sin((2 * Math.PI * freq * i) / rate) * amp * env);
+    }
+  };
+  for (const t of [3, 2, 1]) if (sec - t > 0) tone(sec - t, 0.12, 880, 60);
+  tone(sec, 0.25, 880, 90); tone(sec + 0.3, 0.45, 1320, 90);
+  return new Blob([data], { type: 'audio/wav' });
+}
+function restAudioStart(sec) {
+  if (!db.settings.lockTimer || sec <= 0) return;
+  try {
+    restAudioStop();
+    restAudioUrl = URL.createObjectURL(makeRestWav(sec));
+    restAudio = new Audio(restAudioUrl);
+    restAudio.play().catch(() => {});
+    if ('mediaSession' in navigator) {
+      navigator.mediaSession.metadata = new MediaMetadata({ title: `Dinlenme · ${Math.floor(sec / 60)}:${pad2(Math.round(sec) % 60)}`, artist: 'Gym Takip', album: db.session?.name || 'Antrenman',
+        artwork: [{ src: 'icons/icon-512.png', sizes: '512x512', type: 'image/png' }] });
+      navigator.mediaSession.setActionHandler?.('pause', () => {});
+      navigator.mediaSession.setActionHandler?.('stop', () => stopRest());
+    }
+  } catch { /* desteklenmiyor */ }
+}
+function restAudioStop() {
+  if (restAudio) { try { restAudio.pause(); } catch { /* yok */ } restAudio = null; }
+  if (restAudioUrl) { URL.revokeObjectURL(restAudioUrl); restAudioUrl = null; }
+}
 
 // ═════════════════════════ Hareket detayı (bilgi + ilerleme; set girişi antrenman ekranında)
 const LEVELS = { beginner: 'Başlangıç', intermediate: 'Orta', expert: 'İleri' };
@@ -1996,6 +2260,7 @@ function renderChart(pane, ex) {
       <div class="card"><div class="card-label">Rekor</div><b class="num">${best ? esc(fmtSet(ex, best)) : '—'}</b>
         <div class="sm">${best && type === 'weight' && best.r > 1 ? `1 tekrarda ~${fmtInt(e1rm(best.w, best.r))} kg kaldırabilirsin` : best ? daysAgo(best.date) : 'Kayıt yok'}</div></div>
     </div>
+    ${all.length ? `<div class="sec" style="margin-top:4px"><h2>Rekorlar</h2></div><div class="card" style="margin-bottom:14px">${recordTable(ex, exerciseRecords(ex))}</div>` : ''}
     <div class="chips" style="margin-bottom:10px">${list.map(m => `<button class="chip ${m[0] === chartMetric ? 'on' : ''}" data-m="${m[0]}">${m[1]}</button>`).join('')}</div>
     ${points.length ? `<div class="card"><canvas class="chart"></canvas></div>` : emptyBox('bars', 'Henüz veri yok', 'Bu hareketle ilk setini kaydettiğinde ilerlemen burada görünecek.')}
     ${allDays.length ? `<div class="sec"><h2>Antrenmanlar</h2></div><div class="list">${allDays.map(([d, ss]) => `<div class="item" style="display:block">
@@ -2085,6 +2350,7 @@ function renderHist() {
     ${low.length ? `<div class="tip" style="margin-top:14px">${icon('bulb')}<span class="small muted">${esc(low.join(', '))} bu hafta az çalıştı. Dengeli gelişim için bölge başına haftada 10–20 set önerilir.</span></div>` : ''}</div>` : '';
 
   view.innerHTML = pageHead(`${dates.length} gün`, 'Geçmiş') + `
+    <div class="hist-links"><a href="#/report/week/0">${icon('bars')}<b>Haftalık rapor</b></a><a href="#/report/month/0">${icon('calendar')}<b>Aylık rapor</b></a><a href="#/records">${icon('trophy')}<b>Rekorlar</b></a></div>
     <div class="stats3">
       <div class="card"><b class="num">${thisWeek}</b><span>Bu hafta</span></div>
       <div class="card"><b class="num">${db.workouts.length || dates.length}</b><span>Antrenman</span></div>
@@ -2492,6 +2758,8 @@ function renderSettings() {
     <div class="form">
       <div class="setting"><span>Setler arası dinlenme</span><select id="s-rest">${opt([0, 45, 60, 90, 120, 150, 180, 240], db.settings.rest, v => (v ? `${Math.floor(v / 60)}:${pad2(v % 60)}` : 'Kapalı'))}</select></div>
       <div class="setting"><span>Antrenmanda ekran açık kalsın</span>${switchHTML('s-awake', db.settings.awake)}</div>
+      <div class="setting"><span>Sesli rehber (Türkçe)</span>${switchHTML('s-voice', voiceOn())}</div>
+      <div class="setting"><span>Kilit ekranında dinlenme sayacı<small class="set-note">Ses çalarak sayar, müziği durdurur</small></span>${switchHTML('s-lock', db.settings.lockTimer)}</div>
       <div class="setting"><span>Ağırlık artırma adımı</span><select id="s-step">${opt([0.5, 1, 1.25, 2, 2.5, 5], db.settings.step, v => fmtN(v, 2) + ' kg')}</select></div>
     </div>
     <div class="sec"><h2>İnternetsiz kullanım</h2></div>
@@ -2522,6 +2790,9 @@ function renderSettings() {
   }));
   $('#s-level')?.addEventListener('change', e => { db.profile.level = +e.target.value; save(); });
   $('#s-place')?.addEventListener('change', e => { db.profile.place = e.target.value; save(); });
+  const sw = (id, key, after) => $(id)?.addEventListener('click', e => { db.settings[key] = !e.currentTarget.classList.contains('on'); save(); e.currentTarget.classList.toggle('on', db.settings[key]); e.currentTarget.setAttribute('aria-checked', db.settings[key]); after?.(db.settings[key]); });
+  sw('#s-voice', 'voice', on => { if (on) { unlockSpeech(); if (!pickVoice()) toast('Telefonda Türkçe ses bulunamadı; iPhone Ayarlar > Erişilebilirlik > Seslendirme > Sesler bölümünden indirebilirsin', 'info'); else speak('Sesli rehber açık'); } });
+  sw('#s-lock', 'lockTimer', on => { if (on) toast('Dinlenme sırasında ses çalar; ekran kilitliyken de sayar', 'info'); });
   $('#s-awake')?.addEventListener('click', e => { db.settings.awake = !db.settings.awake; save(); e.currentTarget.classList.toggle('on', db.settings.awake); e.currentTarget.setAttribute('aria-checked', db.settings.awake); });
   navigator.storage?.persisted?.().then(p => { const el = $('#persist-note'); if (el) el.textContent = p ? 'Kalıcı depolama açık: iPhone yer açmak için verilerini silmez.' : 'Kalıcı depolama izni verilmedi; düzenli yedek almanı öneririz.'; }).catch(() => {});
   $('#s-rest').addEventListener('change', e => { db.settings.rest = +e.target.value; save(); });
@@ -2771,19 +3042,22 @@ function beep() {
 function startRest(sec) {
   if (!sec) return;
   restEnd = Date.now() + sec * 1000; restTotal = sec;
+  restAudioStart(sec);
   restEl.hidden = false; restEl.classList.remove('done');
   clearInterval(restTimer);
   restTimer = setInterval(tickRest, 250);
   tickRest();
 }
-function stopRest() { clearInterval(restTimer); restEl.hidden = true; }
+function stopRest() { clearInterval(restTimer); restEl.hidden = true; restAudioStop(); }
 function tickRest() {
   const leftMs = restEnd - Date.now();
   const left = Math.ceil(leftMs / 1000);
   $('#rest-bar').style.strokeDashoffset = 106.8 * (1 - clamp(leftMs / 1000 / restTotal, 0, 1));
   if (left <= 0) {
     if (!restEl.classList.contains('done')) {
-      restEl.classList.add('done'); beep();
+      restEl.classList.add('done');
+      if (!restAudio) beep();
+      if (!document.hidden) setTimeout(() => speak('Dinlenme bitti. Sıradaki set.'), restAudio ? 900 : 500);
       $('#rest-time').textContent = 'Hazır!';
       setTimeout(stopRest, 4000);
     }
@@ -2797,6 +3071,7 @@ restEl.addEventListener('click', e => {
   restEnd += +b.dataset.rest * 1000;
   if (restEnd < Date.now()) restEnd = Date.now();
   restTotal = Math.max(restTotal, (restEnd - Date.now()) / 1000);
+  if (db.settings.lockTimer) restAudioStart((restEnd - Date.now()) / 1000);
   tickRest();
 });
 
